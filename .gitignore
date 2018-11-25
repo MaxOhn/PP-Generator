@@ -27,4 +27,5 @@ target/
 .idea/
 src/main/resources/mapThumb/*.jpg
 src/main/java/util/secrets.java
+src/main/java/util/MainTest.java
 .iml
