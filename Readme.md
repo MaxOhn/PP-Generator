@@ -24,7 +24,9 @@ The struggle setting it up begins here.
 
 - The last and most annoying dependency for the code right now will be the local database setup I have. Since I'm not handing out access to that, you'll have to rewrite that interface a little to fit your needs.
 
-- Everything else is should import automatically through Maven (I hope).
+- A lot of parts require some information of a file `/util/secrets.java` which I have as static class with variables containing discord token, osu api key, twitch client id, file paths, ... so you'll have to customize that one.
+
+- Everything else should import automatically through Maven (I hope).
 
 
 
