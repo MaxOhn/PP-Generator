@@ -1,0 +1,152 @@
+package main.java.util;
+
+import de.maxikg.osuapi.model.*;
+import main.java.core.Main;
+
+import java.util.*;
+
+import static de.maxikg.osuapi.model.Mod.createSum;
+
+public class utilOsu {
+
+    public static String mods_str(int mods) {
+        StringBuilder sb = new StringBuilder();
+        if ((mods & 1) != 0)
+            sb.append("NF");
+        if ((mods & 2) != 0)
+            sb.append("EZ");
+        if ((mods & 4) != 0)
+            sb.append("TD");
+        if ((mods & 8) != 0)
+            sb.append("HD");
+        if ((mods & 16) != 0)
+            sb.append("HR");
+        if ((mods & 512) != 0)
+            sb.append("NC");
+        else if ((mods & 64) != 0)
+            sb.append("DT");
+        if ((mods & 256) != 0)
+            sb.append("HT");
+        if ((mods & 1024) != 0)
+            sb.append("FL");
+        if ((mods & 4096) != 0)
+            sb.append("SO");
+        return sb.toString();
+    }
+
+    public static String abbrvModSet(Set<Mod> mods) {
+        return mods_str(createSum(mods));
+    }
+
+    public static int countRetries(String name, UserGame recent, Collection<UserGame> userRecents) {
+        int amountTries = 0;
+        for (UserGame game : userRecents) {
+            if (game.getBeatmapId() == recent.getBeatmapId())
+                if (game.getScore() > 10000)
+                    amountTries++;
+                else
+                    break;
+        }
+        if (amountTries == 20) {
+            amountTries = 0;
+            userRecents = Main.osu.getUserRecentByUsername(name).limit(50).query();
+            for (UserGame game : userRecents) {
+                if (game.getBeatmapId() == recent.getBeatmapId())
+                    if (game.getScore() > 10000)
+                        amountTries++;
+                    else
+                        break;
+            }
+        }
+        return amountTries;
+    }
+
+    static rankEmote getRankEmote(String rank) {
+        switch (rank) {
+            case "XH":
+                return rankEmote.XH;
+            case "X":
+                return rankEmote.X_;
+            case "SH":
+                return rankEmote.SH;
+            case "S":
+                return rankEmote.S_;
+            case "A":
+                return rankEmote.A_;
+            case "B":
+                return rankEmote.B_;
+            case "C":
+                return rankEmote.C_;
+            case "D":
+                return rankEmote.D_;
+        }
+        return rankEmote.F_;
+    }
+
+    public enum rankEmote {
+
+        XH("515354675059621888"),
+        X_("515354674929336320"),
+        SH("515354675323600933"),
+        S_("515354674791186433"),
+        A_("515339175222837259"),
+        B_("515354674866683904"),
+        C_("515354674476351492"),
+        D_("515354674963021824"),
+        F_("515623098947600385");
+
+        private String value;
+
+        rankEmote(String s) {
+            this.value = s;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public static int passedObjects(UserGame g) {
+        return g.getCount300() + g.getCount100() + g.getCount50() + g.getCountMiss();
+    }
+
+    public static int indexInTopPlays(UserGame score, Collection<UserScore> topPlays) {
+        int index = 0;
+        for (UserScore s: topPlays) {
+            if (s.getScore() == score.getScore() && s.getDate() == s.getDate())
+                return ++index;
+            index++;
+        }
+        return -1;
+    }
+
+    public static int indexInTopPlays(BeatmapScore score, Collection<UserScore> topPlays) {
+        int index = 0;
+        for (UserScore s: topPlays) {
+            if (s.getScore() == score.getScore() && s.getDate() == s.getDate())
+                return ++index;
+            index++;
+        }
+        return -1;
+    }
+
+    public static int indexInGlobalPlays(UserGame score, Collection<BeatmapScore> globalPlays) {
+        int index = 0;
+        for (BeatmapScore s: globalPlays) {
+            if (s.getScore() == score.getScore() && s.getDate() == s.getDate() && score.getUserId() == s.getUserId())
+                return ++index;
+            index++;
+        }
+        return -1;
+    }
+
+    public static int indexInGlobalPlays(BeatmapScore score, Collection<BeatmapScore> globalPlays) {
+        int index = 0;
+        for (BeatmapScore s: globalPlays) {
+            if (score.equals(s))
+                return ++index;
+            index++;
+        }
+        return -1;
+    }
+}
