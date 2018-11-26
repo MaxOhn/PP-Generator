@@ -44,7 +44,7 @@ public class cmdRecent extends scoreEmbed implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).limit(1).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
-        scoreEmbed.embedScore(event, user, map, recent, userRecents, topPlays, globalPlays);
+        scoreEmbed.embedScoreRecent(event, user, map, recent, userRecents, topPlays, globalPlays);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package main.java.core;
 
 import de.maxikg.osuapi.model.Beatmap;
+import de.maxikg.osuapi.model.BeatmapScore;
 import de.maxikg.osuapi.model.Mod;
 import de.maxikg.osuapi.model.UserGame;
 import main.java.util.secrets;
@@ -32,6 +33,14 @@ public class Performance {
         calculateMapPP();
     }
 
+    public Performance(Beatmap map, BeatmapScore score) {
+        this.mode = 3;
+        this.map = map;
+        maniaPerf = new ManiaPerformanceCalculator(createSum(score.getEnabledMods()),
+                Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float)map.getDifficultyOverall(),
+                score.getScore(), calculateManiaStars());
+    }
+
     public Performance(Beatmap map, UserGame usergame) {
         this(map, usergame, 0);
     }
@@ -45,10 +54,9 @@ public class Performance {
             calculateMapPP();
             calculatePlayPP();
         } else if (mode == 3) {
-            double stars = calculateManiaStars();
             maniaPerf = new ManiaPerformanceCalculator(createSum(usergame.getEnabledMods()),
                     Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float)map.getDifficultyOverall(),
-                    usergame.getScore(), stars);
+                    usergame.getScore(), calculateManiaStars());
             if (usergame.getRank().equals("F"))
                 maniaPerf.setPlayPP(0);
         }

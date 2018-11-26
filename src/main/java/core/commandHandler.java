@@ -4,6 +4,7 @@ import main.java.commands.Command;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.Set;
 
 public class commandHandler {
 
@@ -12,6 +13,10 @@ public class commandHandler {
 
     // commands contains all invoke words with their corresponding action
     static HashMap<String, Command> commands = new HashMap<>();
+
+    public static Set<String> getCommands() {
+        return commands.keySet();
+    }
 
     public static void handleCommand(commandParser.commandContainer cmd) {
         // If the word following the prefix is an invoke word

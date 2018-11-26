@@ -64,6 +64,9 @@ public class Main {
         commandHandler.commands.put("removes", new cmdRemoveStream());
         commandHandler.commands.put("compare", new cmdCompare());
         commandHandler.commands.put("c", new cmdCompare());
+        commandHandler.commands.put("comparemania", new cmdCompareMania());
+        commandHandler.commands.put("cmania", new cmdCompareMania());
+        commandHandler.commands.put("cm", new cmdCompareMania());
         commandHandler.commands.put("help", new cmdHelp());
         commandHandler.commands.put("h", new cmdHelp());
         commandHandler.commands.put("link", new cmdLink());
