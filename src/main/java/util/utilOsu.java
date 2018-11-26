@@ -106,8 +106,11 @@ public class utilOsu {
         }
     }
 
-    public static int passedObjects(UserGame g) {
-        return g.getCount300() + g.getCount100() + g.getCount50() + g.getCountMiss();
+    public static int passedObjects(UserGame g, int mode) {
+        if (mode == 0)
+            return g.getCount300() + g.getCount100() + g.getCount50() + g.getCountMiss();
+        else // (mode == 3)
+            return g.getCountGeki() + g.getCount300() + g.getCountKatu() + g.getCount100() + g.getCount50() + g.getCountMiss();
     }
 
     public static int indexInTopPlays(UserGame score, Collection<UserScore> topPlays) {

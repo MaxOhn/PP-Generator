@@ -91,7 +91,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("SELECT * FROM twitch");
+        ResultSet rs = stmnt.executeQuery("select * from twitch");
         while(rs.next()) {
             if (streamers.containsKey(rs.getString("name")))
                 streamers.get(rs.getString("name")).add(rs.getString("channel"));

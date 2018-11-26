@@ -30,5 +30,4 @@ public class commandHandler {
             logger.warn(cmd.invoke + " is no valid command");
         }
     }
-
 }

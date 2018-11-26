@@ -31,16 +31,16 @@ public class cmdRecentMania implements Command {
         UserGame recent;
         User user;
         try {
-            user = Main.osu.getUserByUsername(name).query().iterator().next();
+            user = Main.osu.getUserByUsername(name).mode(GameMode.OSU_MANIA).query().iterator().next();
             userRecents = Main.osu.getUserRecentByUsername(name).mode(GameMode.OSU_MANIA).query();
             recent = userRecents.iterator().next();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent mania plays").queue();
             return;
         }
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).limit(1).query().iterator().next();
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
+        Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(GameMode.OSU_MANIA).limit(1).query().iterator().next();
+        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(GameMode.OSU_MANIA).limit(50).query();
+        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(GameMode.OSU_MANIA).query();
         scoreEmbed.embedScoreMania(event, user, map, recent, userRecents, topPlays, globalPlays);
     }
 

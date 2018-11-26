@@ -20,7 +20,7 @@ The struggle setting it up begins here.
 
 - Calculating the [performance points](https://osu.ppy.sh/help/wiki/Performance_Points) of a map/play is done via [oppai-ng](https://github.com/Francesco149/oppai-ng)'s command line function so this one must be installed aswell.
 
-- Another minor struggle was the log4j import, its pom.xml dependency as of now is working though so it might be fine.
+- Another minor struggle was the [log4j](https://logging.apache.org/log4j/2.x/) import, its pom.xml dependency as of now is working though so it might be fine.
 
 - The last and most annoying dependency for the code right now will be the local database setup I have. Since I'm not handing out access to that, you'll have to rewrite that interface a little to fit your needs.
 
@@ -35,7 +35,7 @@ The struggle setting it up begins here.
 
 
 
-If any question arise, feel free to contact me (Badewanne3#0685) on discord.
+If any question arise, feel free to contact me (`Badewanne3#0685`[) on discord.
 
 The bot is by no means written in a professional manner. Just a little project for me to get back into Java and give our discord server some more utility.
 

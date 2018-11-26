@@ -169,6 +169,78 @@ public class scoreEmbed {
     public static void embedScoreMania(MessageReceivedEvent event, User user, Beatmap map, UserGame score,
                                      Collection<UserGame> history, Collection<UserScore> topPlays,
                                      Collection<BeatmapScore> globalPlays) {
-        // TODO
+        // countgeki = 320, count300 = 300, countkatu = 200, count100 = 100, count50 = 50, countmiss = miss
+
+        Performance performance = new Performance(map, score, 3);
+        int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
+                score.getCount50() + score.getCountMiss();
+        int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
+        int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
+        int amountTries = countRetries(user.getUsername(), score, history);
+        String acc = df.format(100*Math.max(0.0D, Math.min(((double)score.getCount50() * 50.0D +
+                (double)score.getCount100() * 100.0D + (double)score.getCountKatu() * 200.0D+ (double)score.getCount300() *
+                300.0D + (double)score.getCountGeki() * 300.0D) / ((double)passedObjects * 300.0D), 1.0D)));
+        String rank = event.getJDA().getEmoteById(utilOsu.getRankEmote(score.getRank()).getValue()).getAsMention()
+                + (score.getRank().equals("F") ? " (" + performance.getCompletion() + "%)" : "");
+
+        EmbedBuilder eb = createBuilder(map, user, score)
+                .setTimestamp(score.getDate().toInstant())
+                .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
+        eb.getFields().addAll(createFieldsMania(performance, map, score, acc, rank));
+
+        MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
+        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                "thumb.jpg", mb.build()).queue(message -> {
+            try {
+                Thread.sleep(shortFormatDelay);
+                eb.clearFields().setTimestamp(null)
+                        .addField(new MessageEmbed.Field(rank + "\t" +
+                                NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
+                                acc + "%)\t" + howLongAgo(score.getDate()), "**" + (score.getRank().equals("F") ?
+                                "-" : (df.format(performance.getTotalPlayPP()) + "pp")) + "**/" +
+                                df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() +"x/" +
+                                map.getMaxCombo() + "x ]\t { " + score.getCountGeki() + "/" + score.getCount300() +
+                                "/" + score.getCountKatu() + "/" + score.getCount100() + "/" + score.getCount50()
+                                + "/" + score.getCountMiss() + " }", false));
+                mb.setEmbed(eb.build());
+                message.editMessage(mb.build()).queue();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private static ArrayList<MessageEmbed.Field> createFieldsMania(Performance p, Beatmap m, Object o, String acc, String rank) {
+        int nmiss;  int n50;  int n100; int nkatu; int n300; int ngeki; int mcombo; int score; double pp; String r;
+        if (o instanceof BeatmapScore) {
+            nmiss = ((BeatmapScore) o).getCountMiss(); n50 = ((BeatmapScore) o).getCount50();
+            n100 = ((BeatmapScore) o).getCount100(); n300 =((BeatmapScore) o).getCount300();
+            mcombo = ((BeatmapScore) o).getMaxCombo(); score = ((BeatmapScore) o).getScore();
+            pp = ((BeatmapScore) o).getPp(); nkatu = ((BeatmapScore)o).getCountKatu();
+            ngeki = ((BeatmapScore)o).getCountGeki(); r = ((BeatmapScore)o).getRank();
+        } else {
+            nmiss = ((UserGame) o).getCountMiss(); n50 = ((UserGame) o).getCount50();
+            n100 = ((UserGame) o).getCount100(); n300 =((UserGame) o).getCount300();
+            mcombo = ((UserGame) o).getMaxCombo(); score = ((UserGame) o).getScore(); pp = p.getTotalPlayPP();
+            nkatu = ((UserGame)o).getCountKatu(); r = ((UserGame)o).getRank();
+            ngeki = ((UserGame)o).getCountGeki();
+        }
+        String mapInfo = "Length: `" + secondsToTimeFormat(m.getTotalLength()) + "` (`"
+                + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBpm() + "` Objects: `"
+                + p.getObjectAmount() + "`\nCS: `" + m.getDifficultySize() + "` AR: `"
+                + m.getDifficultyApproach() + "` OD: `" + m.getDifficultyOverall() + "` HP: `"
+                + m.getDifficultyDrain() + "` Stars: `" + df.format(m.getDifficultyRating()) + "`";
+        ArrayList<MessageEmbed.Field> fields = new ArrayList<>();
+        fields.add(new MessageEmbed.Field("Rank", rank,true));
+        fields.add(new MessageEmbed.Field("Score",
+                "" + NumberFormat.getNumberInstance(Locale.US).format(score), true));
+        fields.add(new MessageEmbed.Field("Acc", acc + "% ", true));
+        fields.add(new MessageEmbed.Field("PP",
+                "**" + (r.equals ("F")? "-" : df.format(pp)) + "**/" + df.format(p.getTotalMapPP()), true));
+        fields.add(new MessageEmbed.Field("Combo", mcombo +"/" + m.getMaxCombo(), true));
+        fields.add(new MessageEmbed.Field("Hits", ngeki + "/" + n300 + "/" + nkatu + "/" +
+                n100 + "/" + n50 + "/" + nmiss, true));
+        fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
+        return fields;
     }
 }

@@ -74,6 +74,23 @@ public class FileInteractor {
         }
     }
 
+    public int countTotalObjects(int mapID) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
+            int nobjects = 0;
+            String line;
+            boolean reachedHO = false;
+            while ((line = reader.readLine()) != null) {
+                if (reachedHO) nobjects++;
+                reachedHO |= line.equals("[HitObjects]");
+            }
+            return nobjects;
+        } catch (IOException e) {
+            logger.error("Something went wrong while counting the objects of a map: " + e);
+            return 0;
+        }
+    }
+
     public void copyMapUntilOffset(String name, int mapID, int offsetLimit) {
         File submap = new File(name);
         try {
@@ -82,13 +99,10 @@ public class FileInteractor {
             String line;
             boolean reachedTP = false;
             boolean reachedHO = false;
-            int counter = 0;
             while ((line = reader.readLine()) != null) {
                 if (!reachedTP && !reachedHO)
                     writer.write(line + System.getProperty("line.separator"));
                 else if (reachedTP && !line.equals("")) {
-                    if (++counter % 10 == 0)
-                        counter = 0;
                     if (Integer.parseInt(line.split(",")[0]) <= offsetLimit)
                         writer.write(line + System.getProperty("line.separator"));
                 } else if (reachedHO)
