@@ -33,9 +33,9 @@ public class cmdCompareMania implements Command {
             if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                 MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                 List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                if (fields.get(0).getValue().matches(".+(\\{)?( ?\\d+ ?\\/){4} ?\\d+ ?(\\})?.+")
+                if (fields.get(0).getValue().matches("(.?)+(\\{)?( ?\\d+ ?\\/){4} ?\\d+ ?(\\})?(.?)+")
                     || (fields.size() >= 5 &&
-                        fields.get(5).getValue().matches(".+(\\{)?( ?\\d+ ?\\/){4} ?\\d+ ?(\\})?.+"))) {
+                        fields.get(5).getValue().matches("(.?)+(\\{)?( ?\\d+ ?\\/){4} ?\\d+ ?(\\})?(.?)+"))) {
                     mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
                     break;
                 }

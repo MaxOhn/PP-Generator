@@ -32,7 +32,7 @@ public class commandHandler {
                     cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
         } else {
             Logger logger = Logger.getLogger("core.commandHandler");
-            logger.warn(cmd.invoke + " is no valid command");
+            logger.warn(cmd.invoke + " is no valid command [" + cmd.event.getAuthor().getName() + "]");
         }
     }
 }

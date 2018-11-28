@@ -73,7 +73,7 @@ public class Main {
         commandHandler.commands.put("dance", new cmdDance());
     }
 
-    static void streamerOnline(String test, String id) {
-        jda.getTextChannelById(Long.parseLong(id)).sendMessage(test).queue();
+    static void streamerOnline(String text, String id) {
+        jda.getTextChannelById(Long.parseLong(id)).sendMessage(text).queue();
     }
 }
