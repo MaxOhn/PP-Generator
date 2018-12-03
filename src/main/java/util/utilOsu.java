@@ -31,11 +31,44 @@ public class utilOsu {
             sb.append("FL");
         if ((mods & 4096) != 0)
             sb.append("SO");
+        if ((mods & 16384) != 0)
+            sb.append("PF");
+        else if ((mods & 32) != 0)
+            sb.append("SD");
+        if ((mods & 1048576) != 0)
+            sb.append("FI");
         return sb.toString();
+    }
+
+    public static String key_mods_str(int mods) {
+        if ((mods & 67108864) != 0)
+            return "1K";
+        if ((mods & 268435456) != 0)
+            return "2K";
+        if ((mods & 134217728) != 0)
+            return "3K";
+        if ((mods & 32768) != 0)
+            return "4K";
+        if ((mods & 65536) != 0)
+            return "5K";
+        if ((mods & 131072) != 0)
+            return "6K";
+        if ((mods & 262144) != 0)
+            return "7K";
+        if ((mods & 524288) != 0)
+            return "8K";
+        if ((mods & 16777216) != 0)
+            return "9K";
+        return "";
     }
 
     public static String abbrvModSet(Set<Mod> mods) {
         return mods_str(createSum(mods));
+    }
+
+    public static boolean beatmapScoreIsUserGame(BeatmapScore s, UserGame g) {
+        return s.getDate() == g.getDate() && s.getScore() == g.getScore() && s.getEnabledMods() == g.getEnabledMods()
+                && s.getCountGeki() == g.getCountGeki() && s.getUserId() == g.getUserId();
     }
 
     public static int countRetries(String name, UserGame recent, Collection<UserGame> userRecents) {

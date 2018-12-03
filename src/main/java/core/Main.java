@@ -48,6 +48,8 @@ public class Main {
 
     private static void addCommands() {
         commandHandler.commands.put("t", new cmdTest());
+        commandHandler.commands.put("devtool", new cmdDevTool());
+        commandHandler.commands.put("dt", new cmdDevTool());
         commandHandler.commands.put("ping", new cmdPing());
         commandHandler.commands.put("p", new cmdPing());
         commandHandler.commands.put("roll", new cmdRoll());
@@ -74,6 +76,9 @@ public class Main {
     }
 
     static void streamerOnline(String text, String id) {
-        jda.getTextChannelById(Long.parseLong(id)).sendMessage(text).queue();
+        if (secrets.RELEASE)
+            jda.getTextChannelById(id).sendMessage(text).queue();
+        else
+            jda.getTextChannelById(secrets.devChannelID).sendMessage(text).queue();
     }
 }

@@ -13,6 +13,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class TwitchHook {
 
@@ -28,6 +29,14 @@ public class TwitchHook {
         trackStreamers();
     }
 
+    public HashMap<String, ArrayList<String>> getStreamers() {
+        return streamers;
+    }
+
+    public ArrayList<String> getIsOnline() {
+        return isOnline;
+    }
+
     private void loadStreamers() {
         try {
             streamers = DBProvider.getTwitch();
@@ -38,7 +47,7 @@ public class TwitchHook {
     }
 
     private void trackStreamers() {
-        int trackDelay = 10;
+        int trackDelay = 11;
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable twitchIterator = () -> {
             for (String streamer : streamers.keySet()) {
@@ -63,11 +72,13 @@ public class TwitchHook {
 
                     @Override
                     public void onFailure(int i, String s, String s1) {
+                        logger.info("onFailure: " + i + ", " + s + ", " + s1 + " (remove " + streamer + ")");
                         isOnline.remove(streamer);
                     }
 
                     @Override
                     public void onFailure(Throwable throwable) {
+                        logger.info("onFailure: " + throwable.getMessage() + " (remove " + streamer + ")");
                         isOnline.remove(streamer);
                     }
                 });
@@ -76,7 +87,7 @@ public class TwitchHook {
         scheduler.scheduleAtFixedRate(twitchIterator, trackDelay, trackDelay, MINUTES);
     }
 
-    public static boolean addStreamer(String streamer, String channelID) {
+    public boolean addStreamer(String streamer, String channelID) {
         try {
             DBProvider.addStreamer(streamer, channelID);
             if (streamers.containsKey(streamer))
@@ -90,7 +101,7 @@ public class TwitchHook {
         return false;
     }
 
-    public static boolean removeStreamer(String streamer, String channelID) {
+    public boolean removeStreamer(String streamer, String channelID) {
         boolean removedFromHashMap = false;
         try {
             DBProvider.removeStreamer(streamer, channelID);

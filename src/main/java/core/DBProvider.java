@@ -86,7 +86,7 @@ public class DBProvider {
         stmnt.execute("insert into twitch(name, channel) values ('" + streamer + "', '" + channelID + "')");
     }
 
-    static HashMap<String, ArrayList<String>> getTwitch() throws SQLException, ClassNotFoundException {
+    public static HashMap<String, ArrayList<String>> getTwitch() throws SQLException, ClassNotFoundException {
         HashMap<String, ArrayList<String>> streamers = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);

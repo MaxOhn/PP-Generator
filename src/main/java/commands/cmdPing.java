@@ -13,8 +13,8 @@ public class cmdPing implements Command {
     public void action(String[] args, MessageReceivedEvent event) {
         long time = System.currentTimeMillis();
         if(args.length == 0)
-            event.getTextChannel().sendMessage("Ping!").queue(message ->
-                    message.editMessageFormat("Ping! (%dms)", System.currentTimeMillis() - time).queue());
+            event.getTextChannel().sendMessage("Pong!").queue(message ->
+                    message.editMessageFormat("Pong! (%dms)", System.currentTimeMillis() - time).queue());
         else
             event.getTextChannel().sendMessage(help(0)).queue();
     }

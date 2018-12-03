@@ -48,4 +48,8 @@ public class utilGeneral {
                 return true;
         return false;
     }
+
+    public static boolean isDev(MessageReceivedEvent event) {
+        return event.getAuthor().getId().equals(secrets.badewanne3ID);
+    }
 }

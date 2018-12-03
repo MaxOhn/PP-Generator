@@ -19,6 +19,10 @@ public class DiscordLink {
         }
     }
 
+    public HashMap<String, String> getLink() {
+        return link;
+    }
+
     public boolean addLink(String discordID, String osuname) {
         try {
             DBProvider.addLink(discordID, osuname);

@@ -36,8 +36,8 @@ public class commandParser {
         ArrayList<String> split = new ArrayList<>();
         Collections.addAll(split, splitbeheaded);
         String[] args = new String[split.size()-1];
-        split.subList(1,split.size()).toArray(args);
-        return new commandContainer(raw,beheaded,splitbeheaded,invoke,args,event);
+        split.subList(1, split.size()).toArray(args);
+        return new commandContainer(raw, beheaded, splitbeheaded, invoke, args, event);
     }
 
 }

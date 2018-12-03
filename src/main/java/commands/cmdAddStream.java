@@ -46,7 +46,7 @@ public class cmdAddStream implements Command {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
         }
-        if (TwitchHook.addStreamer(name, event.getTextChannel().getId()))
+        if (Main.twitch.addStreamer(name, event.getTextChannel().getId()))
             event.getTextChannel().sendMessage("I'm now tracking `" + name + "`'s twitch stream.").queue();
         else {
             MessageBuilder builder = new MessageBuilder("Could not track `" + name +

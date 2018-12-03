@@ -1,5 +1,6 @@
 package main.java.commands;
 
+import main.java.core.Main;
 import main.java.core.TwitchHook;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -27,7 +28,7 @@ public class cmdRemoveStream implements Command {
             return;
         }
 
-        if (TwitchHook.removeStreamer(args[0], event.getTextChannel().getId()))
+        if (Main.twitch.removeStreamer(args[0], event.getTextChannel().getId()))
             event.getTextChannel().sendMessage("I'm no longer tracking `" + args[0] + "`'s twitch stream.").queue();
         else
             event.getTextChannel().sendMessage("Could not remove `" + args[0] + "`'s stream. Is the name being tracked in this channel?").queue();
