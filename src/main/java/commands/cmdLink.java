@@ -20,9 +20,15 @@ public class cmdLink implements Command {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         }
-        if (Main.discLink.addLink(event.getAuthor().getId(), args[0]))
+
+        String name = "";
+        for(int i = 0; i < args.length; i++) {
+            if (i == 0) name = name + args[i]; else name = name + " " + args[i];
+        }
+
+        if (Main.discLink.addLink(event.getAuthor().getId(), name))
             event.getTextChannel().sendMessage("I linked discord's `" + event.getAuthor().getName() +
-                    "` with osu's `" + args[0] + "`").queue();
+                    "` with osu's `" + name + "`").queue();
         else
             event.getTextChannel().sendMessage("I could not link the accounts, blame bade").queue();
     }
