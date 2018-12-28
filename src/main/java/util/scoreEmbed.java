@@ -86,7 +86,7 @@ public class scoreEmbed {
 
     private static ArrayList<MessageEmbed.Field> createFieldsMania(Performance p, Beatmap m, Object o, String acc,
                                                                    String rank, String mods) {
-        return createFieldsMania(p, m, o, acc, rank, "", "");
+        return createFieldsMania(p, m, o, acc, rank, mods, "");
     }
 
     private static ArrayList<MessageEmbed.Field> createFieldsMania(Performance p, Beatmap m, Object o, String acc,

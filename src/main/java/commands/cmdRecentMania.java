@@ -32,7 +32,7 @@ public class cmdRecentMania implements Command {
         User user;
         try {
             user = Main.osu.getUserByUsername(name).mode(GameMode.OSU_MANIA).query().iterator().next();
-            userRecents = Main.osu.getUserRecentByUsername(name).mode(GameMode.OSU_MANIA).query();
+            userRecents = Main.osu.getUserRecentByUsername(name).limit(50).mode(GameMode.OSU_MANIA).query();
             recent = userRecents.iterator().next();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent mania plays").queue();

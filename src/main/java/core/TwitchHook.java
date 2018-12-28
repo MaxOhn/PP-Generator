@@ -67,7 +67,8 @@ public class TwitchHook {
                                     streamMessage(stream, channelID);
                                 }
                             }
-                        }
+                        } else
+                            isOnline.remove(streamer);
                     }
 
                     @Override

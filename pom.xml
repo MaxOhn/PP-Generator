@@ -142,5 +142,12 @@
             <artifactId>json</artifactId>
             <version>20160810</version>
         </dependency>
+        <!--
+        <dependency>
+            <groupId>it.ekgame</groupId>
+            <artifactId>beatmap_analyzer</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        -->
     </dependencies>
 </project>

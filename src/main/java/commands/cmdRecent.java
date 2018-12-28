@@ -35,7 +35,7 @@ public class cmdRecent extends scoreEmbed implements Command {
         User user;
         try {
             user = Main.osu.getUserByUsername(name).query().iterator().next();
-            userRecents = Main.osu.getUserRecentByUsername(name).query();
+            userRecents = Main.osu.getUserRecentByUsername(name).limit(50).query();
             recent = userRecents.iterator().next();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
