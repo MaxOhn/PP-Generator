@@ -22,8 +22,8 @@ public class cmdLink implements Command {
         }
 
         String name = "";
-        for(int i = 0; i < arguments.length; i++) {
-            if (i == 0) name = name + arguments[i]; else name = name + " " + arguments[i];
+        for(int i = 0; i < args.length; i++) {
+            if (i == 0) name = name + args[i]; else name = name + " " + args[i];
         }
 
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
