@@ -21,10 +21,7 @@ public class cmdLink implements Command {
             return;
         }
 
-        String name = "";
-        for(int i = 0; i < args.length; i++) {
-            if (i == 0) name = name + args[i]; else name = name + " " + args[i];
-        }
+        String name = String.join(" ", args);
 
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
             event.getTextChannel().sendMessage("I linked discord's `" + event.getAuthor().getName() +
