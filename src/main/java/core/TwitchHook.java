@@ -60,9 +60,9 @@ public class TwitchHook {
                     @Override
                     public void onSuccess(Stream stream) {
                         if (stream != null && stream.isOnline()) {
-                            for (String channelID : streamers.get(streamer)) {
-                                if (!isOnline.contains(streamer)) {
-                                    isOnline.add(streamer);
+                            if (!isOnline.contains(streamer)) {
+                                isOnline.add(streamer);
+                                for (String channelID : streamers.get(streamer)) {
                                     logger.info(stream.getChannel().getName() + " now playing: " + stream.getGame());
                                     streamMessage(stream, channelID);
                                 }
