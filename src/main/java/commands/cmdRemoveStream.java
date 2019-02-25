@@ -1,7 +1,6 @@
 package main.java.commands;
 
 import main.java.core.Main;
-import main.java.core.TwitchHook;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -10,7 +9,7 @@ import static main.java.util.utilGeneral.isAuthority;
 public class cmdRemoveStream implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        if (args.length < 1 || args.length > 2) {
+        if (args.length < 1 || args.length > 1) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         } else if (!isAuthority(event)) {
@@ -40,7 +39,8 @@ public class cmdRemoveStream implements Command {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "removestream <twitch name>` to make me remove the name from the" +
-                        " stream-tracking list";
+                        " stream-tracking list\nUsing this command requires one of these roles: `[" +
+                        String.join(", ", statics.authorities) + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
             default:

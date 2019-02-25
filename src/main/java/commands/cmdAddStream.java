@@ -1,7 +1,6 @@
 package main.java.commands;
 
 import main.java.core.Main;
-import main.java.core.TwitchHook;
 import main.java.util.secrets;
 import main.java.util.statics;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -61,7 +60,8 @@ public class cmdAddStream implements Command {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream --link <link to twitch stream>`" +
-                        "to make me respond whenever the stream comes online";
+                        "to make me respond whenever the stream comes online\nUsing this command requires one of these roles: `[" +
+                        String.join(", ", statics.authorities) + "]`";
             case 1:
                 return "User is already being tracked in this channel!" + help;
             case 2:

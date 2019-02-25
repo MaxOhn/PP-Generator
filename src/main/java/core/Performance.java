@@ -14,6 +14,7 @@ import java.io.*;
 import java.util.ArrayList;
 
 import static de.maxikg.osuapi.model.Mod.createSum;
+import static main.java.util.utilOsu.mods_str;
 
 
 public class Performance {
@@ -64,6 +65,7 @@ public class Performance {
 
     private int calculateCompletion() {
         int hits = utilOsu.passedObjects(usergame, mode);
+        if (mapPerf == null && mode == 0) return 0;
         if (mode == 0)
             return (int)((double)hits*100/(double)mapPerf.getNobjects());
         else // (mode == 3)
@@ -84,17 +86,25 @@ public class Performance {
 
     private void calculateMapPP() {
         try {
+            // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
+            String cmdLineString = secrets.execPrefix + "dotnet " +  secrets.perfCalcPath + " simulate osu " + secrets.mapPath +
+                    map.getBeatmapId() + ".osu";
+            if (usergame != null)
+                for (Mod mod: usergame.getEnabledMods())
+                    cmdLineString += " -m " + mods_str(mod.getFlag());
             Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec(secrets.execPrefix + "oppai " + secrets.mapPath + map.getBeatmapId() + ".osu "
-                    + (usergame == null ? "" : ("+" + utilOsu.abbrvModSet(usergame.getEnabledMods())) + " ")
-                    + "-ojson");
+            Process pr = rt.exec(cmdLineString);
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-            String line;
-            line = input.readLine();
-            mapPerf = new PerfObj(new JSONObject(line));
+            ArrayList<String> lines = new ArrayList<>();
+            String line = input.readLine();     // Skip artist, song title, difficulty
+            while ((line = input.readLine()) != null)
+                lines.add(line);
+            mapPerf = new PerfObj(lines);
             while ((line = errors.readLine()) != null)
                 logger.error(line);
+            input.close();
+            errors.close();
             pr.waitFor();
         } catch (Exception e) {
             logger.error("Something went wrong while calculating the pp of a map: " + e);
@@ -125,22 +135,26 @@ public class Performance {
                 int lastNoteTiming = Main.fileInteractor.offsetOfNote(utilOsu.passedObjects(usergame, mode), map.getBeatmapId());
                 Main.fileInteractor.copyMapUntilOffset(mapPath, map.getBeatmapId(), lastNoteTiming);
             }
+            String cmdLineString = secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate osu " + secrets.mapPath +
+                    map.getBeatmapId() + ".osu"
+                    + " -a " + calculateAcc()
+                    + " -c " + usergame.getMaxCombo()
+                    + " -X " + usergame.getCountMiss()
+                    + " -M " + usergame.getCount50()
+                    + " -G " + usergame.getCount100();
+            for (Mod mod: usergame.getEnabledMods())
+                cmdLineString += " -m " + mods_str(mod.getFlag());
             Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec(secrets.execPrefix + "oppai " + mapPath + " "
-                    + "+" + utilOsu.abbrvModSet(usergame.getEnabledMods()) + " "
-                    + calculateAcc() + "% "
-                    + usergame.getCount50() + "x50 "
-                    + usergame.getCount100() + "x100 "
-                    + usergame.getCountMiss() + "m "
-                    + usergame.getMaxCombo() + "x "
-                    + "-ojson");
+            Process pr = rt.exec(cmdLineString);
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-            String line = input.readLine();
-            playPerf = new PerfObj(new JSONObject(line));
-            while((line=errors.readLine()) != null) {
-                System.out.println(line);
-            }
+            ArrayList<String> lines = new ArrayList<>();
+            String line = input.readLine();     // Skip artist, song title, difficulty
+            while ((line = input.readLine()) != null)
+                lines.add(line);
+            playPerf = new PerfObj(lines);
+            while ((line = errors.readLine()) != null)
+                logger.error(line);
             input.close();
             errors.close();
             pr.waitFor();
@@ -173,7 +187,7 @@ public class Performance {
     }
 
     public double getAcc() {
-        return usergame == null ? 0 : calculateAcc();
+        return usergame == null ? 0 : playPerf.getAcc();
     }
 
     public int getCompletion() {
@@ -181,100 +195,41 @@ public class Performance {
     }
 
     private static class PerfObj {
-        private String artist;
-        private String title;
-        private String creator;
-        private String version;
-        private String modsStr;
-        private int mods;
-        private double od;
-        private double ar;
-        private double cs;
-        private double hp;
+        private double acc = -1;
         private int combo;
-        private int maxCombo;
-        private int ncircles;
-        private int nsliders;
-        private int nspinners;
-        private int nmisses;
-        private int scoreVersion;
-        private double stars;
-        private double speedStars;
-        private double aimStars;
-        private int nsingles;
-        private int nsinglesThreshold;
-        private double aimPP;
-        private double speedPP;
-        private double accPP;
+        private int maxcombo;
+        private int nobjects = 0;
+        private int nmiss;
         private double pp;
 
-        PerfObj(JSONObject json) throws JSONException {
-            this.artist = json.getString("artist");
-            this.title = json.getString("title");
-            this.creator = json.getString("creator");
-            this.version = json.getString("version");
-            this.modsStr = json.getString("mods_str");
-            this.mods = json.getInt("mods");
-            this.od = json.getDouble("od");
-            this.ar = json.getDouble("ar");
-            this.cs = json.getDouble("cs");
-            this.hp = json.getDouble("hp");
-            this.combo = json.getInt("combo");
-            this.maxCombo = json.getInt("max_combo");
-            this.ncircles = json.getInt("num_circles");
-            this.nsliders = json.getInt("num_sliders");
-            this.nspinners = json.getInt("num_spinners");
-            this.nmisses = json.getInt("misses");
-            this.scoreVersion = json.getInt("score_version");
-            this.stars = json.getDouble("stars");
-            this.speedStars = json.getDouble("speed_stars");
-            this.aimStars = json.getDouble("aim_stars");
-            this.nsingles = json.getInt("nsingles");
-            this.nsinglesThreshold = json.getInt("nsingles_threshold");
-            this.aimPP = json.getDouble("aim_pp");
-            this.speedPP = json.getDouble("speed_pp");
-            this.accPP = json.getDouble("acc_pp");
-            this.pp = json.getDouble("pp");
+        PerfObj(Iterable<String> lines) {
+            for (String line: lines) {
+                String[] splitLine = line.split(" ");
+                switch (splitLine[0]) {
+                    case "Accuracy":
+                        if (this.acc > -1) break;
+                        this.acc = Double.parseDouble(splitLine[splitLine.length-1].replace("%","")); break;
+                    case "Combo":
+                        this.combo = Integer.parseInt(splitLine[splitLine.length-2]); break;
+                    case "Great":
+                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "Good":
+                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "Meh":
+                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "Miss":
+                        this.nobjects += (this.nmiss = Integer.parseInt(splitLine[splitLine.length-1])); break;
+                    case "Max":
+                        this.maxcombo = Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "pp":
+                        this.pp = Double.parseDouble(splitLine[splitLine.length-1]); break;
+                    default: break;
+                }
+            }
         }
 
-        public String getArtist() {
-            return artist;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public String getCreator() {
-            return creator;
-        }
-
-        public String getVersion() {
-            return version;
-        }
-
-        public String getModsStr() {
-            return modsStr;
-        }
-
-        public int getMods() {
-            return mods;
-        }
-
-        public double getOd() {
-            return od;
-        }
-
-        public double getAr() {
-            return ar;
-        }
-
-        public double getCs() {
-            return cs;
-        }
-
-        public double getHp() {
-            return hp;
+        public double getAcc() {
+            return acc;
         }
 
         public int getCombo() {
@@ -282,67 +237,19 @@ public class Performance {
         }
 
         public int getMaxCombo() {
-            return maxCombo;
+            return maxcombo;
         }
 
-        public int getNcircles() {
-            return ncircles;
+        public int getNobjects() {
+            return nobjects;
         }
 
-        public int getNsliders() {
-            return nsliders;
+        public int getNmiss() {
+            return nmiss;
         }
 
-        public int getNspinners() {
-            return nspinners;
-        }
-
-        public int getNmisses() {
-            return nmisses;
-        }
-
-        public int getScoreVersion() {
-            return scoreVersion;
-        }
-
-        public double getStars() {
-            return stars;
-        }
-
-        public double getSpeedStars() {
-            return speedStars;
-        }
-
-        public double getAimStars() {
-            return aimStars;
-        }
-
-        public int getNsingles() {
-            return nsingles;
-        }
-
-        public int getNsinglesThreshold() {
-            return nsinglesThreshold;
-        }
-
-        public double getAimPP() {
-            return aimPP;
-        }
-
-        public double getSpeedPP() {
-            return speedPP;
-        }
-
-        public double getAccPP() {
-            return accPP;
-        }
-
-        double getPp() {
+        public double getPp() {
             return pp;
-        }
-
-        int getNobjects() {
-            return ncircles + nsliders + nspinners;
         }
     }
 
