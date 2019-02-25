@@ -129,8 +129,8 @@ public class TwitchHook {
         return output.toString();
     }
 
-    public boolean isTracked(String streamer) {
-        return streamers.keySet().contains(streamer);
+    public boolean isTracked(String streamer, String channelID) {
+        return streamers.keySet().contains(streamer) && streamers.get(streamer).contains(channelID);
     }
 
     private void streamMessage(Stream stream, String channelID) {

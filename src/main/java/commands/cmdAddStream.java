@@ -42,7 +42,7 @@ public class cmdAddStream implements Command {
                 event.getTextChannel().sendMessage(help(2)).queue();
         } else
             name = args[0];
-        if (Main.twitch.isTracked(name)) {
+        if (Main.twitch.isTracked(name, event.getTextChannel().getId())) {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
         }
@@ -63,7 +63,7 @@ public class cmdAddStream implements Command {
                 return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream --link <link to twitch stream>`" +
                         "to make me respond whenever the stream comes online";
             case 1:
-                return "User is already being tracked!" + help;
+                return "User is already being tracked in this channel!" + help;
             case 2:
                 return "The stream link should be of the form `https://www.twitch.tv/<twitch name>`" + help;
             case 3:

@@ -26,7 +26,7 @@ public class cmdRecentMania implements Command {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         } else
-            name = args[0];
+            name = String.join(" ", args);
         Collection<UserGame> userRecents;
         UserGame recent;
         User user;
