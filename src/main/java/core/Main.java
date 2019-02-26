@@ -76,6 +76,12 @@ public class Main {
         commandHandler.commands.put("recentbest", new cmdRecentBest());
         commandHandler.commands.put("rb", new cmdRecentBest());
         commandHandler.commands.put("fireflies", new cmdFireflies());
+        commandHandler.commands.put("pretender", new cmdPretender());
+        commandHandler.commands.put("fireandflames", new cmdFireAndFlames());
+        commandHandler.commands.put("catchit", new cmdCatchit());
+        commandHandler.commands.put("flamingo", new cmdFlamingo());
+        commandHandler.commands.put("ding", new cmdDing());
+        commandHandler.commands.put("brainpower", new cmdBrainpower());
     }
 
     static void streamerOnline(String text, String id) {
