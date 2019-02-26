@@ -11,6 +11,7 @@ public class cmdTest implements Command {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         System.out.println("no usage for test command");
+        event.getTextChannel().sendMessage("Useless command as of now").queue();
     }
 
     @Override

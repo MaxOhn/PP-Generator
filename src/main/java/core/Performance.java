@@ -1,9 +1,6 @@
 package main.java.core;
 
-import de.maxikg.osuapi.model.Beatmap;
-import de.maxikg.osuapi.model.BeatmapScore;
-import de.maxikg.osuapi.model.Mod;
-import de.maxikg.osuapi.model.UserGame;
+import de.maxikg.osuapi.model.*;
 import main.java.util.secrets;
 import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
@@ -24,6 +21,7 @@ public class Performance {
     private Beatmap map;
     private UserGame usergame = null;
     private BeatmapScore mapscore = null;
+    private UserScore userscore = null;
     private Logger logger = Logger.getLogger(this.getClass());
     private ManiaPerformanceCalculator maniaPerf = null;
     private int mode;
@@ -31,19 +29,29 @@ public class Performance {
     public Performance(Beatmap map, BeatmapScore score, int mode) {
         this.mode = mode;
         this.map = map;
-        if (mode == 0) {
-            this.mapscore = score;
-            prepareFiles();
-            calculateMapPP();
-        } else if (mode == 2) {
+        this.mapscore = score;
+        prepareFiles();
+        if (mode == 0) calculateMapPP();
+        else if (mode == 2) {
             maniaPerf = new ManiaPerformanceCalculator(createSum(score.getEnabledMods()),
                     Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float) map.getDifficultyOverall(),
                     score.getScore(), calculateManiaStars());
         }
     }
 
-    public Performance(Beatmap map, UserGame usergame) {
-        this(map, usergame, 0);
+    public Performance(Beatmap map, UserScore score, int mode) {
+        this.mode = mode;
+        this.map = map;
+        this.userscore = score;
+        prepareFiles();
+        if (mode == 0) calculateMapPP();
+        else if (mode == 3) {
+            maniaPerf = new ManiaPerformanceCalculator(createSum(score.getEnabledMods()),
+                    Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float)map.getDifficultyOverall(),
+                    score.getScore(), calculateManiaStars());
+            if (score.getRank().equals("F"))
+                maniaPerf.setPlayPP(0);
+        }
     }
 
     public Performance(Beatmap map, UserGame usergame, int mode) {
@@ -94,6 +102,9 @@ public class Performance {
                     cmdLineString += " -m " + mods_str(mod.getFlag());
             else if (mapscore != null)
                 for (Mod mod: mapscore.getEnabledMods())
+                    cmdLineString += " -m " + mods_str(mod.getFlag());
+            else if (userscore != null)
+                for (Mod mod: userscore.getEnabledMods())
                     cmdLineString += " -m " + mods_str(mod.getFlag());
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString);

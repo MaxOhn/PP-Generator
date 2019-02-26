@@ -73,6 +73,8 @@ public class Main {
         commandHandler.commands.put("h", new cmdHelp());
         commandHandler.commands.put("link", new cmdLink());
         commandHandler.commands.put("dance", new cmdDance());
+        commandHandler.commands.put("recentbest", new cmdRecentBest());
+        commandHandler.commands.put("rb", new cmdRecentBest());
     }
 
     static void streamerOnline(String text, String id) {

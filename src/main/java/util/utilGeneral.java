@@ -1,6 +1,7 @@
 package main.java.util;
 
 import net.dv8tion.jda.core.entities.Role;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.time.OffsetDateTime;
@@ -49,7 +50,7 @@ public class utilGeneral {
         return false;
     }
 
-    public static boolean isDev(MessageReceivedEvent event) {
-        return event.getAuthor().getId().equals(secrets.badewanne3ID);
+    public static boolean isDev(User author) {
+        return author.getId().equals(secrets.badewanne3ID);
     }
 }

@@ -166,6 +166,15 @@ public class utilOsu {
         return -1;
     }
 
+    public static int indexInTopPlays(UserScore score, Collection<UserScore> topPlays) {
+        int index = 0;
+        for (UserScore s: topPlays) {
+            if (s == score) return ++index;
+            index++;
+        }
+        return -1;
+    }
+
     public static int indexInGlobalPlays(UserGame score, Collection<BeatmapScore> globalPlays) {
         int index = 0;
         for (BeatmapScore s: globalPlays) {
@@ -180,6 +189,16 @@ public class utilOsu {
         int index = 0;
         for (BeatmapScore s: globalPlays) {
             if (score.equals(s))
+                return ++index;
+            index++;
+        }
+        return -1;
+    }
+
+    public static int indexInGlobalPlays(UserScore score, Collection<BeatmapScore> globalPlays) {
+        int index = 0;
+        for (BeatmapScore s: globalPlays) {
+            if (s.getScore() == score.getScore() && s.getDate() == s.getDate() && score.getUserId() == s.getUserId())
                 return ++index;
             index++;
         }

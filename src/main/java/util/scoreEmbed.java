@@ -60,10 +60,14 @@ public class scoreEmbed {
             n100 = ((BeatmapScore) o).getCount100(); n300 = ((BeatmapScore) o).getCount300();
             mcombo = ((BeatmapScore) o).getMaxCombo(); score = ((BeatmapScore) o).getScore();
             pp = ((BeatmapScore) o).getPp();
-        } else {
+        } else if (o instanceof UserGame){
             nmiss = ((UserGame) o).getCountMiss(); n50 = ((UserGame) o).getCount50();
             n100 = ((UserGame) o).getCount100(); n300 = ((UserGame) o).getCount300();
             mcombo = ((UserGame) o).getMaxCombo(); score = ((UserGame) o).getScore(); pp = p.getTotalPlayPP();
+        } else { // UserScore
+            nmiss = ((UserScore) o).getCountMiss(); n50 = ((UserScore) o).getCount50();
+            n100 = ((UserScore) o).getCount100(); n300 = ((UserScore) o).getCount300();
+            mcombo = ((UserScore) o).getMaxCombo(); score = ((UserScore) o).getScore(); pp = ((UserScore) o).getPp();
         }
         String mapInfo = "Length: `" + secondsToTimeFormat(m.getTotalLength()) + "` (`"
                 + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBpm() + "` Objects: `"
@@ -180,10 +184,94 @@ public class scoreEmbed {
         });
     }
 
+    public static void embedScoreRecentBest(MessageReceivedEvent event, User user, Beatmap map, UserScore score,
+                                        Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays, GameMode mode) {
+        int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
+        int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
+        String mods = modString(score.getEnabledMods());
+        Performance performance;
+        String acc;
+        String rank;
+        EmbedBuilder eb;
+
+        switch (mode) {
+            case STANDARD:
+                performance = new Performance(map, score, mode.getValue());
+                acc = df.format(100 * Math.max(0.0D, Math.min(((double) score.getCount50() *
+                        50.0D + (double) score.getCount100() * 100.0D + (double) score.getCount300() * 300.0D) / ((double)
+                        (score.getCount50() + score.getCount100() + score.getCount300() + score.getCountMiss()) * 300.0D), 1.0D)));
+                rank = event.getJDA().getEmoteById(utilOsu.getRankEmote(score.getRank()).getValue()).getAsMention()
+                        + (score.getRank().equals("F") ? " (" + performance.getCompletion() + "%)" : "");
+
+                eb = createBuilder(map, user)
+                        .setTimestamp(score.getDate().toInstant())
+                        .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
+                eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
+
+                MessageBuilder mb = new MessageBuilder(eb.build());
+                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                        "thumb.jpg", mb.build()).queue(message -> {
+                    try {
+                        Thread.sleep(shortFormatDelay);
+                        eb.clearFields().setTimestamp(null)
+                                .addField(new MessageEmbed.Field(rank + mods + "\t" +
+                                        NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
+                                        acc + "%)\t" + howLongAgo(score.getDate()), "**" + df.format(score.getPp()) +
+                                        "pp**/" + df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
+                                        map.getMaxCombo() + "x ]\t { " + score.getCount300() + " / " + score.getCount100() + " / " +
+                                        score.getCount50() + " / " + score.getCountMiss() + " }", false));
+                        eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
+                        mb.setEmbed(eb.build());
+                        message.editMessage(mb.build()).queue();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                return;
+            case OSU_MANIA:
+                performance = new Performance(map, score, 3);
+                int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
+                        score.getCount50() + score.getCountMiss();
+                acc = df.format(100 * Math.max(0.0D, Math.min(((double) score.getCount50() * 50.0D +
+                        (double) score.getCount100() * 100.0D + (double) score.getCountKatu() * 200.0D + (double) score.getCount300() *
+                        300.0D + (double) score.getCountGeki() * 300.0D) / ((double) passedObjects * 300.0D), 1.0D)));
+                rank = event.getJDA().getGuildById(secrets.devGuildID)
+                        .getEmoteById(utilOsu.getRankEmote(score.getRank()).getValue()).getAsMention();
+
+                eb = createBuilder(map, user)
+                        .setTimestamp(score.getDate().toInstant())
+                        .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
+                eb.getFields().addAll(createFieldsMania(performance, map, score, acc, rank, mods));
+                eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
+
+                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                        "thumb.jpg").embed(eb.build()).queue(message -> {
+                    try {
+                        Thread.sleep(shortFormatDelay);
+                        eb.clearFields().setTimestamp(null)
+                                .addField(new MessageEmbed.Field(rank + mods + "\t" +
+                                        NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
+                                        acc + "%)\t" + howLongAgo(score.getDate()), "**" + (score.getRank().equals("F") ?
+                                        "-" : (df.format(score.getPp()) + "pp")) + "**/" +
+                                        df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
+                                        map.getMaxCombo() + "x ]\t { " + score.getCountGeki() + "/" + score.getCount300() +
+                                        "/" + score.getCountKatu() + "/" + score.getCount100() + "/" + score.getCount50()
+                                        + "/" + score.getCountMiss() + " }", false));
+                        eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
+                        message.editMessage(eb.build()).queue();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
+                break;
+            default: break;
+        }
+    }
+
     public static void embedScoreRecent(MessageReceivedEvent event, User user, Beatmap map, UserGame score,
                                         Collection<UserGame> history, Collection<UserScore> topPlays,
                                         Collection<BeatmapScore> globalPlays) {
-        Performance performance = new Performance(map, score);
+        Performance performance = new Performance(map, score, 0);
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
         int amountTries = countRetries(user.getUsername(), score, history);

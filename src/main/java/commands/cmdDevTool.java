@@ -10,7 +10,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 public class cmdDevTool implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        return utilGeneral.isDev(event);
+        if (utilGeneral.isDev(event.getAuthor())) return true;
+        else event.getTextChannel().sendMessage("Only devs can use the devtools command !!!").queue();
+        return false;
     }
 
     @Override
