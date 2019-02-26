@@ -138,6 +138,11 @@ public class scoreEmbed {
                         "https://osu.ppy.sh/u/" + u.getUserId(), "https://a.ppy.sh/" + u.getUserId());
     }
 
+    private static String updateBuilderTitle(Beatmap m) {
+        return m.getArtist() + " - " + m.getTitle() + " [" + m.getVersion() + "]"
+                + " [" + df.format(m.getDifficultyRating()) + "★]";
+    }
+
     public static void embedScoreCompare(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                          Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
         Performance performance = new Performance(map);
@@ -167,6 +172,7 @@ public class scoreEmbed {
                                 "pp**/" + df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
                                 map.getMaxCombo() + "x ]\t { " + score.getCount300() + " / " + score.getCount100() + " / " +
                                 score.getCount50() + " / " + score.getCountMiss() + " }", false));
+                eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
                 message.editMessage(eb.build()).queue();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -206,6 +212,7 @@ public class scoreEmbed {
                                 "pp**/" + df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
                                 map.getMaxCombo() + "x ]\t { " + score.getCount300() + " / " + score.getCount100() + " / " +
                                 score.getCount50() + " / " + score.getCountMiss() + " }", false));
+                eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
                 mb.setEmbed(eb.build());
                 message.editMessage(mb.build()).queue();
             } catch (InterruptedException e) {
@@ -247,6 +254,7 @@ public class scoreEmbed {
                                 map.getMaxCombo() + "x ]\t { " + score.getCountGeki() + "/" + score.getCount300() +
                                 "/" + score.getCountKatu() + "/" + score.getCount100() + "/" + score.getCount50()
                                 + "/" + score.getCountMiss() + " }", false));
+                eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
                 message.editMessage(eb.build()).queue();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -298,6 +306,7 @@ public class scoreEmbed {
                                 map.getMaxCombo() + "x ]\t { " + score.getCountGeki() + "/" + score.getCount300() +
                                 "/" + score.getCountKatu() + "/" + score.getCount100() + "/" + score.getCount50()
                                 + "/" + score.getCountMiss() + " }", false));
+                eb.setTitle(updateBuilderTitle(map), "https://osu.ppy.sh/b/" + map.getBeatmapId());
                 mb.setEmbed(eb.build());
                 message.editMessage(mb.build()).queue();
             } catch (InterruptedException e) {
