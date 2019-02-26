@@ -23,23 +23,23 @@ public class Performance {
     private PerfObj playPerf = null;
     private Beatmap map;
     private UserGame usergame = null;
+    private BeatmapScore mapscore = null;
     private Logger logger = Logger.getLogger(this.getClass());
     private ManiaPerformanceCalculator maniaPerf = null;
     private int mode;
 
-    public Performance(Beatmap map) {
-        this.mode = 0;
+    public Performance(Beatmap map, BeatmapScore score, int mode) {
+        this.mode = mode;
         this.map = map;
-        prepareFiles();
-        calculateMapPP();
-    }
-
-    public Performance(Beatmap map, BeatmapScore score) {
-        this.mode = 3;
-        this.map = map;
-        maniaPerf = new ManiaPerformanceCalculator(createSum(score.getEnabledMods()),
-                Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float)map.getDifficultyOverall(),
-                score.getScore(), calculateManiaStars());
+        if (mode == 0) {
+            this.mapscore = score;
+            prepareFiles();
+            calculateMapPP();
+        } else if (mode == 2) {
+            maniaPerf = new ManiaPerformanceCalculator(createSum(score.getEnabledMods()),
+                    Main.fileInteractor.countTotalObjects(map.getBeatmapId()), (float) map.getDifficultyOverall(),
+                    score.getScore(), calculateManiaStars());
+        }
     }
 
     public Performance(Beatmap map, UserGame usergame) {
@@ -91,6 +91,9 @@ public class Performance {
                     map.getBeatmapId() + ".osu";
             if (usergame != null)
                 for (Mod mod: usergame.getEnabledMods())
+                    cmdLineString += " -m " + mods_str(mod.getFlag());
+            else if (mapscore != null)
+                for (Mod mod: mapscore.getEnabledMods())
                     cmdLineString += " -m " + mods_str(mod.getFlag());
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString);

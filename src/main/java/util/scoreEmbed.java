@@ -145,7 +145,7 @@ public class scoreEmbed {
 
     public static void embedScoreCompare(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                          Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
-        Performance performance = new Performance(map);
+        Performance performance = new Performance(map, score, 0);
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
         String acc = df.format(100 * Math.max(0.0D, Math.min(((double) score.getCount50() *
@@ -223,7 +223,7 @@ public class scoreEmbed {
 
     public static void embedScoreCompareMania(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                               Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
-        Performance performance = new Performance(map, score);
+        Performance performance = new Performance(map, score, 3);
         int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
                 score.getCount50() + score.getCountMiss();
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
