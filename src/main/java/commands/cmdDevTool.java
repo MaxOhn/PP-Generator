@@ -38,6 +38,13 @@ public class cmdDevTool implements Command {
                     }
                 }
                 break;
+            case "checkstreamer":
+            case "cs":
+            case "checkstreams":
+            case "checkstream":
+                event.getTextChannel().sendMessage("Checking for online streamers...").queue();
+                Main.twitch.streamerCheckIteration();
+                break;
             case "streamonline":
             case "onlines":
             case "onlinestream":
