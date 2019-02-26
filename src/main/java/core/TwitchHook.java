@@ -54,39 +54,42 @@ public class TwitchHook {
     }
 
     public void streamerCheckIteration() {
-        for (String streamer : streamers.keySet()) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                logger.warn("Thread.sleep in trackStreamers was interrupted: " + e);
-            }
-            twitch.streams().get(streamer, new StreamResponseHandler() {
-                @Override
-                public void onSuccess(Stream stream) {
-                    if (stream != null && stream.isOnline()) {
-                        if (!isOnline.contains(streamer)) {
-                            isOnline.add(streamer);
-                            logger.info(stream.getChannel().getName() + " now playing: " + stream.getGame());
-                            for (String channelID : streamers.get(streamer)) {
-                                streamMessage(stream, channelID);
+        final Thread t = new Thread(() -> {
+            for (String streamer : streamers.keySet()) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    logger.warn("Thread.sleep in trackStreamers was interrupted: " + e);
+                }
+                twitch.streams().get(streamer, new StreamResponseHandler() {
+                    @Override
+                    public void onSuccess(Stream stream) {
+                        if (stream != null && stream.isOnline()) {
+                            if (!isOnline.contains(streamer)) {
+                                isOnline.add(streamer);
+                                logger.info(stream.getChannel().getName() + " now playing: " + stream.getGame());
+                                for (String channelID : streamers.get(streamer)) {
+                                    streamMessage(stream, channelID);
+                                }
                             }
-                        }
-                    } else isOnline.remove(streamer);
-                }
+                        } else isOnline.remove(streamer);
+                    }
 
-                @Override
-                public void onFailure(int i, String s, String s1) {
-                    logger.info("onFailure: " + i + ", " + s + ", " + s1 + " (remove " + streamer + ")");
-                    isOnline.remove(streamer);
-                }
+                    @Override
+                    public void onFailure(int i, String s, String s1) {
+                        logger.info("onFailure: " + i + ", " + s + ", " + s1 + " (remove " + streamer + ")");
+                        isOnline.remove(streamer);
+                    }
 
-                @Override
-                public void onFailure(Throwable throwable) {
-                    logger.info("onFailure: " + throwable.getMessage() + " (remove " + streamer + ")");
-                    isOnline.remove(streamer);
-                }
-            });
-        }
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        logger.info("onFailure: " + throwable.getMessage() + " (remove " + streamer + ")");
+                        isOnline.remove(streamer);
+                    }
+                });
+            }
+        });
+        t.start();
     }
 
     public boolean addStreamer(String streamer, String channelID) {

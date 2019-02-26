@@ -75,6 +75,7 @@ public class Main {
         commandHandler.commands.put("dance", new cmdDance());
         commandHandler.commands.put("recentbest", new cmdRecentBest());
         commandHandler.commands.put("rb", new cmdRecentBest());
+        commandHandler.commands.put("fireflies", new cmdFireflies());
     }
 
     static void streamerOnline(String text, String id) {
