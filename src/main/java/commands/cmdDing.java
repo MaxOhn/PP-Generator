@@ -20,7 +20,7 @@ public class cmdDing implements Command {
                 "Wenn ich dich seh', dann muss ich sing'n:",
                 "Tingalingaling, you pretty thing!"
         };
-        int delay = 3500;
+        int delay = 3000;
         final Thread t = new Thread(() -> {
             for (int i = 0; i < lyrics.length; i++) {
                 try {

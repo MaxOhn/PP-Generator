@@ -82,6 +82,9 @@ public class Main {
         commandHandler.commands.put("flamingo", new cmdFlamingo());
         commandHandler.commands.put("ding", new cmdDing());
         commandHandler.commands.put("brainpower", new cmdBrainpower());
+        commandHandler.commands.put("best", new cmdBest());
+        commandHandler.commands.put("b", new cmdBest());
+        commandHandler.commands.put("top", new cmdBest());
     }
 
     static void streamerOnline(String text, String id) {
