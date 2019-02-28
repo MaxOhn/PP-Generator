@@ -66,7 +66,7 @@ public class cmdRecentMania implements Command {
                 return "Enter `" + statics.prefix + "recentmania [osu name]` to make me respond with info about the players last mania play."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "Either specify a osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
+                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
                 return help(0);
         }

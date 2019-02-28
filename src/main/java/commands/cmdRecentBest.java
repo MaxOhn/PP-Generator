@@ -107,7 +107,7 @@ public class cmdRecentBest implements Command {
                 return "Enter `" + statics.prefix + "recentbest [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best recent performance."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "Either specify a osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
+                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             case 2:
                 return "The number must be between 1 and 100!" + help;
             case 3:

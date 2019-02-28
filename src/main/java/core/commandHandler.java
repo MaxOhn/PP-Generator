@@ -23,13 +23,17 @@ public class commandHandler {
         if(commands.containsKey(cmd.invoke)) {
             // Check if called conditions are satisfied
             boolean safe = commands.get(cmd.invoke).called(cmd.args,cmd.event);
-            // If so, perform the action
-            if(safe)
-                commands.get(cmd.invoke).action(cmd.args,cmd.event);
-            // Log the occurrence of the invoke
             Logger logger = Logger.getLogger(commands.get(cmd.invoke).getClass());
-            logger.info(String.format("[%s] %s: %s", cmd.event.getGuild().getName() + ":" + cmd.event.getTextChannel().getName(),
-                    cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
+            try {
+                // If so, perform the action
+                if (safe)
+                    commands.get(cmd.invoke).action(cmd.args, cmd.event);
+                // Log the occurrence of the invoke
+                logger.info(String.format("[%s] %s: %s", cmd.event.getGuild().getName() + ":" + cmd.event.getTextChannel().getName(),
+                        cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
+            } catch (Exception e) {
+                logger.error(String.format("%s: %s [%s]", cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw(), e.getMessage()));
+            }
         } else {
             Logger logger = Logger.getLogger("core.commandHandler");
             logger.warn(cmd.invoke + " is no valid command [" + cmd.event.getAuthor().getName() + "]");

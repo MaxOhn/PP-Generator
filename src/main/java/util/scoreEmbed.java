@@ -102,11 +102,16 @@ public class scoreEmbed {
             mcombo = ((BeatmapScore) o).getMaxCombo(); score = ((BeatmapScore) o).getScore();
             pp = ((BeatmapScore) o).getPp(); nkatu = ((BeatmapScore)o).getCountKatu();
             ngeki = ((BeatmapScore)o).getCountGeki(); r = ((BeatmapScore)o).getRank();
-        } else {
+        } else if (o instanceof UserGame){
             nmiss = ((UserGame) o).getCountMiss(); n50 = ((UserGame) o).getCount50();
             n100 = ((UserGame) o).getCount100(); n300 =((UserGame) o).getCount300();
             mcombo = ((UserGame) o).getMaxCombo(); score = ((UserGame) o).getScore(); pp = p.getTotalPlayPP();
             nkatu = ((UserGame)o).getCountKatu(); r = ((UserGame)o).getRank(); ngeki = ((UserGame)o).getCountGeki();
+        } else { // UserScore
+            nmiss = ((UserScore) o).getCountMiss(); n50 = ((UserScore) o).getCount50();
+            n100 = ((UserScore) o).getCount100(); n300 =((UserScore) o).getCount300();
+            mcombo = ((UserScore) o).getMaxCombo(); score = ((UserScore) o).getScore(); pp = ((UserScore) o).getPp();
+            nkatu = ((UserScore)o).getCountKatu(); r = ((UserScore)o).getRank(); ngeki = ((UserScore)o).getCountGeki();
         }
         String mapInfo = "Length: `" + secondsToTimeFormat(m.getTotalLength()) + "` (`"
                 + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBpm() + "` Objects: `"

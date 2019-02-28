@@ -29,6 +29,10 @@ public class cmdCompare extends scoreEmbed implements Command  {
         }
 
         String name = args.length > 0 ? args[0] : Main.discLink.getOsu(event.getAuthor().getId());
+        if (name == null) {
+            event.getTextChannel().sendMessage(help(1)).queue();
+            return;
+        }
         String mapID = "";
 
         int counter = 100;
@@ -78,6 +82,8 @@ public class cmdCompare extends scoreEmbed implements Command  {
                 return "Enter `" + statics.prefix + "compare` to make me show your best play on the map of "
                 + "the last `" + statics.prefix + "recent`. Enter `" + statics.prefix + "compare <osu name>` to" +
                         " compare with someone else";
+            case 1:
+                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
                 return help(0);
         }
