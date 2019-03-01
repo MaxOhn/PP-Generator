@@ -20,7 +20,7 @@ public class cmdHelp implements Command {
         }
         mb.replaceLast(", ", "");
         mb.append("]`\n");
-        mb.append("To get help for a specific command, type `" + statics.prefix + "[command] --h`");
+        mb.append("To get help for a specific command, type `" + statics.prefix + "[command] -h`");
         event.getTextChannel().sendMessage(mb.build()).queue();
     }
 

@@ -23,7 +23,7 @@ public class cmdCompare extends scoreEmbed implements Command  {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
 
-        if (args.length > 0 && (args[0].equals("--h") || args[0].equals("--help"))) {
+        if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         }
@@ -76,7 +76,7 @@ public class cmdCompare extends scoreEmbed implements Command  {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "compare --h` for more help)";
+        String help = " (`" + statics.prefix + "compare -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "compare` to make me show your best play on the map of "

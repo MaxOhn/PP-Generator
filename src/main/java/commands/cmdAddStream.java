@@ -24,13 +24,13 @@ public class cmdAddStream implements Command {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
 
-        if (args[0].equals("--h") || args[0].equals("--help")) {
+        if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         }
 
         String name = "";
-        if (args[0].equals("--l") || args[0].equals("--link")) {
+        if (args[0].equals("-l") || args[0].equals("-link")) {
             if (args.length  < 2) {
                 event.getTextChannel().sendMessage(help(0)).queue();
                 return;
@@ -56,10 +56,10 @@ public class cmdAddStream implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "addstream --h` for more help)";
+        String help = " (`" + statics.prefix + "addstream -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream --link <link to twitch stream>`" +
+                return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream -link <link to twitch stream>`" +
                         "to make me respond whenever the stream comes online\nUsing this command requires one of these roles: `[" +
                         String.join(", ", statics.authorities) + "]`";
             case 1:

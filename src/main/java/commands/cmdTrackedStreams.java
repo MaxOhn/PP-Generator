@@ -12,7 +12,7 @@ public class cmdTrackedStreams implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        if (args.length > 0 && (args[0].equals("--h") || args[0].equals("--help")))
+        if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help")))
             event.getTextChannel().sendMessage(help(0)).queue();
         else
             event.getTextChannel().sendMessage("I'm current tracking in this channel: `" + Main.twitch.trackedStreamers(event.getTextChannel().getId()) + "`").queue();
@@ -20,7 +20,7 @@ public class cmdTrackedStreams implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "trackedstreams --h` for more help)";
+        String help = " (`" + statics.prefix + "trackedstreams -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "trackedstreams`" +

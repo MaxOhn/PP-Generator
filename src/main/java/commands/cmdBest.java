@@ -74,7 +74,7 @@ public class cmdBest implements Command {
                 event.getTextChannel().sendMessage(help(1)).queue();
                 return;
             }
-        } else if (args[0].equals("--h") || args[0].equals("--help")) {
+        } else if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         } else {
@@ -99,7 +99,7 @@ public class cmdBest implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "best --h` for more help)";
+        String help = " (`" + statics.prefix + "best -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "best [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."

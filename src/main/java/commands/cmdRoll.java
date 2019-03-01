@@ -10,7 +10,7 @@ public class cmdRoll implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if(args.length > 0) {
-            if(args.length > 1 || args[0].equals("--h")) {
+            if(args.length > 1 || args[0].equals("-h")) {
                 event.getTextChannel().sendMessage(help(0)).queue();
                 return false;
             }
@@ -39,10 +39,10 @@ public class cmdRoll implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "roll --h` for more help)";
+        String help = " (`" + statics.prefix + "roll -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "roll <limit>` to make me give you a number between 1 and <limit>." +
+                return "Enter `" + statics.prefix + "roll [limit]` to make me give you a number between 1 and <limit>." +
                         "\nDefault: limit=10";
             case 1:
                 return "Limit must be bigger than 1" + help;

@@ -22,7 +22,7 @@ public class cmdRecentMania implements Command {
                 event.getTextChannel().sendMessage(help(1)).queue();
                 return;
             }
-        } else if (args[0].equals("--h") || args[0].equals("--help")) {
+        } else if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         } else
@@ -60,7 +60,7 @@ public class cmdRecentMania implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "recentmania --h` for more help)";
+        String help = " (`" + statics.prefix + "recentmania -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "recentmania [osu name]` to make me respond with info about the players last mania play."

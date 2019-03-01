@@ -16,7 +16,7 @@ public class cmdDance implements Command {
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length == 0)
             return true;
-        if (args[0].equals("--h") || args[0].equals("--help"))
+        if (args[0].equals("-h") || args[0].equals("-help"))
             event.getTextChannel().sendMessage(help(0)).queue();
         return false;
     }
@@ -55,7 +55,6 @@ public class cmdDance implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "dance --h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "dance` to make me show off my moves :^)";

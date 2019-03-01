@@ -16,7 +16,7 @@ public class cmdLink implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        if (args[0].equals("--h") || args[0].equals("--help")) {
+        if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
         }
@@ -32,7 +32,7 @@ public class cmdLink implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "link --h` for more help)";
+        String help = " (`" + statics.prefix + "link -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "link <osu name>` to make me link your discord with that osu name";
