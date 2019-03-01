@@ -1,16 +1,9 @@
 package main.java.commands;
 
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-
-public class cmdBrainpower implements Command {
+public class cmdBrainpower extends cmdSong {
     @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
-        return true;
-    }
-
-    @Override
-    public void action(String[] args, MessageReceivedEvent event) {
-        String[] lyrics = {
+    String[] getLyrics() {
+        return new String[] {
                 "Andrenaline is pumping",
                 "Andrenaline is pumpiiing",
                 "Generator",
@@ -30,22 +23,10 @@ public class cmdBrainpower implements Command {
                 "Brain Poweeeer",
                 "O-oooooooooo AAAAE-A-A-I-A-U- EO-"
         };
-        int delay = 2500;
-        final Thread t = new Thread(() -> {
-            for (int i = 0; i < lyrics.length; i++) {
-                try {
-                    event.getTextChannel().sendMessage("♫ " + lyrics[i] + " ♫").queue();
-                    Thread.sleep(delay);
-                } catch (InterruptedException e) {
-                    i--;
-                }
-            }
-        });
-        t.start();
     }
 
     @Override
-    public String help(int hCode) {
-        return null;
+    int getDelay() {
+        return 2500;
     }
 }
