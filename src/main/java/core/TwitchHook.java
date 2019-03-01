@@ -10,10 +10,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class TwitchHook {
 
@@ -142,6 +140,6 @@ public class TwitchHook {
         String game = stream.getGame();
         String filler = !game.equals("")? " is playing " + game: " now live";
         String url = stream.getChannel().getUrl();
-        Main.streamerOnline("[Now online]: `" + name + "`" + filler + " on " + url, channelID);
+        Main.sendCustomMessage("[Now online]: `" + name + "`" + filler + " on " + url, channelID);
     }
 }

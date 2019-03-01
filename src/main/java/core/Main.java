@@ -45,6 +45,7 @@ public class Main {
         builder.addEventListener(new reconnectListener());
         builder.addEventListener(new commandListener());
         builder.addEventListener(new serverJoinListener());
+        builder.addEventListener(new roleLostListener());
     }
 
     private static void addCommands() {
@@ -89,7 +90,7 @@ public class Main {
         commandHandler.commands.put("lyrics", new cmdLyrics());
     }
 
-    static void streamerOnline(String text, String id) {
+    public static void sendCustomMessage(String text, String id) {
         if (secrets.RELEASE)
             jda.getTextChannelById(id).sendMessage(text).queue();
         else

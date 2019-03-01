@@ -23,7 +23,8 @@ public abstract class cmdSong implements Command {
             }
         } catch (ClassNotFoundException | SQLException e) {
             event.getTextChannel().sendMessage("Something went wrong, ping bade or smth xd").queue();
-            Logger.getLogger(this.getClass()).error("Error while interacting with lyrics database: " + e);
+            Logger logger = Logger.getLogger(this.getClass());
+            logger.error("Error while interacting with lyrics database: " + e);
             return false;
         }
         return true;
