@@ -11,6 +11,32 @@ public class DBProvider {
 
     /*
      * ------------------------
+     *         lyrics
+     * ------------------------
+     */
+
+    public static boolean getLyricsState(String serverID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        System.out.println("select available from lyrics where server='" + serverID + "'");
+        ResultSet rs = stmnt.executeQuery("select available from lyrics where server='" + serverID + "'");
+        rs.next();
+        return rs.getBoolean("available");
+    }
+
+    public static void setLyricsState(String serverID, boolean bool) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        System.out.println("delete from lyrics where server='" + serverID + "'");
+        stmnt.execute("delete from lyrics where server='" + serverID + "'");
+        System.out.println("insert into lyrics(server, available) values ('" + serverID + "', " + bool + ")");
+        stmnt.execute("insert into lyrics(server, available) values ('" + serverID + "', " + bool + ")");
+    }
+
+    /*
+     * ------------------------
      *         discosu
      * ------------------------
      */

@@ -20,7 +20,6 @@ public class cmdTrackedStreams implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "trackedstreams -h` for more help)";
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "trackedstreams`" +

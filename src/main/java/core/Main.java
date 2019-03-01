@@ -85,6 +85,7 @@ public class Main {
         commandHandler.commands.put("best", new cmdBest());
         commandHandler.commands.put("b", new cmdBest());
         commandHandler.commands.put("top", new cmdBest());
+        commandHandler.commands.put("lyrics", new cmdLyrics());
     }
 
     static void streamerOnline(String text, String id) {
