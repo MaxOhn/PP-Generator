@@ -6,7 +6,7 @@
 
     <groupId>ppgen.bot</groupId>
     <artifactId>PP-Generator</artifactId>
-    <version>1.8.4</version>
+    <version>1.8.6</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -142,12 +142,5 @@
             <artifactId>json</artifactId>
             <version>20160810</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>it.ekgame</groupId>
-            <artifactId>beatmap_analyzer</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        -->
     </dependencies>
 </project>

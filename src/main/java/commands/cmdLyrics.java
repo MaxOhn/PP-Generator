@@ -28,10 +28,10 @@ public class cmdLyrics implements Command {
                     case "-t":
                         if (DBProvider.getLyricsState(event.getGuild().getId())) {
                             DBProvider.setLyricsState(event.getGuild().getId(), false);
-                            event.getTextChannel().sendMessage("User can no longer use song commands!").queue();
+                            event.getTextChannel().sendMessage("Users can no longer use song commands!").queue();
                         } else {
                             DBProvider.setLyricsState(event.getGuild().getId(), true);
-                            event.getTextChannel().sendMessage("User can now use song commands!").queue();
+                            event.getTextChannel().sendMessage("Users can now use song commands!").queue();
                         }
                         break;
                     case "-c":
@@ -49,11 +49,11 @@ public class cmdLyrics implements Command {
                     switch (args[1]) {
                         case "on":
                             DBProvider.setLyricsState(event.getGuild().getId(), true);
-                            event.getTextChannel().sendMessage("User can now use song commands!").queue();
+                            event.getTextChannel().sendMessage("Users can now use song commands!").queue();
                             break;
                         case "off":
                             DBProvider.setLyricsState(event.getGuild().getId(), false);
-                            event.getTextChannel().sendMessage("User can no longer use song commands!").queue();
+                            event.getTextChannel().sendMessage("Users can no longer use song commands!").queue();
                             break;
                         default:
                             event.getTextChannel().sendMessage(help(1)).queue();

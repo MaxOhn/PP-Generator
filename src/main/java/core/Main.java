@@ -44,6 +44,7 @@ public class Main {
         builder.addEventListener(new readyListener());
         builder.addEventListener(new reconnectListener());
         builder.addEventListener(new commandListener());
+        builder.addEventListener(new serverJoinListener());
     }
 
     private static void addCommands() {
