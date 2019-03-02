@@ -88,6 +88,10 @@ public class Main {
         commandHandler.commands.put("b", new cmdBest());
         commandHandler.commands.put("top", new cmdBest());
         commandHandler.commands.put("lyrics", new cmdLyrics());
+        commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
+        commandHandler.commands.put("rt", new cmdRecentTaiko());
+        commandHandler.commands.put("comparetaiko", new cmdCompareTaiko());
+        commandHandler.commands.put("ct", new cmdCompareTaiko());
     }
 
     public static void sendCustomMessage(String text, String id) {
