@@ -94,6 +94,8 @@ public class Main {
         commandHandler.commands.put("rt", new cmdRecentTaiko());
         commandHandler.commands.put("comparetaiko", new cmdCompareTaiko());
         commandHandler.commands.put("ct", new cmdCompareTaiko());
+        commandHandler.commands.put("prune", new cmdPrune());
+        commandHandler.commands.put("purge", new cmdPrune());
     }
 
     public static void sendCustomMessage(String text, String id) {

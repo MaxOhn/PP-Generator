@@ -13,8 +13,8 @@ public abstract class cmdSong implements Command {
     abstract String[] getLyrics();
 
     abstract int getDelay();
-    
-    int getCooldown() {
+
+    private int getCooldown() {
         return 2000;
     }
 
