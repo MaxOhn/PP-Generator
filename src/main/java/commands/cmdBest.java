@@ -39,9 +39,7 @@ public class cmdBest implements Command {
                 if (i+1 < args.length) {
                     switch (args[i+1]) {
                         case "s": mode = GameMode.STANDARD; break;
-                        case "t":
-                            event.getTextChannel().sendMessage(help(5)).queue();
-                            return;
+                        case "t": mode = GameMode.TAIKO; break;
                         case "c":
                             event.getTextChannel().sendMessage(help(5)).queue();
                             return;
@@ -102,7 +100,7 @@ public class cmdBest implements Command {
         String help = " (`" + statics.prefix + "best -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "best [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."
+                return "Enter `" + statics.prefix + "top [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify a osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
@@ -113,7 +111,7 @@ public class cmdBest implements Command {
             case 4:
                 return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
             case 5:
-                return "Taiko and CtB not yet supported" + help;
+                return "CtB is not yet supported" + help;
             default:
                 return help(0);
         }

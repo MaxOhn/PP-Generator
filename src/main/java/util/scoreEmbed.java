@@ -238,6 +238,8 @@ public class scoreEmbed {
         String acc;
         String rank;
         EmbedBuilder eb;
+        MessageBuilder mb;
+        int passedObjects;
 
         switch (mode) {
             case STANDARD:
@@ -253,7 +255,7 @@ public class scoreEmbed {
                         .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
                 eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
 
-                MessageBuilder mb = new MessageBuilder(eb.build());
+                mb = new MessageBuilder(eb.build());
                 event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
                         "thumb.jpg", mb.build()).queue(message -> {
                     try {
@@ -275,7 +277,7 @@ public class scoreEmbed {
                 return;
             case OSU_MANIA:
                 performance = new Performance(map, score, 3);
-                int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
+                passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
                         score.getCount50() + score.getCountMiss();
                 acc = df.format(100 * Math.max(0.0D, Math.min(((double) score.getCount50() * 50.0D +
                         (double) score.getCount100() * 100.0D + (double) score.getCountKatu() * 200.0D + (double) score.getCount300() *
@@ -310,7 +312,37 @@ public class scoreEmbed {
                 });
                 break;
             case TAIKO:
-                // TODO
+                performance = new Performance(map, score, 1);
+                passedObjects = score.getCount300() + score.getCount100() + score.getCountMiss();
+                acc = df.format(100 * (0.5 * score.getCount100() + score.getCount300()) / passedObjects);
+                rank = event.getJDA().getEmoteById(utilOsu.getRankEmote(score.getRank()).getValue()).getAsMention()
+                        + (score.getRank().equals("F") ? " (" + performance.getCompletion() + "%)" : "");
+
+                eb = createBuilder(map, user)
+                        .setTimestamp(score.getDate().toInstant())
+                        .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
+                eb.getFields().addAll(createFieldsTaiko(performance, map, score, acc, rank, mods));
+
+                mb = new MessageBuilder(eb.build());
+                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                        "thumb.jpg", mb.build()).queue(message -> {
+                    try {
+                        Thread.sleep(shortFormatDelay);
+                        eb.clearFields().setTimestamp(null)
+                                .addField(new MessageEmbed.Field(rank + mods + "\t" +
+                                        NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
+                                        acc + "%)\t" + howLongAgo(score.getDate()), "**" + (score.getRank().equals("F") ?
+                                        "-" : (df.format(score.getPp()) + "pp")) + "**/" +
+                                        df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
+                                        map.getMaxCombo() + "x ]\t { " + score.getCount300() +
+                                        "/" + score.getCount100() + "/" + score.getCountMiss() + " }", false));
+                        eb.setTitle(updateBuilderTitle(map, null), "https://osu.ppy.sh/b/" + map.getBeatmapId());
+                        mb.setEmbed(eb.build());
+                        message.editMessage(mb.build()).queue();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
                 break;
             default: break;
         }
@@ -437,7 +469,7 @@ public class scoreEmbed {
                         .addField(new MessageEmbed.Field(rank + mods + "\t" +
                                 NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
                                 acc + "%)\t" + howLongAgo(score.getDate()), "**" + (score.getRank().equals("F") ?
-                                "-" : currPP) + "**/" +
+                                "-" : currPP + "pp") + "**/" +
                                 df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
                                 map.getMaxCombo() + "x ]\t { " + score.getCountGeki() + "/" + score.getCount300() +
                                 "/" + score.getCountKatu() + "/" + score.getCount100() + "/" + score.getCount50()
@@ -485,7 +517,7 @@ public class scoreEmbed {
                         .addField(new MessageEmbed.Field(rank + mods + "\t" +
                                 NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" +
                                 acc + "%)\t" + howLongAgo(score.getDate()), "**" + (score.getRank().equals("F") ?
-                                "-" : currPP) + "**/" +
+                                "-" : currPP + "pp") + "**/" +
                                 df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
                                 map.getMaxCombo() + "x ]\t { " + score.getCount300() +
                                 "/" + score.getCount100() + "/" + score.getCountMiss() + " }", false));

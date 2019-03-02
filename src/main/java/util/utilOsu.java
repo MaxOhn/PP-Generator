@@ -142,6 +142,8 @@ public class utilOsu {
     public static int passedObjects(UserGame g, int mode) {
         if (mode == 0)
             return g.getCount300() + g.getCount100() + g.getCount50() + g.getCountMiss();
+        else if (mode == 1)
+            return g.getCount300() + g.getCount100() + g.getCountMiss();
         else // (mode == 3)
             return g.getCountGeki() + g.getCount300() + g.getCountKatu() + g.getCount100() + g.getCount50() + g.getCountMiss();
     }

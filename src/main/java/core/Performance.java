@@ -43,7 +43,6 @@ public class Performance {
 
     private int calculateCompletion() {
         int hits = utilOsu.passedObjects(usergame, mode);
-        if (mapPerf == null && mode == 0) return 0;
         return (int)((double)hits*100/(double)mapPerf.getNobjects());
     }
 
@@ -56,10 +55,15 @@ public class Performance {
 
     private void calculateMapPP() {
         try {
+            String modeStr;
+            switch (mode) {
+                case 1: modeStr = "taiko"; break;
+                case 3: modeStr = "mania"; break;
+                default: modeStr = "osu"; break;
+            }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
-            String cmdLineString = secrets.execPrefix + "dotnet " +  secrets.perfCalcPath + " simulate " +
-                    (mode == 0 ? "osu" : mode == 3 ? "mania" : "error") + " " + secrets.mapPath +
-                    map.getBeatmapId() + ".osu";
+            String cmdLineString = secrets.execPrefix + "dotnet " +  secrets.perfCalcPath + " simulate " + modeStr +
+                    " " + secrets.mapPath + map.getBeatmapId() + ".osu";
             if (usergame != null)
                 for (Mod mod: usergame.getEnabledMods())
                     cmdLineString += " -m " + mods_str(mod.getFlag());
@@ -97,10 +101,12 @@ public class Performance {
                 (double)usergame.getCount300() * 300.0D;
         if (mode == 3)
             numerator += (double)usergame.getCountKatu() * 200.0D + (double)usergame.getCountGeki() * 300.0D;
+        else if (mode == 1)
+            numerator = 0.5 * usergame.getCount100() + usergame.getCount300();
         double denominator;
         if (mode == 0)
             denominator = (double)(mapPerf.getNobjects()) * 300.0D;
-        else // (mode == 3)
+        else // (mode == 3 || mode == 1)
             denominator = mapPerf.getNobjects();
         double res = numerator / denominator;
         return 100*Math.max(0.0D, Math.min(res, 1.0D));
@@ -108,7 +114,7 @@ public class Performance {
 
     private void calculatePlayPP() {
         boolean failedPlay = usergame.getRank().equals("F");
-        if (failedPlay && mode == 3) return; // Don't calculate failed scores of mania plays
+        if (failedPlay && mode > 0) return; // Don't calculate failed scores of non-standard plays
         String mapPath = failedPlay ?
                 secrets.mapPath + "temp" + map.getBeatmapId() + usergame.getUserId() + ".osu" :
                 secrets.mapPath + map.getBeatmapId() + ".osu";
@@ -117,13 +123,19 @@ public class Performance {
                 int lastNoteTiming = Main.fileInteractor.offsetOfNote(utilOsu.passedObjects(usergame, mode), map.getBeatmapId());
                 Main.fileInteractor.copyMapUntilOffset(mapPath, map.getBeatmapId(), lastNoteTiming);
             }
-            String cmdLineString = secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " +
-                    (mode == 0 ? "osu" : mode == 3 ? "mania" : "error") + " " + secrets.mapPath + map.getBeatmapId() + ".osu";
-            if (mode == 0) {
+            String modeStr;
+            switch (mode) {
+                case 1: modeStr = "taiko"; break;
+                case 3: modeStr = "mania"; break;
+                default: modeStr = "osu"; break;
+            }
+            String cmdLineString = secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr + " "
+                    + secrets.mapPath + map.getBeatmapId() + ".osu";
+            if (mode < 3) {
                 cmdLineString += " -a " + calculateAcc()
                         + " -c " + usergame.getMaxCombo()
                         + " -X " + usergame.getCountMiss()
-                        + " -M " + usergame.getCount50()
+                        + (mode == 0 ? " -M " + usergame.getCount50() : "")
                         + " -G " + usergame.getCount100();
             } else { // mode == 3
                 cmdLineString += " -s " + usergame.getScore();
@@ -146,8 +158,6 @@ public class Performance {
             pr.waitFor();
             if (mode == 3) {
                 playPerf.setNobjects(mapPerf.getNobjects());
-                playPerf.setCombo(usergame.getMaxCombo());
-                playPerf.setNmiss(usergame.getCountMiss());
                 playPerf.setAcc(calculateAcc());
             }
             if (failedPlay)
@@ -179,10 +189,8 @@ public class Performance {
 
     private static class PerfObj {
         private double acc = -1;
-        private int combo = 0;
         private int maxcombo = 0;
         private int nobjects = 0;
-        private int nmiss = 0;
         private double pp;
 
         PerfObj(Iterable<String> lines) {
@@ -192,16 +200,14 @@ public class Performance {
                     case "Accuracy":
                         if (this.acc > -1) break;
                         this.acc = Double.parseDouble(splitLine[splitLine.length-1].replace("%","")); break;
-                    case "Combo":
-                        this.combo = Integer.parseInt(splitLine[splitLine.length-2]); break;
+                    case "Greats":
                     case "Great":
-                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "Goods":
                     case "Good":
-                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
                     case "Meh":
-                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
+                    case "Misses":
                     case "Miss":
-                        this.nobjects += (this.nmiss = Integer.parseInt(splitLine[splitLine.length-1])); break;
+                        this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
                     case "Max":
                         this.maxcombo = Integer.parseInt(splitLine[splitLine.length-1]); break;
                     case "pp":
@@ -219,14 +225,6 @@ public class Performance {
             this.acc = acc;
         }
 
-        public int getCombo() {
-            return combo;
-        }
-
-        void setCombo(int combo) {
-            this.combo = combo;
-        }
-
         int getMaxCombo() {
             return maxcombo;
         }
@@ -241,14 +239,6 @@ public class Performance {
 
         void setNobjects(int nobjects) {
             this.nobjects = nobjects;
-        }
-
-        public int getNmiss() {
-            return nmiss;
-        }
-
-        void setNmiss(int nmiss) {
-            this.nmiss = nmiss;
         }
 
         double getPp() {
