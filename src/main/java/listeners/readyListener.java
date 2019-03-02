@@ -10,6 +10,8 @@ import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.apache.log4j.Logger;
 
+import java.util.HashSet;
+
 public class readyListener extends ListenerAdapter {
 
     public void onReady(ReadyEvent event) {
@@ -19,5 +21,6 @@ public class readyListener extends ListenerAdapter {
         Main.twitch = new TwitchHook();
         Main.discLink = new DiscordLink();
         Main.fileInteractor = new FileInteractor();
+        Main.runningLyrics = new HashSet<>();
     }
 }

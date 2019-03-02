@@ -12,6 +12,7 @@ import net.dv8tion.jda.core.entities.Game;
 import org.apache.log4j.PropertyConfigurator;
 
 import javax.security.auth.login.LoginException;
+import java.util.HashSet;
 
 public class Main {
 
@@ -21,6 +22,7 @@ public class Main {
     public static TwitchHook twitch;
     public static DiscordLink discLink;
     public static FileInteractor fileInteractor;
+    public static HashSet<String> runningLyrics;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
 

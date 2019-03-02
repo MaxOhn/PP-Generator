@@ -1,6 +1,7 @@
 package main.java.commands;
 
 import main.java.core.DBProvider;
+import main.java.core.Main;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
@@ -12,6 +13,10 @@ public abstract class cmdSong implements Command {
     abstract String[] getLyrics();
 
     abstract int getDelay();
+    
+    int getCooldown() {
+        return 2000;
+    }
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -27,11 +32,12 @@ public abstract class cmdSong implements Command {
             logger.error("Error while interacting with lyrics database: " + e);
             return false;
         }
-        return true;
+        return !Main.runningLyrics.contains(event.getGuild().getId());
     }
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        Main.runningLyrics.add(event.getGuild().getId());
         String[] lyrics = getLyrics();
         int delay = getDelay();
         final Thread t = new Thread(() -> {
@@ -40,6 +46,12 @@ public abstract class cmdSong implements Command {
                     event.getTextChannel().sendMessage("♫ " + lyric + " ♫").queue();
                     Thread.sleep(delay);
                 } catch (InterruptedException ignored) {}
+            }
+            try {
+                Thread.sleep(getCooldown());
+            } catch (InterruptedException ignored) {
+            } finally {
+                Main.runningLyrics.remove(event.getGuild().getId());
             }
         });
         t.start();
