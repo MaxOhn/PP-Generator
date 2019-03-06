@@ -22,17 +22,19 @@ public class FileInteractor {
             logger.error("Something went wrong while deleting a file: " + f.getName());
     }
 
-    public void downloadMapThumb(int mapID) {
+    public boolean downloadMapThumb(int mapID) {
         try {
             InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + ".jpg").openStream();
-            Files.copy(in, Paths.get(secrets.thumbPath + mapID + ".jpg"), REPLACE_EXISTING);
+            Files.copy(in, Paths.get(secrets.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
             logger.info("Downloaded thumbnail of mapset " + mapID + " successfully");
+            return true;
         } catch (IOException e) {
             logger.error("Something went wrong while downloading the thumbnail of a mapset: " + e);
+            return false;
         }
     }
 
-    public void downloadMap(int mapID) {
+    public boolean downloadMap(int mapID) {
         String urlStr = "https://osu.ppy.sh/web/maps/" + mapID;
         String file_name = secrets.mapPath + mapID + ".osu";
         int lines = 0;
@@ -48,11 +50,12 @@ public class FileInteractor {
         } catch (IOException e) {
             logger.error("Something went wrong while downloading a map: " + e);
             deleteFile(file_name);
-            return;
+            return false;
         }
         if (lines < 50000)
-            return;
+            return true;
         deleteFile(file_name);
+        return true;
     }
 
     public int offsetOfNote(int noteIndex, int mapID) {

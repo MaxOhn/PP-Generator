@@ -1,6 +1,7 @@
 package main.java.util;
 
 import de.maxikg.osuapi.model.*;
+import main.java.core.Main;
 import main.java.core.Performance;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -50,6 +51,15 @@ public class scoreEmbed {
     private static String keyString(Set<Mod> mods, Beatmap map) {
         String keys = key_mods_str(createSum(mods));
         return "[" + (keys.equals("") ? ((int)map.getDifficultySize() + "K") : keys) + "] ";
+    }
+
+    private static boolean prepareFiles(Beatmap map) {
+        boolean success = true;
+        if (!new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg").isFile())
+            success = Main.fileInteractor.downloadMapThumb(map.getBeatmapSetId());
+        if (!new File(secrets.mapPath + map.getBeatmapId() + ".osu").isFile())
+            success &= Main.fileInteractor.downloadMap(map.getBeatmapId());
+        return success;
     }
 
     private static ArrayList<MessageEmbed.Field> createFields(Performance p, Beatmap m, Object o, String r, String acc,
@@ -194,6 +204,7 @@ public class scoreEmbed {
 
     public static void embedScoreCompare(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                          Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 0);
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
@@ -210,7 +221,12 @@ public class scoreEmbed {
                 .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
         eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
 
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);
@@ -231,9 +247,13 @@ public class scoreEmbed {
 
     public static void embedScoreRecentBest(MessageReceivedEvent event, User user, Beatmap map, UserScore score,
                                         Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays, GameMode mode) {
+        boolean fileSuccess = prepareFiles(map);
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
         String mods = modString(score.getEnabledMods());
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
         Performance performance;
         String acc;
         String rank;
@@ -256,7 +276,9 @@ public class scoreEmbed {
                 eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
 
                 mb = new MessageBuilder(eb.build());
-                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+
+                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg", mb.build()).queue(message -> {
                     try {
                         Thread.sleep(shortFormatDelay);
@@ -291,7 +313,8 @@ public class scoreEmbed {
                 eb.getFields().addAll(createFieldsMania(performance, map, score, acc, rank, mods));
                 eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
 
-                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg").embed(eb.build()).queue(message -> {
                     try {
                         Thread.sleep(shortFormatDelay);
@@ -324,7 +347,9 @@ public class scoreEmbed {
                 eb.getFields().addAll(createFieldsTaiko(performance, map, score, acc, rank, mods));
 
                 mb = new MessageBuilder(eb.build());
-                event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+
+                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+                event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg", mb.build()).queue(message -> {
                     try {
                         Thread.sleep(shortFormatDelay);
@@ -351,6 +376,7 @@ public class scoreEmbed {
     public static void embedScoreRecent(MessageReceivedEvent event, User user, Beatmap map, UserGame score,
                                         Collection<UserGame> history, Collection<UserScore> topPlays,
                                         Collection<BeatmapScore> globalPlays) {
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 0);
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
@@ -369,7 +395,13 @@ public class scoreEmbed {
         eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
 
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);
@@ -391,6 +423,7 @@ public class scoreEmbed {
 
     public static void embedScoreCompareMania(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                               Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 3);
         int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
                 score.getCount50() + score.getCountMiss();
@@ -409,7 +442,12 @@ public class scoreEmbed {
         eb.getFields().addAll(createFieldsMania(performance, map, score, acc, rank, mods));
         eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
 
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);
@@ -440,6 +478,7 @@ public class scoreEmbed {
                                              Collection<UserGame> history, Collection<UserScore> topPlays,
                                              Collection<BeatmapScore> globalPlays, BeatmapScore bestScore) {
         // countgeki = 320, count300 = 300, countkatu = 200, count100 = 100, count50 = 50, countmiss = miss
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 3);
         int passedObjects = score.getCountGeki() + score.getCount300() + score.getCountKatu() + score.getCount100() +
                 score.getCount50() + score.getCountMiss();
@@ -461,7 +500,13 @@ public class scoreEmbed {
         eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
 
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);
@@ -492,6 +537,7 @@ public class scoreEmbed {
     public static void embedScoreRecentTaiko(MessageReceivedEvent event, User user, Beatmap map, UserGame score,
                                              Collection<UserGame> history, Collection<UserScore> topPlays,
                                              Collection<BeatmapScore> globalPlays, BeatmapScore bestScore) {
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 1);
         int passedObjects = score.getCount300() + score.getCount100() + score.getCountMiss();
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
@@ -509,7 +555,13 @@ public class scoreEmbed {
         eb.getFields().addAll(createFieldsTaiko(performance, map, score, acc, rank, mods, currPP));
 
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);
@@ -532,6 +584,7 @@ public class scoreEmbed {
 
     public static void embedScoreCompareTaiko(MessageReceivedEvent event, User user, Beatmap map, BeatmapScore score,
                                               Collection<UserScore> topPlays, Collection<BeatmapScore> globalPlays) {
+        boolean fileSuccess = prepareFiles(map);
         Performance performance = new Performance(map, score, 1);
         int passedObjects = score.getCount300() + score.getCount100() + score.getCountMiss();
         int topPlayIndex = utilOsu.indexInTopPlays(score, topPlays);
@@ -546,7 +599,12 @@ public class scoreEmbed {
                 .setDescription(topPlayDescription(topPlayIndex, globalPlayIndex));
         eb.getFields().addAll(createFieldsTaiko(performance, map, score, acc, rank, mods));
 
-        event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+
+        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
+        event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
                 Thread.sleep(shortFormatDelay);

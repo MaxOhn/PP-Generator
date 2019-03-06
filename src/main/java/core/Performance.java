@@ -4,14 +4,10 @@ import de.maxikg.osuapi.model.*;
 import main.java.util.secrets;
 import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
-import org.json.JSONException;
-import org.json.JSONObject;
-import sun.misc.Perf;
 
 import java.io.*;
 import java.util.ArrayList;
 
-import static de.maxikg.osuapi.model.Mod.createSum;
 import static main.java.util.utilOsu.mods_str;
 
 
@@ -35,7 +31,6 @@ public class Performance {
             this.userscore = (UserScore)score;
         else if (score instanceof UserGame)
             this.usergame = (UserGame)score;
-        prepareFiles();
         calculateMapPP();
         if (usergame != null)
             calculatePlayPP();
@@ -44,13 +39,6 @@ public class Performance {
     private int calculateCompletion() {
         int hits = utilOsu.passedObjects(usergame, mode);
         return (int)((double)hits*100/(double)mapPerf.getNobjects());
-    }
-
-    private void prepareFiles() {
-        if (!new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg").isFile())
-            Main.fileInteractor.downloadMapThumb(map.getBeatmapSetId());
-        if (!new File(secrets.mapPath + map.getBeatmapId() + ".osu").isFile())
-            Main.fileInteractor.downloadMap(map.getBeatmapId());
     }
 
     private void calculateMapPP() {
