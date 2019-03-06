@@ -24,7 +24,7 @@ public class FileInteractor {
 
     public boolean downloadMapThumb(int mapID) {
         try {
-            InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + ".jpg").openStream();
+            InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + "l.jpg").openStream();
             Files.copy(in, Paths.get(secrets.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
             logger.info("Downloaded thumbnail of mapset " + mapID + " successfully");
             return true;

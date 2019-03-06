@@ -7,6 +7,9 @@ import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class cmdDevTool implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -22,6 +25,18 @@ public class cmdDevTool implements Command {
             return;
         }
         switch (args[0]) {
+            case "send":
+            case "sendmessage":
+            case "sendmsg":
+                try {
+                    List<String> argList = Arrays.asList(args);
+                    String channelID = args[1];
+                    String msg = String.join(" ", argList.subList(2, args.length));
+                    Main.sendCustomMessage(msg, channelID);
+                    event.getTextChannel().sendMessage("Message was sent").queue();
+                } catch (Exception e) {
+                    event.getTextChannel().sendMessage(help(1)).queue();
+                }
             case "streamer":
             case "streamers":
                 if (args.length == 1)

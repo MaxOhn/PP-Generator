@@ -55,7 +55,7 @@ public class scoreEmbed {
 
     private static boolean prepareFiles(Beatmap map) {
         boolean success = true;
-        if (!new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg").isFile())
+        if (!new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg").isFile())
             success = Main.fileInteractor.downloadMapThumb(map.getBeatmapSetId());
         if (!new File(secrets.mapPath + map.getBeatmapId() + ".osu").isFile())
             success &= Main.fileInteractor.downloadMap(map.getBeatmapId());
@@ -225,7 +225,6 @@ public class scoreEmbed {
                 ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
@@ -500,7 +499,6 @@ public class scoreEmbed {
                 ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
