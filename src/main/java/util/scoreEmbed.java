@@ -222,7 +222,7 @@ public class scoreEmbed {
         eb.getFields().addAll(createFields(performance, map, score, rank, acc, mods));
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
         //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
@@ -252,7 +252,7 @@ public class scoreEmbed {
         int globalPlayIndex = utilOsu.indexInGlobalPlays(score, globalPlays);
         String mods = modString(score.getEnabledMods());
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
         Performance performance;
         String acc;
@@ -277,7 +277,6 @@ public class scoreEmbed {
 
                 mb = new MessageBuilder(eb.build());
 
-                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
                 event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg", mb.build()).queue(message -> {
                     try {
@@ -313,7 +312,6 @@ public class scoreEmbed {
                 eb.getFields().addAll(createFieldsMania(performance, map, score, acc, rank, mods));
                 eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
 
-                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
                 event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg").embed(eb.build()).queue(message -> {
                     try {
@@ -348,7 +346,6 @@ public class scoreEmbed {
 
                 mb = new MessageBuilder(eb.build());
 
-                //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
                 event.getTextChannel().sendFile(bgThumb,
                         "thumb.jpg", mb.build()).queue(message -> {
                     try {
@@ -397,10 +394,9 @@ public class scoreEmbed {
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
@@ -443,10 +439,9 @@ public class scoreEmbed {
         eb.setTitle(keyString(score.getEnabledMods(), map) + eb.build().getTitle(), eb.build().getUrl());
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
@@ -502,7 +497,7 @@ public class scoreEmbed {
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
         //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
@@ -557,10 +552,9 @@ public class scoreEmbed {
         MessageBuilder mb = new MessageBuilder("Try #" + amountTries).setEmbed(eb.build());
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg", mb.build()).queue(message -> {
             try {
@@ -600,10 +594,9 @@ public class scoreEmbed {
         eb.getFields().addAll(createFieldsTaiko(performance, map, score, acc, rank, mods));
 
         File bgThumb = fileSuccess
-                ? new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg")
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
 
-        //event.getTextChannel().sendFile(new File(secrets.thumbPath + map.getBeatmapSetId() + ".jpg"),
         event.getTextChannel().sendFile(bgThumb,
                 "thumb.jpg").embed(eb.build()).queue(message -> {
             try {
