@@ -36,6 +36,7 @@ public class commandHandler {
                         cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
             } catch (Exception e) {
                 logger.error(String.format("%s: %s [%s]", cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw(), e.getMessage()));
+                e.printStackTrace();
             }
         } else {
             Logger logger = Logger.getLogger("core.commandHandler");

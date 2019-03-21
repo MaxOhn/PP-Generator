@@ -10,7 +10,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.*;
 
+import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
+import static main.java.util.utilOsu.mods_flag;
 
 public class cmdCompareMania implements Command {
     @Override
@@ -51,6 +53,13 @@ public class cmdCompareMania implements Command {
                     || (fields.size() >= 5 &&
                         fields.get(5).getValue().matches("(.?)+(\\{)?( ?\\d+ ?\\/){5} ?\\d+ ?(\\})?(.?)+"))) {
                     mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
+                    if (withMods) {
+                        if (fields.size() >= 5 && fields.get(0).getValue().contains("+")) {
+                            mods = parseFlagSum(mods_flag(fields.get(0).getValue().split("\\+")[1]));
+                        } else if (fields.get(0).getName().contains("+")) {
+                            mods = parseFlagSum(mods_flag(fields.get(0).getName().split("\\+")[1].split(" ")[0]));
+                        }
+                    }
                     break;
                 }
             }

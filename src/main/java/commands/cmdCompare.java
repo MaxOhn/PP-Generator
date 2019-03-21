@@ -17,7 +17,7 @@ import static main.java.util.utilOsu.mods_flag;
 public class cmdCompare extends scoreEmbed implements Command  {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        return args.length < 2;
+        return true;
     }
 
     @Override
@@ -56,8 +56,8 @@ public class cmdCompare extends scoreEmbed implements Command  {
                     if (withMods) {
                         if (fields.size() >= 5 && fields.get(0).getValue().contains("+")) {
                             mods = parseFlagSum(mods_flag(fields.get(0).getValue().split("\\+")[1]));
-                        } else if (msgEmbed.getTitle().contains("+")) {
-                            mods = parseFlagSum(mods_flag(msgEmbed.getTitle().split("\\+")[1].split(" ")[0]));
+                        } else if (fields.get(0).getName().contains("+")) {
+                            mods = parseFlagSum(mods_flag(fields.get(0).getName().split("\\+")[1].split(" ")[0]));
                         }
                     }
                     break;
