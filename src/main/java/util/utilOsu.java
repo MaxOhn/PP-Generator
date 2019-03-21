@@ -40,6 +40,30 @@ public class utilOsu {
         return sb.toString();
     }
 
+    public static int mods_flag(String mods) {
+        int flag = 0;
+        String[] modArr = mods.split("(?<=\\G..)");
+        for (String s: modArr) {
+            switch (s) {
+                case "NF": flag += 1; break;
+                case "EZ": flag += 2; break;
+                case "TD": flag += 4; break;
+                case "HD": flag += 8; break;
+                case "HR": flag += 16; break;
+                case "SD": flag += 32; break;
+                case "DT": flag += 64; break;
+                case "HT": flag += 256; break;
+                case "NC": flag += 576; break;
+                case "FL": flag += 1024; break;
+                case "SO": flag += 4096; break;
+                case "PF": flag += 16416; break;
+                case "FI": flag += 1048576; break;
+                default: break;
+            }
+        }
+        return flag;
+    }
+
     public static String key_mods_str(int mods) {
         if ((mods & 67108864) != 0)
             return "1K";

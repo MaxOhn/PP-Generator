@@ -142,5 +142,11 @@
             <artifactId>json</artifactId>
             <version>20160810</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.tillerino</groupId>
+            <artifactId>osu-api-connector</artifactId>
+            <version>0.12.1</version>
+        </dependency>
+
     </dependencies>
 </project>

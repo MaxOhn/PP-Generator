@@ -1,9 +1,6 @@
 package main.java.commands;
 
 import main.java.core.Main;
-import main.java.core.commandHandler;
-import main.java.core.commandParser;
-import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -37,6 +34,7 @@ public class cmdDevTool implements Command {
                 } catch (Exception e) {
                     event.getTextChannel().sendMessage(help(1)).queue();
                 }
+                break;
             case "streamer":
             case "streamers":
                 if (args.length == 1)

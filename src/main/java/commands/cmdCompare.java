@@ -1,9 +1,6 @@
 package main.java.commands;
 
-import de.maxikg.osuapi.model.Beatmap;
-import de.maxikg.osuapi.model.BeatmapScore;
-import de.maxikg.osuapi.model.User;
-import de.maxikg.osuapi.model.UserScore;
+import de.maxikg.osuapi.model.*;
 import main.java.core.Main;
 import main.java.util.scoreEmbed;
 import main.java.util.statics;
@@ -11,8 +8,11 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
+import static de.maxikg.osuapi.model.Mod.parseFlagSum;
+import static main.java.util.utilOsu.abbrvModSet;
+import static main.java.util.utilOsu.mods_flag;
 
 public class cmdCompare extends scoreEmbed implements Command  {
     @Override
@@ -28,7 +28,16 @@ public class cmdCompare extends scoreEmbed implements Command  {
             return;
         }
 
-        String name = args.length > 0 ? args[0] : Main.discLink.getOsu(event.getAuthor().getId());
+        boolean withMods = args.length > 0 && String.join(" ", args).matches("(.* )?-m(od(s)?)?( .*)?");
+        Set<Mod> mods = null;
+        List<String> argList = new LinkedList<>(Arrays.asList(args));
+        if (withMods) {
+            argList.remove("-m");
+            argList.remove("-mod");
+            argList.remove("-mods");
+        }
+
+        String name = argList.size() > 0 ? String.join(" ", argList) : Main.discLink.getOsu(event.getAuthor().getId());
         if (name == null) {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
@@ -44,6 +53,13 @@ public class cmdCompare extends scoreEmbed implements Command  {
                         || (fields.size() >= 5 &&
                         fields.get(5).getValue().matches("(.?)+\\{( ?\\d+ ?\\/){3} ?\\d+ ?\\}(.?)+"))) {
                     mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
+                    if (withMods) {
+                        if (fields.size() >= 5 && fields.get(0).getValue().contains("+")) {
+                            mods = parseFlagSum(mods_flag(fields.get(0).getValue().split("\\+")[1]));
+                        } else if (msgEmbed.getTitle().contains("+")) {
+                            mods = parseFlagSum(mods_flag(msgEmbed.getTitle().split("\\+")[1].split(" ")[0]));
+                        }
+                    }
                     break;
                 }
             }
@@ -54,13 +70,23 @@ public class cmdCompare extends scoreEmbed implements Command  {
             }
         }
 
-        Collection<BeatmapScore> scores = Main.osu.getScores(Integer.parseInt(mapID)).username(name).query();
+        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).username(name).query();
         if (scores.size() == 0) {
             event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
                     mapID + "`").queue();
             return;
         }
+
         BeatmapScore score = scores.iterator().next();
+        if (withMods) {
+            Iterator<BeatmapScore> it = scores.iterator();
+            while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods));
+            if (!score.getEnabledMods().equals(mods)) {
+                event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
+                        mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
+                score = scores.iterator().next();
+            }
+        }
         User user;
         try {
             user = Main.osu.getUserByUsername(name).query().iterator().next();
@@ -79,9 +105,9 @@ public class cmdCompare extends scoreEmbed implements Command  {
         String help = " (`" + statics.prefix + "compare -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare` to make me show your best play on the map of "
+                return "Enter `" + statics.prefix + "compare [-m]` to make me show your best play on the map of "
                 + "the last `" + statics.prefix + "recent`. Enter `" + statics.prefix + "compare <osu name>` to" +
-                        " compare with someone else";
+                        " compare with someone else. If `-m` is added, I will also take the mod into account.";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:

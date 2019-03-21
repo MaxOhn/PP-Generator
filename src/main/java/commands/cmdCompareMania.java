@@ -8,8 +8,9 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+
+import static main.java.util.utilOsu.abbrvModSet;
 
 public class cmdCompareMania implements Command {
     @Override
@@ -25,7 +26,16 @@ public class cmdCompareMania implements Command {
             return;
         }
 
-        String name = args.length > 0 ? args[0] : Main.discLink.getOsu(event.getAuthor().getId());
+        boolean withMods = args.length > 0 && String.join(" ", args).matches("(.* )?-m(od(s)?)?( .*)?");
+        Set<Mod> mods = null;
+        List<String> argList = new LinkedList<>(Arrays.asList(args));
+        if (withMods) {
+            argList.remove("-m");
+            argList.remove("-mod");
+            argList.remove("-mods");
+        }
+
+        String name = argList.size() > 0 ? String.join(" ", argList) : Main.discLink.getOsu(event.getAuthor().getId());
         if (name == null) {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
@@ -57,7 +67,17 @@ public class cmdCompareMania implements Command {
                     mapID + "`").queue();
             return;
         }
+
         BeatmapScore score = scores.iterator().next();
+        if (withMods) {
+            Iterator<BeatmapScore> it = scores.iterator();
+            while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods));
+            if (!score.getEnabledMods().equals(mods)) {
+                event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
+                        mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
+                score = scores.iterator().next();
+            }
+        }
         User user;
         try {
             user = Main.osu.getUserByUsername(name).mode(GameMode.OSU_MANIA).query().iterator().next();
@@ -76,9 +96,9 @@ public class cmdCompareMania implements Command {
         String help = " (`" + statics.prefix + "comparemania -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "comparemania` to make me show your best play on the map of "
+                return "Enter `" + statics.prefix + "comparemania [-m]` to make me show your best play on the map of "
                         + "the last `" + statics.prefix + "recentmania`. Enter `" + statics.prefix + "comparemania <osu name>` to" +
-                        " compare with someone else";
+                        " compare with someone else. If `-m` is added, I will also take the mod into account.";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
