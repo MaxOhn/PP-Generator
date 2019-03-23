@@ -12,17 +12,13 @@ import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 import static de.maxikg.osuapi.model.Mod.createSum;
-import static main.java.util.utilOsu.abbrvModSet;
-import static main.java.util.utilOsu.countRetries;
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
-import static main.java.util.utilOsu.key_mods_str;
+import static main.java.util.utilOsu.*;
 
 public class scoreEmbed {
 
@@ -616,6 +612,37 @@ public class scoreEmbed {
     }
 
     public static void embedScores(MessageReceivedEvent event, User user, Beatmap map, Collection<BeatmapScore> scores) {
-        // TODO
+        boolean fileSuccess = prepareFiles(map);
+        List<BeatmapScore> orderedScores = new ArrayList<>(scores);
+        orderedScores.sort(Comparator.comparing(BeatmapScore::getPp).reversed());
+        EmbedBuilder eb = createBuilder(map, user);
+        File bgThumb = fileSuccess
+                ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
+                : new File(secrets.thumbPath + "bgNotFound.png");
+        Performance performance;
+        String rank;
+        String mods;
+        String acc;
+        String name;
+        String value;
+        int idx = 1;
+        for (BeatmapScore score : scores) {
+            performance = new Performance(map, score, map.getMode().getValue());
+            acc = df.format(100 * Math.max(0.0D, Math.min(((double) score.getCount50() *
+                    50.0D + (double) score.getCount100() * 100.0D + (double) score.getCount300() * 300.0D) / ((double)
+                    (score.getCount50() + score.getCount100() + score.getCount300() + score.getCountMiss()) * 300.0D), 1.0D)));
+            rank = event.getJDA().getGuildById(secrets.devGuildID)
+                    .getEmoteById(utilOsu.getRankEmote(score.getRank()).getValue()).getAsMention();
+            mods = modString(score.getEnabledMods());
+            name = "**" + idx + ".** " + rank + mods + "\t[" + df.format(performance.getStarRating()) + "★]\t" +
+                    NumberFormat.getNumberInstance(Locale.US).format(score.getScore()) + "\t(" + acc + "%)";
+            value = "**" + df.format(score.getPp()) + "pp**/" +
+                    df.format(performance.getTotalMapPP()) + "PP\t[ " + score.getMaxCombo() + "x/" +
+                    map.getMaxCombo() + "x ]\t {" + score.getCount300() + "/" + score.getCount100() + "/" +
+                    score.getCount50() + "/" + score.getCountMiss() + "}\t" + howLongAgo(score.getDate());
+            eb.addField(name, value, false);
+            idx++;
+        }
+        event.getTextChannel().sendFile(bgThumb,"thumb.jpg").embed(eb.build()).queue();
     }
 }

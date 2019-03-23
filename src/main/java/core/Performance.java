@@ -40,11 +40,6 @@ public class Performance {
             calculatePlayPP();
     }
 
-    private int calculateCompletion() {
-        int hits = utilOsu.passedObjects(usergame, mode);
-        return (int)((double)hits*100/(double)mapPerf.getNobjects());
-    }
-
     private void calculateMapPP() {
         try {
             String modeStr;
@@ -54,19 +49,19 @@ public class Performance {
                 default: modeStr = "osu"; break;
             }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
-            String cmdLineString = secrets.execPrefix + "dotnet " +  secrets.perfCalcPath + " simulate " + modeStr +
-                    " " + secrets.mapPath + map.getBeatmapId() + ".osu";
+            StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr +
+                    " " + secrets.mapPath + map.getBeatmapId() + ".osu");
             if (usergame != null)
                 for (Mod mod: usergame.getEnabledMods())
-                    cmdLineString += " -m " + mods_str(mod.getFlag());
+                    cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
             else if (mapscore != null)
                 for (Mod mod: mapscore.getEnabledMods())
-                    cmdLineString += " -m " + mods_str(mod.getFlag());
+                    cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
             else if (userscore != null)
                 for (Mod mod: userscore.getEnabledMods())
-                    cmdLineString += " -m " + mods_str(mod.getFlag());
+                    cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
             Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec(cmdLineString);
+            Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             ArrayList<String> lines = new ArrayList<>();
@@ -122,21 +117,19 @@ public class Performance {
                 case 3: modeStr = "mania"; break;
                 default: modeStr = "osu"; break;
             }
-            String cmdLineString = secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr + " "
-                    + secrets.mapPath + map.getBeatmapId() + ".osu";
+            StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr + " "
+                    + secrets.mapPath + map.getBeatmapId() + ".osu");
             if (mode < 3) {
-                cmdLineString += " -a " + calculateAcc()
-                        + " -c " + usergame.getMaxCombo()
-                        + " -X " + usergame.getCountMiss()
-                        + (mode == 0 ? " -M " + usergame.getCount50() : "")
-                        + " -G " + usergame.getCount100();
+                cmdLineString.append(" -a ").append(calculateAcc()).append(" -c ").append(usergame.getMaxCombo())
+                        .append(" -X ").append(usergame.getCountMiss())
+                        .append(mode == 0 ? " -M " + usergame.getCount50() : "").append(" -G ").append(usergame.getCount100());
             } else { // mode == 3
-                cmdLineString += " -s " + usergame.getScore();
+                cmdLineString.append(" -s ").append(usergame.getScore());
             }
             for (Mod mod: usergame.getEnabledMods())
-                cmdLineString += " -m " + mods_str(mod.getFlag());
+                cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
             Runtime rt = Runtime.getRuntime();
-            Process pr = rt.exec(cmdLineString);
+            Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             ArrayList<String> lines = new ArrayList<>();
@@ -174,15 +167,16 @@ public class Performance {
     }
 
     public double getAcc() {
-        return usergame == null ? 0 : playPerf.getAcc();
+        return playPerf == null ? 0 : playPerf.getAcc();
     }
 
     public double getStarRating() {
-        return mapPerf.getStarRating();
+        return mapPerf == null ? 0 : mapPerf.getStarRating();
     }
 
     public int getCompletion() {
-        return calculateCompletion();
+        int hits = utilOsu.passedObjects(usergame, mode);
+        return (int)((double)hits*100/(double)mapPerf.getNobjects());
     }
 
     private class PerfObj {
@@ -220,7 +214,7 @@ public class Performance {
                 else if (mapscore != null)
                     mods = mapscore.getEnabledMods();
                 if (!mods.contains(Mod.DOUBLE_TIME) && !mods.contains(Mod.HARD_ROCK) && !mods.contains(Mod.NIGHTCORE)
-                        && !mods.contains(Mod.EASY) && !mods.contains(Mod.HALF_TIME)) {
+                        && !mods.contains(Mod.EASY) && !mods.contains(Mod.NO_FAIL) && !mods.contains(Mod.HALF_TIME)) {
                     this.starRating = map.getDifficultyRating();
                     return;
                 }
