@@ -1,14 +1,17 @@
 package main.java.util;
 
+import main.java.core.DBProvider;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 public class utilGeneral {
 
@@ -44,10 +47,11 @@ public class utilGeneral {
         return "";
     }
 
-    public static boolean isAuthority(MessageReceivedEvent event) {
-        for(Role r : event.getGuild().getMember(event.getAuthor()).getRoles())
-            if(Arrays.asList(statics.authorities).contains(r.getName().toLowerCase())
-                    || (r.hasPermission(Permission.ADMINISTRATOR)))
+    public static boolean isAuthority(Member author, String serverID) throws SQLException, ClassNotFoundException {
+        List<String> authorityRoles = Arrays.asList(DBProvider.getAuthorityRoles(serverID));
+        for(Role r : author.getRoles())
+            if(r.hasPermission(Permission.ADMINISTRATOR) ||
+                    (authorityRoles.contains(r.getName().toLowerCase())))
                 return true;
         return false;
     }

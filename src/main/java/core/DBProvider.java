@@ -10,26 +10,42 @@ import java.util.HashMap;
 public class DBProvider {
 
     /*
-     * ------------------------
-     *         lyrics
-     * ------------------------
+     * -------------------------
+     *      server properties
+     * -------------------------
      */
 
     public static boolean getLyricsState(String serverID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select available from lyrics where server='" + serverID + "'");
+        ResultSet rs = stmnt.executeQuery("select lyricsAvailable from serverProperties where server='" + serverID + "'");
         rs.next();
-        return rs.getBoolean("available");
+        return rs.getBoolean("lyricsAvailable");
     }
 
     public static void setLyricsState(String serverID, boolean bool) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("delete from lyrics where server='" + serverID + "'");
-        stmnt.execute("insert into lyrics(server, available) values ('" + serverID + "', " + bool + ")");
+        stmnt.execute("update serverProperties set lyricsAvailable = " + bool + " where server='" + serverID + "'");
+    }
+
+    public static String[] getAuthorityRoles(String serverID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select authorityRoles from serverProperties where server='" + serverID + "'");
+        rs.next();
+        return rs.getString("authorityRoles").split("##");
+    }
+
+    public static void setAuthorityRoles(String serverID, String[] roles) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("update serverProperties set authorityRoles = '" + String.join("##", roles) +
+                "' where server='" + serverID + "'");
     }
 
     /*

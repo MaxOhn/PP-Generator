@@ -16,8 +16,15 @@ public class cmdLyrics implements Command {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         }
-        if (!isAuthority(event)) {
-            event.getTextChannel().sendMessage(help(2)).queue();
+        try {
+            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
+                event.getTextChannel().sendMessage(help(2)).queue();
+                return false;
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            Logger logger = Logger.getLogger(this.getClass());
+            logger.error("Error while retrieving authorityRoles: " + e);
+            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             return false;
         }
         return true;
@@ -70,8 +77,8 @@ public class cmdLyrics implements Command {
                 event.getTextChannel().sendMessage(help(0)).queue();
             }
         } catch (SQLException | ClassNotFoundException e) {
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth xd").queue();
-            logger.error("Error while interacting with lyrics database: " + e);
+            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
+            logger.error("Error while retrieving lyricsAvailable state: " + e);
         }
     }
 

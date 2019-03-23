@@ -96,6 +96,8 @@ public class Main {
         commandHandler.commands.put("ct", new cmdCompareTaiko());
         commandHandler.commands.put("prune", new cmdPrune());
         commandHandler.commands.put("purge", new cmdPrune());
+        commandHandler.commands.put("setauthorityroles", new cmdSetAuthorityRoles());
+        commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
     }
 
     public static void sendCustomMessage(String text, String id) {

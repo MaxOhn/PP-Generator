@@ -2,6 +2,9 @@ package main.java.commands;
 
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 import static main.java.util.utilGeneral.isAuthority;
 
@@ -12,8 +15,15 @@ public class cmdPrune implements Command {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         }
-        if (!isAuthority(event)) {
-            event.getTextChannel().sendMessage(help(1)).queue();
+        try {
+            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
+                event.getTextChannel().sendMessage(help(1)).queue();
+                return false;
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            Logger logger = Logger.getLogger(this.getClass());
+            logger.error("Error while retrieving authorityRoles: " + e);
+            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             return false;
         }
         if (args.length != 1) {

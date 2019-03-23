@@ -5,6 +5,9 @@ import main.java.util.secrets;
 import main.java.util.statics;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.apache.log4j.Logger;
+
+import java.sql.SQLException;
 
 import static main.java.util.utilGeneral.isAuthority;
 
@@ -15,8 +18,16 @@ public class cmdAddStream implements Command {
                 || (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help")))) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
-        } else if (!isAuthority(event)) {
-            event.getTextChannel().sendMessage(help(3)).queue();
+        }
+        try {
+            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
+                event.getTextChannel().sendMessage(help(3)).queue();
+                return false;
+            }
+        } catch (SQLException | ClassNotFoundException e) {
+            Logger logger = Logger.getLogger(this.getClass());
+            logger.error("Error while retrieving authorityRoles: " + e);
+            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             return false;
         }
         return true;
