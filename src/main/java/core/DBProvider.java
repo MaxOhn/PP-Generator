@@ -6,6 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class DBProvider {
 
@@ -41,6 +42,14 @@ public class DBProvider {
     }
 
     public static void setAuthorityRoles(String serverID, String[] roles) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("update serverProperties set authorityRoles = '" + String.join("##", roles) +
+                "' where server='" + serverID + "'");
+    }
+
+    public static void setAuthorityRoles(String serverID, List<String> roles) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();

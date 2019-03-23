@@ -6,6 +6,8 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static main.java.util.utilGeneral.isAuthority;
 
@@ -55,7 +57,28 @@ public class cmdSetAuthorityRoles implements Command {
             }
         } else {
             try {
-                DBProvider.setAuthorityRoles(serverID, args);
+                List<String> argList = new ArrayList<>();
+                if (args.length > 0) {
+                    int idx = 0;
+                    while (idx < args.length) {
+                        if (args[idx].startsWith('"' + "")) {
+                            int startIdx = idx++;
+                            while (idx < args.length && !args[idx].endsWith('"' + "")) idx++;
+                            if (idx == args.length) {
+                                argList.add(args[startIdx]);
+                                idx = startIdx + 1;
+                            } else {
+                                StringBuilder roleWithSpaces = new StringBuilder();
+                                roleWithSpaces.append(args[startIdx], 1, args[startIdx++].length()).append(" ");
+                                for (; startIdx < idx; startIdx++)
+                                    roleWithSpaces.append(args[startIdx]).append(" ");
+                                argList.add(roleWithSpaces.append(args[idx], 0, args[idx++].length()-1).toString());
+                            }
+                        } else
+                            argList.add(args[idx++]);
+                    }
+                }
+                DBProvider.setAuthorityRoles(serverID, argList);
                 event.getTextChannel().sendMessage("Authority roles have been updated!").queue();
             } catch (SQLException | ClassNotFoundException e) {
                 logger.error("Error while setting authorityRoles: " + e);
@@ -76,8 +99,9 @@ public class cmdSetAuthorityRoles implements Command {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "setauthorityroles [role1 role2 role3 ...] [-c] [-d]` so only users " +
-                        "with one of those roles are allowed to use privileged commands. If `-c` is specified, I will " +
-                        "only respond with the current authority roles instead. If `-d` is specified, I will set the " +
+                        "with one of those roles are allowed to use privileged commands.\nIf a role contains a whitespace" +
+                        ", encapsulate the role with `\"` e.g. `\"bot commander\"`.\nIf `-c` is specified, I will " +
+                        "only respond with the current authority roles instead.\nIf `-d` is specified, I will set the " +
                         "default authority roles.\nUsing this command requires either the admin " +
                         "permission or one of the current authority roles: `[" + roles + "]`";
             case 1:
