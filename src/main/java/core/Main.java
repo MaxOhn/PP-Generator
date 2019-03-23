@@ -99,6 +99,7 @@ public class Main {
         commandHandler.commands.put("setauthorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
+        commandHandler.commands.put("scores", new cmdScores());
     }
 
     public static void sendCustomMessage(String text, String id) {

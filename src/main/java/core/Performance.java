@@ -5,8 +5,12 @@ import main.java.util.secrets;
 import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import static main.java.util.utilOsu.mods_str;
 
@@ -80,7 +84,8 @@ public class Performance {
                 mapPerf.setAcc(100);
             }
         } catch (Exception e) {
-            logger.error("Something went wrong while calculating the pp of a map: " + e);
+            logger.error("Something went wrong while calculating the pp of a map: ");
+            e.printStackTrace();
         }
     }
 
@@ -151,7 +156,8 @@ public class Performance {
             if (failedPlay)
                 Main.fileInteractor.deleteFile(mapPath);
         } catch(Exception e) {
-            logger.error("Something went wrong while calculating the pp of a play: " + e);
+            logger.error("Something went wrong while calculating the pp of a play: ");
+            e.printStackTrace();
         }
     }
 
@@ -171,15 +177,19 @@ public class Performance {
         return usergame == null ? 0 : playPerf.getAcc();
     }
 
+    public double getStarRating() {
+        return mapPerf.getStarRating();
+    }
+
     public int getCompletion() {
         return calculateCompletion();
     }
 
-    private static class PerfObj {
+    private class PerfObj {
         private double acc = -1;
-        private int maxcombo = 0;
         private int nobjects = 0;
         private double pp;
+        private double starRating;
 
         PerfObj(Iterable<String> lines) {
             for (String line: lines) {
@@ -196,12 +206,49 @@ public class Performance {
                     case "Misses":
                     case "Miss":
                         this.nobjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
-                    case "Max":
-                        this.maxcombo = Integer.parseInt(splitLine[splitLine.length-1]); break;
                     case "pp":
                         this.pp = Double.parseDouble(splitLine[splitLine.length-1]); break;
                     default: break;
                 }
+            }
+            if (mapPerf == null) {
+                Set<Mod> mods = new HashSet<>();
+                if (userscore != null)
+                    mods = userscore.getEnabledMods();
+                else if (usergame != null)
+                    mods = usergame.getEnabledMods();
+                else if (mapscore != null)
+                    mods = mapscore.getEnabledMods();
+                if (!mods.contains(Mod.DOUBLE_TIME) && !mods.contains(Mod.HARD_ROCK) && !mods.contains(Mod.NIGHTCORE)
+                        && !mods.contains(Mod.EASY) && !mods.contains(Mod.HALF_TIME)) {
+                    this.starRating = map.getDifficultyRating();
+                    return;
+                }
+                StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " difficulty "
+                        + secrets.mapPath + map.getBeatmapId() + ".osu");
+                for (Mod mod: mods)
+                    cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
+                try {
+                    Runtime rt = Runtime.getRuntime();
+                    Process pr = rt.exec(cmdLineString.toString());
+                    BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+                    BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+                    String line = input.readLine();     // Skip first line
+                    String[] splitLine = input.readLine().split(" ");
+                    double difficulty = Double.parseDouble(splitLine[splitLine.length - 1]);
+                    while ((line = errors.readLine()) != null)
+                        logger.error(line);
+                    input.close();
+                    errors.close();
+                    pr.waitFor();
+                    this.starRating = difficulty;
+                } catch (InterruptedException | IOException e) {
+                    logger.error("Something went wrong while calculating the star rating of a map: ");
+                    e.printStackTrace();
+                    this.starRating = map.getDifficultyRating();
+                }
+            } else {
+                this.starRating = mapPerf.starRating;
             }
         }
 
@@ -213,12 +260,8 @@ public class Performance {
             this.acc = acc;
         }
 
-        int getMaxCombo() {
-            return maxcombo;
-        }
-
-        void setMaxCombo(int maxcombo) {
-            this.maxcombo = maxcombo;
+        double getStarRating() {
+            return starRating;
         }
 
         int getNobjects() {
