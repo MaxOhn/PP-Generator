@@ -5,29 +5,13 @@ import main.java.util.secrets;
 import main.java.util.statics;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
+public class cmdAddStream extends PrivilegedCommand {
 
-import static main.java.util.utilGeneral.isAuthority;
-
-public class cmdAddStream implements Command {
     @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
-        if ((args.length < 1 || args.length > 3)
-                || (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help")))) {
+    boolean customCalled(String[] args, MessageReceivedEvent event) {
+        if ((args.length < 1 || args.length > 3)) {
             event.getTextChannel().sendMessage(help(0)).queue();
-            return false;
-        }
-        try {
-            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
-                event.getTextChannel().sendMessage(help(3)).queue();
-                return false;
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            Logger logger = Logger.getLogger(this.getClass());
-            logger.error("Error while retrieving authorityRoles: " + e);
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             return false;
         }
         return true;
@@ -35,7 +19,6 @@ public class cmdAddStream implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         String name = "";
         if (args[0].equals("-l") || args[0].equals("-link")) {
             if (args.length  < 2) {
@@ -49,7 +32,7 @@ public class cmdAddStream implements Command {
         } else
             name = args[0];
         if (Main.twitch.isTracked(name, event.getTextChannel().getId())) {
-            event.getTextChannel().sendMessage(help(1)).queue();
+            event.getTextChannel().sendMessage(help(3)).queue();
             return;
         }
         if (Main.twitch.addStreamer(name, event.getTextChannel().getId()))
@@ -70,11 +53,11 @@ public class cmdAddStream implements Command {
                         "to make me respond whenever the stream comes online\nUsing this command requires either the admin " + "" +
                         "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
             case 1:
-                return "User is already being tracked in this channel!" + help;
+                return "This command is only for the big boys. Your privilege is too low, yo" + help;
             case 2:
                 return "The stream link should be of the form `https://www.twitch.tv/<twitch name>`" + help;
             case 3:
-                return "This command is only for the big boys. Your privilege is too low, yo" + help;
+                return "User is already being tracked in this channel!" + help;
             default:
                 return help(0);
         }

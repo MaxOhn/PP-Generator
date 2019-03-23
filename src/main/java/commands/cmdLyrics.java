@@ -3,36 +3,13 @@ package main.java.commands;
 import main.java.core.DBProvider;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
-import static main.java.util.utilGeneral.isAuthority;
-
-public class cmdLyrics implements Command {
-    @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
-        if (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            event.getTextChannel().sendMessage(help(0)).queue();
-            return false;
-        }
-        try {
-            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
-                event.getTextChannel().sendMessage(help(2)).queue();
-                return false;
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            Logger logger = Logger.getLogger(this.getClass());
-            logger.error("Error while retrieving authorityRoles: " + e);
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
-            return false;
-        }
-        return true;
-    }
+public class cmdLyrics extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Logger logger = Logger.getLogger(this.getClass());
         try {
             if (args.length == 1) {
                 switch (args[0]) {
@@ -67,7 +44,7 @@ public class cmdLyrics implements Command {
                             event.getTextChannel().sendMessage("Users can no longer use song commands!").queue();
                             break;
                         default:
-                            event.getTextChannel().sendMessage(help(1)).queue();
+                            event.getTextChannel().sendMessage(help(2)).queue();
                             break;
                     }
                 } else {
@@ -92,9 +69,9 @@ public class cmdLyrics implements Command {
                         " permission.\nUsing this command requires either the admin " + "" +
                         "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
             case 1:
-                return "'-s' must be followed by either `on` or `off`" + help;
-            case 2:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
+            case 2:
+                return "'-s' must be followed by either `on` or `off`" + help;
             default:
                 return help(0);
         }

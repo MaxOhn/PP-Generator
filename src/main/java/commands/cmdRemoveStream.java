@@ -3,29 +3,13 @@ package main.java.commands;
 import main.java.core.Main;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
 
-import java.sql.SQLException;
+public class cmdRemoveStream extends PrivilegedCommand {
 
-import static main.java.util.utilGeneral.isAuthority;
-
-public class cmdRemoveStream implements Command {
     @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
-        if ((args.length < 1 || args.length > 3)
-                || (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help")))) {
+    boolean customCalled(String[] args, MessageReceivedEvent event) {
+        if ((args.length < 1 || args.length > 3)) {
             event.getTextChannel().sendMessage(help(0)).queue();
-            return false;
-        }
-        try {
-            if (!isAuthority(event.getMember(), event.getGuild().getId())) {
-                event.getTextChannel().sendMessage(help(1)).queue();
-                return false;
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            Logger logger = Logger.getLogger(this.getClass());
-            logger.error("Error while retrieving authorityRoles: " + e);
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             return false;
         }
         return true;
@@ -33,7 +17,6 @@ public class cmdRemoveStream implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (Main.twitch.removeStreamer(args[0], event.getTextChannel().getId()))
             event.getTextChannel().sendMessage("I'm no longer tracking `" + args[0] + "`'s twitch stream.").queue();
         else

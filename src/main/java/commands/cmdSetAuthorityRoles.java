@@ -3,37 +3,18 @@ package main.java.commands;
 import main.java.core.DBProvider;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static main.java.util.utilGeneral.isAuthority;
-
-public class cmdSetAuthorityRoles implements Command {
+public class cmdSetAuthorityRoles extends PrivilegedCommand {
 
     private String serverID;
-    private Logger logger;
 
     @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
+    boolean customCalled(String[] args, MessageReceivedEvent event) {
         serverID = event.getGuild().getId();
-        logger = Logger.getLogger(this.getClass());
-        if (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            event.getTextChannel().sendMessage(help(0)).queue();
-            return false;
-        }
-        try {
-            if (!isAuthority(event.getMember(), serverID)) {
-                event.getTextChannel().sendMessage(help(1)).queue();
-                return false;
-            }
-        } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Error while retrieving authorityRoles: " + e);
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
-            return false;
-        }
         return true;
     }
 
