@@ -1,5 +1,6 @@
 package main.java.util;
 
+import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -45,7 +46,8 @@ public class utilGeneral {
 
     public static boolean isAuthority(MessageReceivedEvent event) {
         for(Role r : event.getGuild().getMember(event.getAuthor()).getRoles())
-            if(Arrays.asList(statics.authorities).contains(r.getName().toLowerCase()))
+            if(Arrays.asList(statics.authorities).contains(r.getName().toLowerCase())
+                    || (r.hasPermission(Permission.ADMINISTRATOR)))
                 return true;
         return false;
     }

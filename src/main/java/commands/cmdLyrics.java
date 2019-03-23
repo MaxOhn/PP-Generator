@@ -12,6 +12,10 @@ import static main.java.util.utilGeneral.isAuthority;
 public class cmdLyrics implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        if (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help"))) {
+            event.getTextChannel().sendMessage(help(0)).queue();
+            return false;
+        }
         if (!isAuthority(event)) {
             event.getTextChannel().sendMessage(help(2)).queue();
             return false;
@@ -78,8 +82,8 @@ public class cmdLyrics implements Command {
             case 0:
                 return "Enter `" + statics.prefix + "lyrics [-t / -s <on/off> / -c]` to either (`-t`) toggle or (`-s <on/off>`)" +
                         " set the permission to use lyrics commands on or off, or (`-c`) check the current state of the" +
-                        " permission.\nUsing this command requires one of these roles: `[" +
-                        String.join(", ", statics.authorities) + "]`";
+                        " permission.\nUsing this command requires either the admin " + "" +
+                        "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
             case 1:
                 return "'-s' must be followed by either `on` or `off`" + help;
             case 2:

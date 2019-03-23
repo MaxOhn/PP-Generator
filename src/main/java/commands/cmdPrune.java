@@ -8,6 +8,10 @@ import static main.java.util.utilGeneral.isAuthority;
 public class cmdPrune implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        if (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help"))) {
+            event.getTextChannel().sendMessage(help(0)).queue();
+            return false;
+        }
         if (!isAuthority(event)) {
             event.getTextChannel().sendMessage(help(1)).queue();
             return false;
@@ -38,7 +42,7 @@ public class cmdPrune implements Command {
         event.getTextChannel().getIterableHistory().takeAsync(amount).thenApply(event.getTextChannel()::purgeMessages)
                 .thenAccept(arg -> event.getTextChannel().sendMessage(response).queue(message -> {
                     try {
-                        Thread.sleep(5000);
+                        Thread.sleep(6000);
                     } catch (InterruptedException ignored) {
                     } finally {
                         message.delete().queue();
@@ -53,9 +57,8 @@ public class cmdPrune implements Command {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "prune <amount>` to make me delete the last <amount> many messages" +
-                        " in this channel (up to 100 at a time)" +
-                        "\nUsing this command requires one of these roles: `[" +
-                        String.join(", ", statics.authorities) + "]`";
+                        " in this channel (up to 100 at a time)\nUsing this command requires either the admin " + "" +
+                        "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
             case 2:

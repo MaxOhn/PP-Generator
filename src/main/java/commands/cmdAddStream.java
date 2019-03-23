@@ -11,7 +11,8 @@ import static main.java.util.utilGeneral.isAuthority;
 public class cmdAddStream implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        if (args.length < 1 || args.length > 3) {
+        if ((args.length < 1 || args.length > 3)
+                || (args.length == 1 && (args[0].equals("-h") || args[0].equals("-help")))) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         } else if (!isAuthority(event)) {
@@ -23,11 +24,6 @@ public class cmdAddStream implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
-        if (args[0].equals("-h") || args[0].equals("-help")) {
-            event.getTextChannel().sendMessage(help(0)).queue();
-            return;
-        }
 
         String name = "";
         if (args[0].equals("-l") || args[0].equals("-link")) {
@@ -60,8 +56,8 @@ public class cmdAddStream implements Command {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream -link <link to twitch stream>`" +
-                        "to make me respond whenever the stream comes online\nUsing this command requires one of these roles: `[" +
-                        String.join(", ", statics.authorities) + "]`";
+                        "to make me respond whenever the stream comes online\nUsing this command requires either the admin " + "" +
+                        "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
             case 1:
                 return "User is already being tracked in this channel!" + help;
             case 2:
