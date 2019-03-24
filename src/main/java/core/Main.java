@@ -51,34 +51,47 @@ public class Main {
     }
 
     private static void addCommands() {
-        commandHandler.commands.put("t", new cmdTest());
-        commandHandler.commands.put("devtool", new cmdDevTool());
-        commandHandler.commands.put("dt", new cmdDevTool());
-        commandHandler.commands.put("ping", new cmdPing());
-        commandHandler.commands.put("p", new cmdPing());
-        commandHandler.commands.put("roll", new cmdRoll());
+
+        // osu! standard
         commandHandler.commands.put("recent", new cmdRecent());
         commandHandler.commands.put("r", new cmdRecent());
+        commandHandler.commands.put("compare", new cmdCompare());
+        commandHandler.commands.put("c", new cmdCompare());
+
+        // osu! taiko
+        commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
+        commandHandler.commands.put("rt", new cmdRecentTaiko());
+        commandHandler.commands.put("comparetaiko", new cmdCompareTaiko());
+        commandHandler.commands.put("ct", new cmdCompareTaiko());
+
+        // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
-        commandHandler.commands.put("rmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
+        commandHandler.commands.put("rmania", new cmdRecentMania());
+        commandHandler.commands.put("comparemania", new cmdCompareMania());
+        commandHandler.commands.put("cm", new cmdCompareMania());
+        commandHandler.commands.put("cmania", new cmdCompareMania());
+
+        // osu! general
+        commandHandler.commands.put("link", new cmdLink());
+        commandHandler.commands.put("recentbest", new cmdRecentBest());
+        commandHandler.commands.put("rb", new cmdRecentBest());
+        commandHandler.commands.put("best", new cmdBest());
+        commandHandler.commands.put("b", new cmdBest());
+        commandHandler.commands.put("top", new cmdBest());
+        commandHandler.commands.put("scores", new cmdScores());
+
+        // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
         commandHandler.commands.put("adds", new cmdAddStream());
         commandHandler.commands.put("trackedstreams", new cmdTrackedStreams());
         commandHandler.commands.put("trackeds", new cmdTrackedStreams());
         commandHandler.commands.put("removestream", new cmdRemoveStream());
         commandHandler.commands.put("removes", new cmdRemoveStream());
-        commandHandler.commands.put("compare", new cmdCompare());
-        commandHandler.commands.put("c", new cmdCompare());
-        commandHandler.commands.put("comparemania", new cmdCompareMania());
-        commandHandler.commands.put("cmania", new cmdCompareMania());
-        commandHandler.commands.put("cm", new cmdCompareMania());
-        commandHandler.commands.put("help", new cmdHelp());
-        commandHandler.commands.put("h", new cmdHelp());
-        commandHandler.commands.put("link", new cmdLink());
+
+        // fun
         commandHandler.commands.put("dance", new cmdDance());
-        commandHandler.commands.put("recentbest", new cmdRecentBest());
-        commandHandler.commands.put("rb", new cmdRecentBest());
+        commandHandler.commands.put("lyrics", new cmdLyrics());
         commandHandler.commands.put("fireflies", new cmdFireflies());
         commandHandler.commands.put("pretender", new cmdPretender());
         commandHandler.commands.put("fireandflames", new cmdFireAndFlames());
@@ -86,20 +99,20 @@ public class Main {
         commandHandler.commands.put("flamingo", new cmdFlamingo());
         commandHandler.commands.put("ding", new cmdDing());
         commandHandler.commands.put("brainpower", new cmdBrainpower());
-        commandHandler.commands.put("best", new cmdBest());
-        commandHandler.commands.put("b", new cmdBest());
-        commandHandler.commands.put("top", new cmdBest());
-        commandHandler.commands.put("lyrics", new cmdLyrics());
-        commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
-        commandHandler.commands.put("rt", new cmdRecentTaiko());
-        commandHandler.commands.put("comparetaiko", new cmdCompareTaiko());
-        commandHandler.commands.put("ct", new cmdCompareTaiko());
+
+        // utility
+        commandHandler.commands.put("devtool", new cmdDevTool());
+        commandHandler.commands.put("dt", new cmdDevTool());
+        commandHandler.commands.put("ping", new cmdPing());
+        commandHandler.commands.put("p", new cmdPing());
+        commandHandler.commands.put("roll", new cmdRoll());
+        commandHandler.commands.put("help", new cmdHelp());
+        commandHandler.commands.put("h", new cmdHelp());
         commandHandler.commands.put("prune", new cmdPrune());
         commandHandler.commands.put("purge", new cmdPrune());
         commandHandler.commands.put("setauthorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
-        commandHandler.commands.put("scores", new cmdScores());
     }
 
     public static void sendCustomMessage(String text, String id) {

@@ -38,9 +38,6 @@ public class commandHandler {
                 logger.error(String.format("%s: %s [%s]", cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw(), e.getMessage()));
                 e.printStackTrace();
             }
-        } else {
-            Logger logger = Logger.getLogger("core.commandHandler");
-            logger.warn(cmd.invoke + " is no valid command [" + cmd.event.getAuthor().getName() + "]");
         }
     }
 }
