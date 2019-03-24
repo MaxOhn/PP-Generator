@@ -11,6 +11,39 @@ import java.util.List;
 public class DBProvider {
 
     /*
+     * ------------------------
+     *      star ratings
+     * ------------------------
+     */
+
+    public static double getStarRating(int mapID, String mods) throws ClassNotFoundException, SQLException, IllegalAccessException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select " + mods + " from starRatings where mapID='" + mapID + "'");
+        rs.next();
+        double response = rs.getDouble(mods);
+        if (response > -1)
+            return response;
+        else
+            throw new IllegalAccessException("Mods '" + mods + "' not yet calculated for mapID " + mapID);
+    }
+
+    public static void addMap(int mapID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)");
+    }
+
+    public static void  addMods(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("update starRatings set " + mods + "=" + rating + " where mapID='" + mapID + "'");
+    }
+
+    /*
      * -------------------------
      *      server properties
      * -------------------------

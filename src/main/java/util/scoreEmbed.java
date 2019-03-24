@@ -250,8 +250,7 @@ public class scoreEmbed {
                 ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
         Performance performance;
-        String acc;
-        String rank;
+        String acc, rank;
         EmbedBuilder eb;
         MessageBuilder mb;
         int passedObjects;
@@ -620,11 +619,7 @@ public class scoreEmbed {
                 ? new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg")
                 : new File(secrets.thumbPath + "bgNotFound.png");
         Performance performance;
-        String rank;
-        String mods;
-        String acc;
-        String name;
-        String value;
+        String rank, mods, acc, name, value;
         int idx = 1;
         for (BeatmapScore score : scores) {
             performance = new Performance(map, score, map.getMode().getValue());

@@ -8,10 +8,13 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_str;
 
 
@@ -25,6 +28,8 @@ public class Performance {
     private UserScore userscore = null;
     private Logger logger = Logger.getLogger(this.getClass());
     private int mode;
+    private static final Set<Mod> ratingModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
+            Mod.NO_FAIL, Mod.DOUBLE_TIME, Mod.HARD_ROCK));
 
     public Performance(Beatmap map, Object score, int mode) {
         this.mode = mode;
@@ -183,7 +188,7 @@ public class Performance {
         private double acc = -1;
         private int nobjects = 0;
         private double pp;
-        private double starRating;
+        private double starRating = 0;
 
         PerfObj(Iterable<String> lines) {
             for (String line: lines) {
@@ -205,45 +210,83 @@ public class Performance {
                     default: break;
                 }
             }
-            if (mapPerf == null) {
-                Set<Mod> mods = new HashSet<>();
-                if (userscore != null)
-                    mods = userscore.getEnabledMods();
-                else if (usergame != null)
-                    mods = usergame.getEnabledMods();
-                else if (mapscore != null)
-                    mods = mapscore.getEnabledMods();
-                if (!mods.contains(Mod.DOUBLE_TIME) && !mods.contains(Mod.HARD_ROCK) && !mods.contains(Mod.NIGHTCORE)
-                        && !mods.contains(Mod.EASY) && !mods.contains(Mod.NO_FAIL) && !mods.contains(Mod.HALF_TIME)) {
-                    this.starRating = map.getDifficultyRating();
-                    return;
-                }
-                StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " difficulty "
-                        + secrets.mapPath + map.getBeatmapId() + ".osu");
-                for (Mod mod: mods)
-                    cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
-                try {
-                    Runtime rt = Runtime.getRuntime();
-                    Process pr = rt.exec(cmdLineString.toString());
-                    BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-                    BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-                    String line = input.readLine();     // Skip first line
-                    String[] splitLine = input.readLine().split(" ");
-                    double difficulty = Double.parseDouble(splitLine[splitLine.length - 1]);
-                    while ((line = errors.readLine()) != null)
-                        logger.error(line);
-                    input.close();
-                    errors.close();
-                    pr.waitFor();
-                    this.starRating = difficulty;
-                } catch (InterruptedException | IOException e) {
-                    logger.error("Something went wrong while calculating the star rating of a map: ");
-                    e.printStackTrace();
-                    this.starRating = map.getDifficultyRating();
-                }
-            } else {
-                this.starRating = mapPerf.starRating;
+            setStarRating();
+        }
+
+        private void setStarRating() {
+            if (mapPerf != null) {
+                this.starRating = mapPerf.getStarRating();
+                return;
             }
+            Set<Mod> mods = new HashSet<>();
+            if (userscore != null)
+                mods = userscore.getEnabledMods();
+            else if (usergame != null)
+                mods = usergame.getEnabledMods();
+            else if (mapscore != null)
+                mods = mapscore.getEnabledMods();
+            HashSet<Mod> modsImportant = new HashSet<>(mods);
+            modsImportant.retainAll(ratingModifier);
+            if (modsImportant.isEmpty()) {
+                this.starRating = map.getDifficultyRating();
+                return;
+            }
+            if (modsImportant.contains(Mod.NIGHTCORE)) {
+                modsImportant.remove(Mod.NIGHTCORE);
+                modsImportant.add(Mod.DOUBLE_TIME);
+            }
+            try {
+                this.starRating = DBProvider.getStarRating(map.getBeatmapId(), abbrvModSet(modsImportant));
+            } catch (IllegalAccessException e) {    // star rating not yet calculated
+                this.starRating = calculateStarRating(modsImportant);
+                try {
+                    DBProvider.addMods(map.getBeatmapId(), abbrvModSet(modsImportant), this.starRating);
+                } catch (ClassNotFoundException | SQLException e1) {
+                    logger.error("Something went wrong while interacting with starRating database: ");
+                    e1.printStackTrace();
+                }
+            } catch (SQLException e) {              // map not in database
+                try {
+                    DBProvider.addMap(map.getBeatmapId());
+                    this.starRating = calculateStarRating(modsImportant);
+                    DBProvider.addMods(map.getBeatmapId(), abbrvModSet(modsImportant), this.starRating);
+                } catch (ClassNotFoundException | SQLException e1) {
+                    logger.error("Something went wrong while interacting with starRating database: ");
+                    e1.printStackTrace();
+                }
+            } catch (ClassNotFoundException e) {    // won't happen
+                logger.error("Something went wrong while setting the star rating: ");
+                e.printStackTrace();
+            }
+        }
+
+        private double calculateStarRating(Set<Mod> mods) {
+            double rating = 0;
+            StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " difficulty "
+                    + secrets.mapPath + map.getBeatmapId() + ".osu");
+            for (Mod mod: mods)
+                cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
+            try {
+                Runtime rt = Runtime.getRuntime();
+                Process pr = rt.exec(cmdLineString.toString());
+                BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+                BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+                /* // debugging
+                String line;
+                while ((line = input.readLine()) != null)
+                    logger.error(line);
+                while ((line = errors.readLine()) != null)
+                    logger.error(line);
+                //*/
+                rating = Double.parseDouble(input.readLine());
+                input.close();
+                errors.close();
+                pr.waitFor();
+            } catch (InterruptedException | IOException e) {
+                logger.error("Something went wrong while calculating the star rating: ");
+                e.printStackTrace();
+            }
+            return rating;
         }
 
         double getAcc() {
