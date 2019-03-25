@@ -3,8 +3,8 @@ package main.java.commands;
 import de.maxikg.osuapi.model.Beatmap;
 import de.maxikg.osuapi.model.BeatmapScore;
 import de.maxikg.osuapi.model.User;
+import main.java.core.BotMessage;
 import main.java.core.Main;
-import main.java.util.scoreEmbed;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -60,7 +60,7 @@ public class cmdScores implements Command {
             return;
         }
         Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).query().iterator().next();
-        scoreEmbed.embedScores(event, user, map, scores);
+        new BotMessage(event, BotMessage.MessageType.SCORES).user(user).map(map).beatmapscore(scores).buildAndSend();
     }
 
     @Override

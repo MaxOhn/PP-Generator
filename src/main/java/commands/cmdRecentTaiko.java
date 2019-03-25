@@ -1,8 +1,8 @@
 package main.java.commands;
 
 import de.maxikg.osuapi.model.*;
+import main.java.core.BotMessage;
 import main.java.core.Main;
-import main.java.util.scoreEmbed;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -42,7 +42,8 @@ public class cmdRecentTaiko implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(GameMode.TAIKO).limit(1).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(GameMode.TAIKO).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(GameMode.TAIKO).query();
-        scoreEmbed.embedScoreRecentTaiko(event, user, map, recent, userRecents, topPlays, globalPlays);
+        new BotMessage(event, BotMessage.MessageType.RECENT).user(user).map(map).usergame(recent).history(userRecents)
+                .mode(GameMode.TAIKO).topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override

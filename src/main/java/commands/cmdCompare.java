@@ -1,6 +1,7 @@
 package main.java.commands;
 
 import de.maxikg.osuapi.model.*;
+import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.scoreEmbed;
 import main.java.util.statics;
@@ -97,7 +98,8 @@ public class cmdCompare extends scoreEmbed implements Command  {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
-        scoreEmbed.embedScoreCompare(event, user, map, score, topPlays, globalPlays);
+        new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).beatmapscore(score)
+                .topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override

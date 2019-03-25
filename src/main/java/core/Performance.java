@@ -89,6 +89,7 @@ public class Performance {
 
         this.pp = (double)score.getPp();
         this.acc = 0;
+        this.starRating = 0;
 
         this.mods = score.getEnabledMods();
 
@@ -112,6 +113,7 @@ public class Performance {
 
         this.pp = 0;
         this.acc = 0;
+        this.starRating = 0;
 
         this.mods = score.getEnabledMods();
 
@@ -134,6 +136,7 @@ public class Performance {
 
         this.pp = (double)score.getPp();
         this.acc = 0;
+        this.starRating = 0;
 
         this.mods = score.getEnabledMods();
 
@@ -179,6 +182,7 @@ public class Performance {
             denominator = (double)(getNPassedObjects()) * 300.0D;
         else // taiko, mania
             denominator = getNPassedObjects();
+        if (mode == GameMode.OSU_MANIA) denominator *= 300;
         double res = numerator / denominator;
         return (acc = 100*Math.max(0.0D, Math.min(res, 1.0D)));
     }
@@ -328,6 +332,7 @@ public class Performance {
     }
 
     public int getMaxCombo() {
+        if (mode != GameMode.STANDARD) return 0;
         return maxCombo;
     }
 

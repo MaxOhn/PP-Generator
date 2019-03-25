@@ -61,20 +61,19 @@ public class BotMessage {
     }
 
     public void send(String msg) {
+        if (typeM != MessageType.TEXT) throw new IllegalStateException(Error.TYPEM.getMsg());
         event.getTextChannel().sendMessage(msg).queue();
     }
 
     public void buildAndSend() {
-
         if (u == null) throw new IllegalStateException(Error.USER.getMsg());
-
-        eb.setThumbnail("attachement://thumb.jpg");
+        eb.setThumbnail("attachment://thumb.jpg");
         eb.setAuthor(u.getUsername() + ": "
-                        + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRaw()) + "pp (#"
-                        + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRank()) + " "
-                        + u.getCountry().toString().toUpperCase()
-                        + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRankCountry()) + ")",
-                "https://osu.ppy.sh/u/" + u.getUserId(), "https://a.ppy.sh/" + u.getUserId());
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRaw()) + "pp (#"
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRank()) + " "
+                + u.getCountry().toString().toUpperCase()
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRankCountry()) + ")",
+        "https://osu.ppy.sh/u/" + u.getUserId(), "https://a.ppy.sh/" + u.getUserId());
         File thumbFile;
         int idx;
         String ppString = "**", hitString = "{ ", extendedTitle = "";
@@ -86,6 +85,7 @@ public class BotMessage {
                 mb.append("Try #").append(String.valueOf(retries));
             case COMPARE:
             case RECENTBEST:
+            case SINGLETOP:
                 if (m == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + m.getBeatmapSetId() + "l.jpg")
@@ -108,7 +108,6 @@ public class BotMessage {
                 switch (mode) {
                     case STANDARD:
                         hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
-                        ppString += p.getPp();
                         extendedTitle = m.getArtist() + " - " + m.getTitle() + " [" +
                                 m.getVersion() + "]" + " [" + p.getStarRating() + "★]";
                         break;
@@ -119,19 +118,12 @@ public class BotMessage {
                     case OSU_MANIA:
                         hitString += hitString.equals("{ ") ? p.getNGeki() + " / " + p.getN300() + " / "
                                 + p.getNKatu() + " / " + p.getN100() + " / " + p.getN50() : "";
-                        String rank;
-                        switch (typeS) {
-                            case BEATMAPSCORE: rank = bs.getRank(); break;
-                            case USERSCORE: rank = us.getRank(); break;
-                            case USERGAME: rank = ug.getRank(); break;
-                            default: throw new IllegalStateException(Error.TYPES.getMsg());
-                        }
-                        ppString += rank.equals("F") ? "-" : p.getPp();
                         extendedTitle += extendedTitle.equals("") ? getKeyString() + " " + m.getArtist() + " - "
                                 + m.getTitle() + " [" + m.getVersion() + "]" + " [" + p.getStarRating() + "★]" : "";
                         break;
                     default: throw new IllegalStateException("GameMode not supported");
                 }
+                ppString += p.getPp();
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(m.getTotalLength()) + "` (`"
                         + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBpm() + "` Objects: `"
@@ -145,8 +137,8 @@ public class BotMessage {
                     .addField("Rank", getRank() + getModString(),true)
                     .addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()),true)
                     .addField("Acc", p.getAcc() + "%",true)
-                    .addField("PP", ppString + "pp**/" + p.getPpMax() + "PP",true)
-                    .addField("Combo", p.getCombo() + "x/" + m.getMaxCombo() + "x",true)
+                    .addField("PP", ppString + "**/" + p.getPpMax() + "PP",true)
+                    .addField("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x",true)
                     .addField("Hits", hitString,true)
                     .addField("Map Info", mapInfo,true);
                 break;
@@ -163,11 +155,10 @@ public class BotMessage {
                 idx = 1;
                 for (BeatmapScore s : orderedScores) {
                     beatmapscore(s);
-                    p.beatmapscore(s);
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
                             NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
-                    String fieldValue = "**" + df.format(s.getPp()) + "pp**/" + p.getPpMax() + "PP\t[ "
-                            + s.getMaxCombo() + "x/" + m.getMaxCombo() + "x ]\t {";
+                    String fieldValue = "**" + df.format(s.getPp()) + "**/" + p.getPpMax() + "PP\t[ "
+                            + s.getMaxCombo() + "x/" + p.getMaxCombo() + "x ]\t {";
                     switch (mode) {
                         case STANDARD: fieldValue += s.getCount300() + "/" + s.getCount100() + "/" + s.getCount50(); break;
                         case TAIKO: fieldValue +=  s.getCount300() + "/" + s.getCount100(); break;
@@ -204,7 +195,7 @@ public class BotMessage {
                             .append(m.getTitle()).append("[").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(m.getBeatmapId()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
                             .append(p.getStarRating()).append("★]\n ")
-                            .append(getRank()).append(" **").append(p.getPp()).append("pp**/").append(p.getPpMax())
+                            .append(getRank()).append(" **").append(p.getPp()).append("**/").append(p.getPpMax())
                             .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore())).append("\n  [ ")
                             .append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ] ~ { ");
@@ -238,15 +229,16 @@ public class BotMessage {
             case RECENT:
             case COMPARE:
             case RECENTBEST:
+            case SINGLETOP:
                 ma.queue(message -> {
                     try {
                         Thread.sleep(shortFormatDelay);
                         eb.clearFields().setTimestamp(null)
                                 .addField(new MessageEmbed.Field(getRank() + getModString() + "\t" +
                                         NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
-                                        p.getAcc() + "%)\t" + timeAgo, "**" + df.format(p.getPp()) +
-                                        "pp**/" + p.getPpMax() + "PP\t[ " + p.getMaxCombo() + "x/" +
-                                        m.getMaxCombo() + "x ]\t " + hString, false));
+                                        p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
+                                        "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
+                                        p.getMaxCombo() + "x ]\t " + hString, false));
                         eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + m.getBeatmapId());
                         message.editMessage(eb.build()).queue();
                     } catch (InterruptedException ignored) { }
@@ -386,8 +378,8 @@ public class BotMessage {
         String out;
         switch (typeS) {
             case BEATMAPSCORE: out = abbrvModSet(bs.getEnabledMods()); break;
-            case USERSCORE: out = abbrvModSet(bs.getEnabledMods()); break;
-            case USERGAME: out = abbrvModSet(bs.getEnabledMods()); break;
+            case USERSCORE: out = abbrvModSet(us.getEnabledMods()); break;
+            case USERGAME: out = abbrvModSet(ug.getEnabledMods()); break;
             default: throw new IllegalStateException(Error.TYPES.getMsg());
         }
         if (!out.equals(""))
@@ -429,6 +421,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, TOPSCORES, TEXT
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, TEXT
     }
 }

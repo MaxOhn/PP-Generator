@@ -1,6 +1,7 @@
 package main.java.commands;
 
 import de.maxikg.osuapi.model.*;
+import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -44,7 +45,8 @@ public class cmdRecent extends scoreEmbed implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).limit(1).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
-        scoreEmbed.embedScoreRecent(event, user, map, recent, userRecents, topPlays, globalPlays);
+        new BotMessage(event, BotMessage.MessageType.RECENT).user(user).map(map).usergame(recent).history(userRecents)
+                .topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override

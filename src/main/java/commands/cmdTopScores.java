@@ -4,14 +4,15 @@ import de.maxikg.osuapi.model.Beatmap;
 import de.maxikg.osuapi.model.GameMode;
 import de.maxikg.osuapi.model.User;
 import de.maxikg.osuapi.model.UserScore;
+import main.java.core.BotMessage;
 import main.java.core.Main;
-import main.java.util.scoreEmbed;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 public class cmdTopScores implements Command {
     @Override
@@ -27,7 +28,6 @@ public class cmdTopScores implements Command {
     public void action(String[] args, MessageReceivedEvent event) {
 
         GameMode mode = GameMode.STANDARD;
-        int number = 1;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
@@ -74,14 +74,19 @@ public class cmdTopScores implements Command {
         Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(5).query();
         ArrayList<Beatmap> maps = new ArrayList<>();
         for (UserScore score : scores) {
-            maps.add(Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next());
             try {
+            maps.add(Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next());
                 Thread.sleep(300);
-            } catch (InterruptedException e) {
+            } catch (InterruptedException ignored) {
+            } catch (NoSuchElementException e) {
+                event.getTextChannel().sendMessage("Something went wrong, go ping bade or smth :p").queue();
                 e.printStackTrace();
+                return;
             }
+
         }
-        scoreEmbed.embedTopScores(event, user, scores, maps, mode);
+        new BotMessage(event, BotMessage.MessageType.TOPSCORES).user(user).userscore(scores).maps(maps).mode(mode)
+                .buildAndSend();
     }
 
     @Override

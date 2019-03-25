@@ -1,8 +1,8 @@
 package main.java.commands;
 
 import de.maxikg.osuapi.model.*;
+import main.java.core.BotMessage;
 import main.java.core.Main;
-import main.java.util.scoreEmbed;
 import main.java.util.statics;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
@@ -97,7 +97,8 @@ public class cmdCompareMania implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).mode(GameMode.OSU_MANIA).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(GameMode.OSU_MANIA).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(GameMode.OSU_MANIA).query();
-        scoreEmbed.embedScoreCompareMania(event, user, map, score, topPlays, globalPlays);
+        new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).beatmapscore(score)
+                .mode(GameMode.OSU_MANIA).topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override
