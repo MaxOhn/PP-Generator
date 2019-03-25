@@ -8,9 +8,6 @@ import java.util.Set;
 
 public class commandHandler {
 
-    // parse parses the command into the processed object commandContainer
-    public static final commandParser parse = new commandParser();
-
     // commands contains all invoke words with their corresponding action
     static HashMap<String, Command> commands = new HashMap<>();
 

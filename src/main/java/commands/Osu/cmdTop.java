@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-public class cmdBest implements Command {
+public class cmdTop implements Command {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         return true;

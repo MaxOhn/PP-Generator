@@ -5,6 +5,7 @@ import main.java.commands.Command;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -66,7 +67,7 @@ public class cmdCompare implements Command {
                 }
             }
             if (--counter == 0) {
-                event.getTextChannel().sendMessage("Could not find last `" + statics.prefix + getRecentName() + "`, must " +
+                event.getTextChannel().sendMessage("Could not find last `" + statics.prefix + "recent" + getName() + "`, must " +
                         "be too old").queue();
                 return;
             }
@@ -105,17 +106,22 @@ public class cmdCompare implements Command {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + getName() + " -h` for more help)";
+        String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + getName() + " [-m]` to make me show your best play on the map of "
-                + "the last `" + statics.prefix + getRecentName() + "`. Enter `" + statics.prefix + getName() + " <osu name>` to" +
+                return "Enter `" + statics.prefix + "compare" + getName() + " [-m]` to make me show your best play on the map of "
+                + "the last `" + statics.prefix + "recent" + getName() + "`. Enter `" + statics.prefix + "compare" + getName() + " <osu name>` to" +
                         " compare with someone else. If `-m` is added, I will also take the mod into account.";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.OSU;
     }
 
     GameMode getMode() {
@@ -127,10 +133,6 @@ public class cmdCompare implements Command {
     }
 
     String getName() {
-        return "compare";
-    }
-
-    String getRecentName() {
-        return "recent";
+        return "";
     }
 }

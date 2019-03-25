@@ -72,23 +72,17 @@ public class Main {
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
-        commandHandler.commands.put("rmania", new cmdRecentMania());
         commandHandler.commands.put("comparemania", new cmdCompareMania());
         commandHandler.commands.put("cm", new cmdCompareMania());
-        commandHandler.commands.put("cmania", new cmdCompareMania());
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());
         commandHandler.commands.put("recentbest", new cmdRecentBest());
         commandHandler.commands.put("rb", new cmdRecentBest());
-        commandHandler.commands.put("best", new cmdBest());
-        commandHandler.commands.put("b", new cmdBest());
-        commandHandler.commands.put("top", new cmdBest());
+        commandHandler.commands.put("top", new cmdTop());
         commandHandler.commands.put("scores", new cmdScores());
         commandHandler.commands.put("topscores", new cmdTopScores());
-        commandHandler.commands.put("bestscores", new cmdTopScores());
         commandHandler.commands.put("osutop", new cmdTopScores());
-        commandHandler.commands.put("top5", new cmdTopScores());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

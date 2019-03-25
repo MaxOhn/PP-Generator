@@ -3,6 +3,7 @@ package main.java.commands.Utility;
 import main.java.commands.Command;
 import main.java.core.commandHandler;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -28,5 +29,10 @@ public class cmdHelp implements Command {
     @Override
     public String help(int hCode) {
         return null;
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.UTILITY;
     }
 }

@@ -4,6 +4,7 @@ import main.java.commands.PrivilegedCommand;
 import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -62,5 +63,10 @@ public class cmdAddStream extends PrivilegedCommand {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.TWITCH;
     }
 }

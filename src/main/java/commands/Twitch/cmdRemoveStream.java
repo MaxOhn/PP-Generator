@@ -3,6 +3,7 @@ package main.java.commands.Twitch;
 import main.java.commands.PrivilegedCommand;
 import main.java.core.Main;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdRemoveStream extends PrivilegedCommand {
@@ -37,5 +38,10 @@ public class cmdRemoveStream extends PrivilegedCommand {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.TWITCH;
     }
 }

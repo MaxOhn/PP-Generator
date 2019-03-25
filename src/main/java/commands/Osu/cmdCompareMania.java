@@ -16,11 +16,6 @@ public class cmdCompareMania extends cmdCompare {
 
     @Override
     String getName() {
-        return "comparemania";
-    }
-
-    @Override
-    String getRecentName() {
-        return "recentmania";
+        return "mania";
     }
 }

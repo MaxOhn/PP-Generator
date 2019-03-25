@@ -2,7 +2,7 @@ package main.java.commands.Utility;
 
 import main.java.commands.Command;
 import main.java.util.statics;
-import net.dv8tion.jda.core.MessageBuilder;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdPing implements Command {
@@ -22,6 +22,11 @@ public class cmdPing implements Command {
 
     public String help(int hCode) {
         return "Enter `" + statics.prefix + "ping` to make me respond";
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.UTILITY;
     }
 
 }

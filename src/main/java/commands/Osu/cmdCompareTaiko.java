@@ -16,11 +16,6 @@ public class cmdCompareTaiko extends cmdCompare {
 
     @Override
     String getName() {
-        return "comparetaiko";
-    }
-
-    @Override
-    String getRecentName() {
-        return "recenttaiko";
+        return "taiko";
     }
 }

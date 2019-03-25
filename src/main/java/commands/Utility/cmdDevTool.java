@@ -92,4 +92,9 @@ public class cmdDevTool implements Command {
                 return help(0);
         }
     }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.UTILITY;
+    }
 }

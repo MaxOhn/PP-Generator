@@ -1,5 +1,6 @@
 package main.java.commands;
 
+import main.java.util.utilGeneral.Category;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public interface Command {
@@ -13,4 +14,5 @@ public interface Command {
     // help explains the use of the command
     String help(int hCode);
 
+    Category getCategory();
 }

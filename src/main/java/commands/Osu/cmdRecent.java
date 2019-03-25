@@ -64,6 +64,11 @@ public class cmdRecent implements Command {
         }
     }
 
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.OSU;
+    }
+
     GameMode getMode() {
         return GameMode.STANDARD;
     }

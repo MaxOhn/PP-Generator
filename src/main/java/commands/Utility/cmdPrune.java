@@ -2,6 +2,7 @@ package main.java.commands.Utility;
 
 import main.java.commands.PrivilegedCommand;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdPrune extends PrivilegedCommand {
@@ -60,5 +61,10 @@ public class cmdPrune extends PrivilegedCommand {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.UTILITY;
     }
 }

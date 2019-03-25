@@ -3,6 +3,7 @@ package main.java.commands.Fun;
 import main.java.commands.PrivilegedCommand;
 import main.java.core.DBProvider;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -76,5 +77,10 @@ public class cmdLyrics extends PrivilegedCommand {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.FUN;
     }
 }

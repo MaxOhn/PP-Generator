@@ -2,6 +2,7 @@ package main.java.commands.Utility;
 
 import main.java.commands.Command;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.concurrent.ThreadLocalRandom;
@@ -52,5 +53,10 @@ public class cmdRoll implements Command {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.UTILITY;
     }
 }

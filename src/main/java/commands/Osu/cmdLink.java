@@ -3,6 +3,7 @@ package main.java.commands.Osu;
 import main.java.commands.Command;
 import main.java.core.Main;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdLink implements Command {
@@ -40,5 +41,10 @@ public class cmdLink implements Command {
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.OSU;
     }
 }

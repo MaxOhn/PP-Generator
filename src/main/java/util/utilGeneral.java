@@ -56,6 +56,20 @@ public class utilGeneral {
         return false;
     }
 
+    public enum Category {
+        FUN("Fun"),
+        OSU("osu!"),
+        TWITCH("Twitch"),
+        UTILITY("Utility");
+        String name;
+        Category(String name) {
+            this.name = name;
+        }
+        public String getName() {
+            return name;
+        }
+    }
+
     public static boolean isDev(User author) {
         return author.getId().equals(secrets.badewanne3ID);
     }
