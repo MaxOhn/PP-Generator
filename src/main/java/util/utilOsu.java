@@ -113,7 +113,7 @@ public class utilOsu {
         return amountTries;
     }
 
-    static rankEmote getRankEmote(String rank) {
+    public static rankEmote getRankEmote(String rank) {
         switch (rank) {
             case "XH":
                 return rankEmote.XH;

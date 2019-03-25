@@ -34,14 +34,15 @@ public class Performance {
     private int score;
     private int completion;
 
+    private double baseStarRating;
     private double starRating;
     private double pp;
     private double ppMax;
     private double acc;
-    private double od;
-    private double ar;
-    private double cs;
-    private double hp;
+    //private double od;
+    //private double ar;
+    //private double cs;
+    //private double hp;
 
     private String rank;
 
@@ -62,12 +63,11 @@ public class Performance {
         this.mapID =  map.getBeatmapId();
         this.maxCombo = map.getMaxCombo();
 
-        if (this.mods == null || !new HashSet<>(this.mods).removeAll(ratingModifier))
-            this.starRating = (double)map.getDifficultyRating();
-        this.od =  map.getDifficultyOverall();
-        this.ar = map.getDifficultyApproach();
-        this.cs = map.getDifficultySize();
-        this.hp = map.getDifficultyDrain();
+        this.baseStarRating = (double)map.getDifficultyRating();
+        //this.od =  map.getDifficultyOverall();
+        //this.ar = map.getDifficultyApproach();
+        //this.cs = map.getDifficultySize();
+        //this.hp = map.getDifficultyDrain();
 
         this.mode = map.getMode();
 
@@ -91,8 +91,6 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
-        if (new HashSet<>(this.mods).removeAll(ratingModifier))
-            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -116,8 +114,6 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
-        if (new HashSet<>(this.mods).removeAll(ratingModifier))
-            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -140,8 +136,6 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
-        if (new HashSet<>(this.mods).removeAll(ratingModifier))
-            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -223,8 +217,8 @@ public class Performance {
                     case "Meh":
                     case "Misses":
                     case "Miss": this.nObjects += Integer.parseInt(splitLine[splitLine.length-1]); break;
-                    case "OD": this.od = Double.parseDouble(splitLine[splitLine.length-1]); break;
-                    case "AR": this.od = Double.parseDouble(splitLine[splitLine.length-1]); break;
+                    //case "OD": this.od = Double.parseDouble(splitLine[splitLine.length-1]); break;
+                    //case "AR": this.od = Double.parseDouble(splitLine[splitLine.length-1]); break;
                     case "pp": this.ppMax = Double.parseDouble(splitLine[splitLine.length-1]); break;
                     default: break;
                 }
@@ -352,7 +346,7 @@ public class Performance {
         HashSet<Mod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(ratingModifier);
         if (modsImportant.isEmpty())
-            return starRating;
+            return baseStarRating;
         if (modsImportant.contains(Mod.NIGHTCORE)) {
             modsImportant.remove(Mod.NIGHTCORE);
             modsImportant.add(Mod.DOUBLE_TIME);
