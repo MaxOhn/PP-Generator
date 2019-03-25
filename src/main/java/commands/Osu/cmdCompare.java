@@ -16,6 +16,7 @@ import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
 public class cmdCompare implements Command {
+
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         return true;
@@ -50,9 +51,9 @@ public class cmdCompare implements Command {
             if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                 MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                 List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?\\/){3} ?\\d+ ?\\}.*")
+                if (fields.get(0).getValue().matches(getRegex())
                         || (fields.size() >= 5 &&
-                        fields.get(5).getValue().matches(".*\\{( ?\\d+ ?\\/){3} ?\\d+ ?\\}.*"))) {
+                        fields.get(5).getValue().matches(getRegex()))) {
                     mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
                     if (withMods) {
                         if (fields.size() >= 5 && fields.get(0).getValue().contains("+")) {
@@ -65,13 +66,13 @@ public class cmdCompare implements Command {
                 }
             }
             if (--counter == 0) {
-                event.getTextChannel().sendMessage("Could not find last `" + statics.prefix + "recent`, must " +
+                event.getTextChannel().sendMessage("Could not find last `" + statics.prefix + getRecentName() + "`, must " +
                         "be too old").queue();
                 return;
             }
         }
 
-        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).username(name).query();
+        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).mode(getMode()).username(name).query();
         if (scores.size() == 0) {
             event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
                     mapID + "`").queue();
@@ -90,30 +91,46 @@ public class cmdCompare implements Command {
         }
         User user;
         try {
-            user = Main.osu.getUserByUsername(name).query().iterator().next();
+            user = Main.osu.getUserByUsername(name).mode(getMode()).query().iterator().next();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
             return;
         }
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).query().iterator().next();
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
+        Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).mode(getMode()).query().iterator().next();
+        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(getMode()).limit(50).query();
+        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(getMode()).query();
         new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).beatmapscore(score)
-                .topplays(topPlays, globalPlays).buildAndSend();
+                .mode(getMode()).topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "compare -h` for more help)";
+        String help = " (`" + statics.prefix + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare [-m]` to make me show your best play on the map of "
-                + "the last `" + statics.prefix + "recent`. Enter `" + statics.prefix + "compare <osu name>` to" +
+                return "Enter `" + statics.prefix + getName() + " [-m]` to make me show your best play on the map of "
+                + "the last `" + statics.prefix + getRecentName() + "`. Enter `" + statics.prefix + getName() + " <osu name>` to" +
                         " compare with someone else. If `-m` is added, I will also take the mod into account.";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
                 return help(0);
         }
+    }
+
+    GameMode getMode() {
+        return GameMode.STANDARD;
+    }
+
+    String  getRegex() {
+        return ".*\\{( ?\\d+ ?\\/){3} ?\\d+ ?\\}.*";
+    }
+
+    String getName() {
+        return "compare";
+    }
+
+    String getRecentName() {
+        return "recent";
     }
 }

@@ -36,31 +36,39 @@ public class cmdRecent implements Command {
         UserGame recent;
         User user;
         try {
-            user = Main.osu.getUserByUsername(name).query().iterator().next();
-            userRecents = Main.osu.getUserRecentByUsername(name).limit(50).query();
+            user = Main.osu.getUserByUsername(name).mode(getMode()).query().iterator().next();
+            userRecents = Main.osu.getUserRecentByUsername(name).mode(getMode()).limit(50).query();
             recent = userRecents.iterator().next();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
         }
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).limit(1).query().iterator().next();
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).limit(50).query();
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
+        Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(getMode()).limit(1).query().iterator().next();
+        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(getMode()).limit(50).query();
+        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(getMode()).query();
         new BotMessage(event, BotMessage.MessageType.RECENT).user(user).map(map).usergame(recent).history(userRecents)
-                .topplays(topPlays, globalPlays).buildAndSend();
+                .mode(getMode()).topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "recent -h` for more help)";
+        String help = " (`" + statics.prefix + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-              return "Enter `" + statics.prefix + "recent [osu name]` to make me respond with info about the players last play."
+              return "Enter `" + statics.prefix + getName() + " [osu name]` to make me respond with info about the players last play."
                       + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:
                 return help(0);
         }
+    }
+
+    GameMode getMode() {
+        return GameMode.STANDARD;
+    }
+
+    String getName() {
+        return "recent";
     }
 }
