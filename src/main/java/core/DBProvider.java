@@ -33,7 +33,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1)");
+        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1, -1, -1)");
     }
 
     public static void  addMods(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {

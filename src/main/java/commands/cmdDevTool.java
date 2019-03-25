@@ -66,6 +66,7 @@ public class cmdDevTool implements Command {
             case "online":
                 event.getTextChannel().sendMessage("Currently online streamers: `" + Main.twitch.getIsOnline().toString() + "`").queue();
                 break;
+            case "getlink":
             case "discosu":
             case "discordosu":
             case "discordosulink":
