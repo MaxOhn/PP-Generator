@@ -1,7 +1,12 @@
 package main.java.core;
 
 import de.maxikg.osuapi.client.DefaultOsuClient;
-import main.java.commands.*;
+import main.java.commands.Fun.*;
+import main.java.commands.Osu.*;
+import main.java.commands.Twitch.cmdAddStream;
+import main.java.commands.Twitch.cmdRemoveStream;
+import main.java.commands.Twitch.cmdTrackedStreams;
+import main.java.commands.Utility.*;
 import main.java.listeners.*;
 import main.java.util.secrets;
 import net.dv8tion.jda.core.AccountType;

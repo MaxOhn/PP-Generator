@@ -30,7 +30,7 @@ public abstract class PrivilegedCommand implements Command {
         return customCalled(args, event);
     }
 
-    boolean customCalled(String[] args, MessageReceivedEvent event) {
+    public boolean customCalled(String[] args, MessageReceivedEvent event) {
         return true;
     }
 }
