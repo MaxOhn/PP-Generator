@@ -29,7 +29,8 @@ public class FileInteractor {
             logger.info("Downloaded thumbnail of mapset " + mapID + " successfully");
             return true;
         } catch (IOException e) {
-            logger.error("Something went wrong while downloading the thumbnail of a mapset: " + e);
+            logger.error("Something went wrong while downloading the thumbnail of a mapset: ");
+            e.printStackTrace();
             return false;
         }
     }
@@ -48,7 +49,8 @@ public class FileInteractor {
             bReader.close();
             logger.info("Downloaded map " + mapID + " successfully");
         } catch (IOException e) {
-            logger.error("Something went wrong while downloading a map: " + e);
+            logger.error("Something went wrong while downloading a map: ");
+            e.printStackTrace();
             deleteFile(file_name);
             return false;
         }
@@ -72,7 +74,8 @@ public class FileInteractor {
             String[] splitted = line.split(",");
             return Integer.parseInt(splitted[2]);
         } catch (IOException e) {
-            logger.error("Something went wrong while calculating the offset of a note: " + e);
+            logger.error("Something went wrong while calculating the offset of a note: ");
+            e.printStackTrace();
             return 0;
         }
     }
@@ -89,7 +92,8 @@ public class FileInteractor {
             }
             return nobjects;
         } catch (IOException e) {
-            logger.error("Something went wrong while counting the objects of a map: " + e);
+            logger.error("Something went wrong while counting the objects of a map: ");
+            e.printStackTrace();
             return 0;
         }
     }
@@ -117,7 +121,8 @@ public class FileInteractor {
             writer.close();
             reader.close();
         } catch (IOException e) {
-            logger.error("Something went wrong while creating a sub-map: " + e);
+            logger.error("Something went wrong while creating a sub-map: ");
+            e.printStackTrace();
         }
     }
 

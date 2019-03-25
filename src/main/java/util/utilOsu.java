@@ -90,11 +90,6 @@ public class utilOsu {
         return mods_str(createSum(mods));
     }
 
-    public static boolean beatmapScoreIsUserGame(BeatmapScore s, UserGame g) {
-        return s.getDate() == g.getDate() && s.getScore() == g.getScore() && s.getEnabledMods() == g.getEnabledMods()
-                && s.getCountGeki() == g.getCountGeki() && s.getUserId() == g.getUserId();
-    }
-
     public static int countRetries(String name, UserGame recent, Collection<UserGame> userRecents) {
         int amountTries = 0;
         for (UserGame game : userRecents) {
@@ -161,15 +156,6 @@ public class utilOsu {
         public String getValue() {
             return value;
         }
-    }
-
-    public static int passedObjects(UserGame g, int mode) {
-        if (mode == 0)
-            return g.getCount300() + g.getCount100() + g.getCount50() + g.getCountMiss();
-        else if (mode == 1)
-            return g.getCount300() + g.getCount100() + g.getCountMiss();
-        else // (mode == 3)
-            return g.getCountGeki() + g.getCount300() + g.getCountKatu() + g.getCount100() + g.getCount50() + g.getCountMiss();
     }
 
     public static int indexInTopPlays(UserGame score, Collection<UserScore> topPlays) {

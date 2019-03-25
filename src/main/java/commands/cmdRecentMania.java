@@ -41,20 +41,7 @@ public class cmdRecentMania implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(GameMode.OSU_MANIA).limit(1).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(GameMode.OSU_MANIA).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(GameMode.OSU_MANIA).query();
-        if (!recent.getRank().equals("F")) {
-            Collection<BeatmapScore> scores = Main.osu.getScores(map.getBeatmapId()).username(name).mode(GameMode.OSU_MANIA).query();
-            boolean foundScore = false;
-            for (BeatmapScore s: scores) {
-                if (utilOsu.beatmapScoreIsUserGame(s, recent)) {
-                    scoreEmbed.embedScoreRecentMania(event, user, map, recent, userRecents, topPlays, globalPlays, s);
-                    foundScore = true;
-                    break;
-                }
-            }
-            if (!foundScore)
-                scoreEmbed.embedScoreRecentMania(event, user, map, recent, userRecents, topPlays, globalPlays);
-        } else
-            scoreEmbed.embedScoreRecentMania(event, user, map, recent, userRecents, topPlays, globalPlays);
+        scoreEmbed.embedScoreRecentMania(event, user, map, recent, userRecents, topPlays, globalPlays);
     }
 
     @Override

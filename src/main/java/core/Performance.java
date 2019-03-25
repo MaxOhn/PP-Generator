@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_str;
@@ -28,6 +30,7 @@ public class Performance {
     private int nGeki;
     private int nKatu;
     private int combo;
+    private int maxCombo;
     private int score;
     private int completion;
 
@@ -49,14 +52,18 @@ public class Performance {
     private Logger logger = Logger.getLogger(this.getClass());
 
     private static final Set<Mod> ratingModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
-            Mod.NO_FAIL, Mod.DOUBLE_TIME, Mod.HARD_ROCK));
+            Mod.DOUBLE_TIME, Mod.HARD_ROCK));
+
+    private static final DecimalFormat df = new DecimalFormat("0.00");
 
     public Performance() {}
 
     public Performance map(Beatmap map) {
         this.mapID =  map.getBeatmapId();
+        this.maxCombo = map.getMaxCombo();
 
-        this.starRating = (double)map.getDifficultyRating();
+        if (this.mods == null || !new HashSet<>(this.mods).removeAll(ratingModifier))
+            this.starRating = (double)map.getDifficultyRating();
         this.od =  map.getDifficultyOverall();
         this.ar = map.getDifficultyApproach();
         this.cs = map.getDifficultySize();
@@ -68,6 +75,7 @@ public class Performance {
     }
 
     public Performance userscore(UserScore score) {
+        this.mapID = score.getBeatmapId();
         this.userID = score.getUserId();
         this.n300 = score.getCount300();
         this.n100 = score.getCount100();
@@ -83,6 +91,8 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
+        if (new HashSet<>(this.mods).removeAll(ratingModifier))
+            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -90,6 +100,7 @@ public class Performance {
     }
 
     public Performance usergame(UserGame score) {
+        this.mapID = score.getBeatmapId();
         this.userID = score.getUserId();
         this.n300 = score.getCount300();
         this.n100 = score.getCount100();
@@ -105,6 +116,8 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
+        if (new HashSet<>(this.mods).removeAll(ratingModifier))
+            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -127,6 +140,8 @@ public class Performance {
         this.acc = 0;
 
         this.mods = score.getEnabledMods();
+        if (new HashSet<>(this.mods).removeAll(ratingModifier))
+            this.starRating = 0;
 
         this.rank = score.getRank();
 
@@ -148,15 +163,17 @@ public class Performance {
         }
     }
 
-    public int getnObjects() {
-        return nObjects;
+    public int getNObjects() {
+        return nObjects == 0
+                ? (nObjects = Main.fileInteractor.countTotalObjects(mapID))
+                : nObjects;
     }
 
     public String getRank() {
         return rank;
     }
 
-    public double getAcc() {
+    public double getAccDouble() {
         if (acc != 0) return acc;
         double numerator = (double)n50 * 50.0D + (double)n100 * 100.0D + (double)n300 * 300.0D;
         if (mode == GameMode.OSU_MANIA)
@@ -165,25 +182,26 @@ public class Performance {
             numerator = 0.5 * n100 + n300;
         double denominator;
         if (mode == GameMode.STANDARD)
-            denominator = (double)(nObjects) * 300.0D;
+            denominator = (double)(getNPassedObjects()) * 300.0D;
         else // taiko, mania
-            denominator = nObjects;
+            denominator = getNPassedObjects();
         double res = numerator / denominator;
         return (acc = 100*Math.max(0.0D, Math.min(res, 1.0D)));
     }
 
-    public String getAccString() {
-        return new DecimalFormat("0.00").format(getAcc());
+    public String getAcc() {
+        return df.format(getAccDouble());
     }
 
-    public double getPpMax() {
+    public double getPpMaxDouble() {
         if (ppMax != 0) return ppMax;
         try {
             String modeStr;
             switch (mode) {
+                case STANDARD: modeStr = "osu"; break;
                 case TAIKO: modeStr = "taiko"; break;
                 case OSU_MANIA: modeStr = "mania"; break;
-                default: modeStr = "osu"; break;
+                default: modeStr = ""; break;
             }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
             StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr +
@@ -223,7 +241,11 @@ public class Performance {
         return this.ppMax;
     }
 
-    public double getPp() {
+    public String getPpMax() {
+        return df.format(getPpMaxDouble());
+    }
+
+    public double getPpDouble() {
         if (pp != 0) return pp;
         boolean failedPlay = rank.equals("F");
         if (failedPlay && mode.getValue() > 0) return pp; // Don't calculate failed scores of non-standard plays
@@ -244,7 +266,7 @@ public class Performance {
             StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr + " "
                     + secrets.mapPath + mapID + ".osu");
             if (mode.getValue() < 3) {
-                cmdLineString.append(" -a ").append(getAcc())
+                cmdLineString.append(" -a ").append(getAccDouble())
                         .append(" -c ").append(combo)
                         .append(" -X ").append(nMisses)
                         .append(mode == GameMode.STANDARD ? " -M " + n50 : "").append(" -G ").append(n100);
@@ -279,6 +301,10 @@ public class Performance {
         return pp;
     }
 
+    public String getPp() {
+        return df.format(getPpDouble());
+    }
+
     public int getN300() {
         return n300;
     }
@@ -307,6 +333,10 @@ public class Performance {
         return combo;
     }
 
+    public int getMaxCombo() {
+        return maxCombo;
+    }
+
     public int getScore() {
         return score;
     }
@@ -314,10 +344,10 @@ public class Performance {
     public int getCompletion() {
         if (completion != 0) return completion;
         int hits = getNPassedObjects();
-        return (completion = (int)((double)hits*100/(double)nObjects));
+        return (completion = (int)((double)hits*100/(double)getNObjects()));
     }
 
-    public double getStarRating() {
+    public double getStarRatingDouble() {
         if (starRating != 0) return starRating;
         HashSet<Mod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(ratingModifier);
@@ -351,6 +381,10 @@ public class Performance {
             e.printStackTrace();
         }
         return starRating;
+    }
+
+    public String getStarRating() {
+        return df.format(getStarRatingDouble());
     }
 
     private void calculateStarRating(Set<Mod> m) {

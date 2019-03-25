@@ -80,6 +80,10 @@ public class Main {
         commandHandler.commands.put("b", new cmdBest());
         commandHandler.commands.put("top", new cmdBest());
         commandHandler.commands.put("scores", new cmdScores());
+        commandHandler.commands.put("topscores", new cmdTopScores());
+        commandHandler.commands.put("bestscores", new cmdTopScores());
+        commandHandler.commands.put("osutop", new cmdTopScores());
+        commandHandler.commands.put("top5", new cmdTopScores());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

@@ -1,5 +1,6 @@
 package main.java.commands;
 
+import de.maxikg.osuapi.model.Beatmap;
 import de.maxikg.osuapi.model.GameMode;
 import de.maxikg.osuapi.model.User;
 import de.maxikg.osuapi.model.UserScore;
@@ -71,7 +72,16 @@ public class cmdTopScores implements Command {
             return;
         }
         Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(5).query();
-        scoreEmbed.embedTopScores(event, user, scores, mode);
+        ArrayList<Beatmap> maps = new ArrayList<>();
+        for (UserScore score : scores) {
+            maps.add(Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next());
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        scoreEmbed.embedTopScores(event, user, scores, maps, mode);
     }
 
     @Override
@@ -79,7 +89,7 @@ public class cmdTopScores implements Command {
         String help = " (`" + statics.prefix + "topscores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topscores [osu name]` to make me list the user's top scores."
+                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 scores."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

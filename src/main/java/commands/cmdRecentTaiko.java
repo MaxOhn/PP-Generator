@@ -4,7 +4,6 @@ import de.maxikg.osuapi.model.*;
 import main.java.core.Main;
 import main.java.util.scoreEmbed;
 import main.java.util.statics;
-import main.java.util.utilOsu;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.Collection;
@@ -43,20 +42,7 @@ public class cmdRecentTaiko implements Command {
         Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(GameMode.TAIKO).limit(1).query().iterator().next();
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(GameMode.TAIKO).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(GameMode.TAIKO).query();
-        if (!recent.getRank().equals("F")) {
-            Collection<BeatmapScore> scores = Main.osu.getScores(map.getBeatmapId()).username(name).mode(GameMode.TAIKO).query();
-            boolean foundScore = false;
-            for (BeatmapScore s : scores) {
-                if (utilOsu.beatmapScoreIsUserGame(s, recent)) {
-                    scoreEmbed.embedScoreRecentTaiko(event, user, map, recent, userRecents, topPlays, globalPlays, s);
-                    foundScore = true;
-                    break;
-                }
-            }
-            if (!foundScore)
-                scoreEmbed.embedScoreRecentTaiko(event, user, map, recent, userRecents, topPlays, globalPlays);
-        } else
-            scoreEmbed.embedScoreRecentTaiko(event, user, map, recent, userRecents, topPlays, globalPlays);
+        scoreEmbed.embedScoreRecentTaiko(event, user, map, recent, userRecents, topPlays, globalPlays);
     }
 
     @Override

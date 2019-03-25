@@ -28,9 +28,11 @@ public class commandHandler {
             boolean safe = commands.get(invoke).called(cmd.args, cmd.event);
             Logger logger = Logger.getLogger(commands.get(invoke).getClass());
             try {
-                // If so, perform the action
-                if (safe)
-                    commands.get(invoke).action(cmd.args, cmd.event);
+                // If so, perform the action in new thread
+                if (safe) {
+                    final Thread t = new Thread(() -> commands.get(invoke).action(cmd.args, cmd.event));
+                    t.start();
+                }
                 // Log the occurrence of the invoke
                 logger.info(String.format("[%s] %s: %s", cmd.event.getGuild().getName() + ":" + cmd.event.getTextChannel().getName(),
                         cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
