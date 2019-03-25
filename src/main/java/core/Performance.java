@@ -86,6 +86,7 @@ public class Performance {
         this.score = score.getScore();
         this.combo = score.getMaxCombo();
         this.nObjects = 0;
+        this.nPassedObjects = 0;
 
         this.pp = (double)score.getPp();
         this.acc = 0;
@@ -110,6 +111,7 @@ public class Performance {
         this.score = score.getScore();
         this.combo = score.getMaxCombo();
         this.nObjects = 0;
+        this.nPassedObjects = 0;
 
         this.pp = 0;
         this.acc = 0;
@@ -133,6 +135,7 @@ public class Performance {
         this.score = score.getScore();
         this.combo = score.getMaxCombo();
         this.nObjects = 0;
+        this.nPassedObjects = 0;
 
         this.pp = (double)score.getPp();
         this.acc = 0;
