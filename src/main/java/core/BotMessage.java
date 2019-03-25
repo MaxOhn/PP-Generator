@@ -157,7 +157,7 @@ public class BotMessage {
                     beatmapscore(s);
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
                             NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
-                    String fieldValue = "**" + df.format(s.getPp()) + "**/" + p.getPpMax() + "PP\t[ "
+                    String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ "
                             + s.getMaxCombo() + "x/" + p.getMaxCombo() + "x ]\t {";
                     switch (mode) {
                         case STANDARD: fieldValue += s.getCount300() + "/" + s.getCount100() + "/" + s.getCount50(); break;

@@ -28,12 +28,13 @@ public class cmdScores implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Pattern p = Pattern.compile("(https:\\/\\/osu\\.ppy\\.sh\\/b\\/)([0-9]{1,8})(.*)");
+        Pattern p = Pattern.compile("((https:\\/\\/osu\\.ppy\\.sh\\/b\\/)([0-9]{1,8})(.*))|((https:\\/\\/osu\\.ppy\\.sh\\/beatmapsets\\/446774\\#osu\\/)([0-9]{1,8})(.*))");
         String mapID = "-1";
         try {
             Matcher m = p.matcher(args[0]);
             if (m.find())
-                mapID = m.group(2);
+                mapID = m.group(3);
+                if (mapID == null) mapID = m.group(7);
         } catch (Exception e) {
             event.getTextChannel().sendMessage(help(2)).queue();
             return;
