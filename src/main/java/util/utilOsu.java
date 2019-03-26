@@ -1,9 +1,12 @@
 package main.java.util;
 
-import de.maxikg.osuapi.model.*;
-import main.java.core.Main;
+import de.maxikg.osuapi.model.BeatmapScore;
+import de.maxikg.osuapi.model.Mod;
+import de.maxikg.osuapi.model.UserGame;
+import de.maxikg.osuapi.model.UserScore;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Set;
 
 import static de.maxikg.osuapi.model.Mod.createSum;
 
@@ -88,29 +91,6 @@ public class utilOsu {
 
     public static String abbrvModSet(Set<Mod> mods) {
         return mods_str(createSum(mods));
-    }
-
-    public static int countRetries(String name, UserGame recent, Collection<UserGame> userRecents) {
-        int amountTries = 0;
-        for (UserGame game : userRecents) {
-            if (game.getBeatmapId() == recent.getBeatmapId())
-                if (game.getScore() > 10000)
-                    amountTries++;
-                else
-                    break;
-        }
-        if (amountTries == 20) {
-            amountTries = 0;
-            userRecents = Main.osu.getUserRecentByUsername(name).limit(50).query();
-            for (UserGame game : userRecents) {
-                if (game.getBeatmapId() == recent.getBeatmapId())
-                    if (game.getScore() > 10000)
-                        amountTries++;
-                    else
-                        break;
-            }
-        }
-        return amountTries;
     }
 
     public static rankEmote getRankEmote(String rank) {

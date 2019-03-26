@@ -390,10 +390,6 @@ public class Performance {
         modsImportant.retainAll(starModifier);
         if (modsImportant.isEmpty())
             return baseStarRating;
-        if (modsImportant.contains(Mod.NIGHTCORE)) {
-            modsImportant.remove(Mod.NIGHTCORE);
-            modsImportant.add(Mod.DOUBLE_TIME);
-        }
         try {
             this.starRating = DBProvider.getStarRating(mapID, abbrvModSet(modsImportant));
         } catch (IllegalAccessException e) {    // star rating not yet calculated

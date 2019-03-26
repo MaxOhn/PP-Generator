@@ -31,13 +31,20 @@ public class cmdCompare implements Command {
             return;
         }
 
-        boolean withMods = args.length > 0 && String.join(" ", args).matches("(.* )?-m(od(s)?)?( .*)?");
-        Set<Mod> mods = null;
         List<String> argList = new LinkedList<>(Arrays.asList(args));
-        if (withMods) {
-            argList.remove("-m");
-            argList.remove("-mod");
-            argList.remove("-mods");
+        Set<Mod> mods = new HashSet<>();
+        int mIdx = argList.indexOf("-m");
+        if (mIdx == -1) mIdx = argList.indexOf("-mod");
+        if (mIdx == -1) mIdx = argList.indexOf("-mods");
+        if (mIdx != -1) {
+            argList.remove(mIdx);
+            if (argList.size() > mIdx) {
+                mods = parseFlagSum(mods_flag(argList.get(mIdx).toUpperCase()));
+                argList.remove(mIdx);
+            } else {
+                event.getTextChannel().sendMessage(help(2)).queue();
+                return;
+            }
         }
 
         String name = argList.size() > 0 ? String.join(" ", argList) : Main.discLink.getOsu(event.getAuthor().getId());
@@ -56,13 +63,6 @@ public class cmdCompare implements Command {
                         || (fields.size() >= 5 &&
                         fields.get(5).getValue().matches(getRegex()))) {
                     mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
-                    if (withMods) {
-                        if (fields.size() >= 5 && fields.get(0).getValue().contains("+")) {
-                            mods = parseFlagSum(mods_flag(fields.get(0).getValue().split("\\+")[1]));
-                        } else if (fields.get(0).getName().contains("+")) {
-                            mods = parseFlagSum(mods_flag(fields.get(0).getName().split("\\+")[1].split(" ")[0]));
-                        }
-                    }
                     break;
                 }
             }
@@ -81,14 +81,12 @@ public class cmdCompare implements Command {
         }
 
         BeatmapScore score = scores.iterator().next();
-        if (withMods) {
-            Iterator<BeatmapScore> it = scores.iterator();
-            while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods));
-            if (!score.getEnabledMods().equals(mods)) {
-                event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                        mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
-                score = scores.iterator().next();
-            }
+        Iterator<BeatmapScore> it = scores.iterator();
+        while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods));
+        if (!score.getEnabledMods().equals(mods)) {
+            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
+                    mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
+            score = scores.iterator().next();
         }
         User user;
         try {
@@ -109,11 +107,12 @@ public class cmdCompare implements Command {
         String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare" + getName() + " [-m]` to make me show your best play on the map of "
-                + "the last `" + statics.prefix + "recent" + getName() + "`. Enter `" + statics.prefix + "compare" + getName() + " <osu name>` to" +
-                        " compare with someone else. If `-m` is added, I will also take the mod into account.";
+                return "Enter `" + statics.prefix + "compare" + getName() + "[osu name] [-m <nm/hd/nfeznc/...>]` to make me show your best play on the map of "
+                + "the last `" + statics.prefix + "recent" + getName() + "`.\n If `-m` is added with a given mod combination, I will only take these mods into account.";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
+            case 2:
+                return "Specify a mod combination after `-m` such as `nm`, `hdhr`, ..." + help;
             default:
                 return help(0);
         }

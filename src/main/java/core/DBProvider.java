@@ -10,6 +10,10 @@ import java.util.List;
 
 public class DBProvider {
 
+    private static String prepareMods(String mods) {
+        return mods.equals("") ? "NM" : mods.replace("NC", "DT");
+    }
+
     /*
      * ------------------------
      *      pp ratings
@@ -19,7 +23,7 @@ public class DBProvider {
     public static double getPpRating(int mapID, String mods)
             throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
         try {
-            if (mods.equals("")) mods = "NM";
+            mods = prepareMods(mods);
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
             Statement stmnt = c.createStatement();
@@ -46,7 +50,7 @@ public class DBProvider {
     }
 
     public static void  addModsPp(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
-        if (mods.equals("")) mods = "NM";
+        mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
@@ -62,6 +66,7 @@ public class DBProvider {
     public static double getStarRating(int mapID, String mods)
             throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
         try {
+            mods = prepareMods(mods);
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
             Statement stmnt = c.createStatement();
@@ -88,6 +93,7 @@ public class DBProvider {
     }
 
     public static void addModsStars(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
+        mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
