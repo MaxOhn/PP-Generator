@@ -12,31 +12,82 @@ public class DBProvider {
 
     /*
      * ------------------------
+     *      pp ratings
+     * ------------------------
+     */
+
+    public static double getPpRating(int mapID, String mods)
+            throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
+        try {
+            if (mods.equals("")) mods = "NM";
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+            Statement stmnt = c.createStatement();
+            ResultSet rs = stmnt.executeQuery("select " + mods + " from ppRatings where mapID='" + mapID + "'");
+            rs.next();
+            double response = rs.getDouble(mods);
+            if (response > -1)
+                return response;
+            else
+                throw new IllegalAccessException("Mods '" + mods + "' not yet calculated for mapID " + mapID);
+        } catch (SQLException e) {
+            switch (e.getErrorCode()) {
+                case 1054: throw new IllegalArgumentException("Mods '" + mods + "' not available");
+                default: throw e;
+            }
+        }
+    }
+
+    public static void addMapPp(int mapID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into ppRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1)");
+    }
+
+    public static void  addModsPp(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
+        if (mods.equals("")) mods = "NM";
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("update ppRatings set " + mods + "=" + rating + " where mapID='" + mapID + "'");
+    }
+
+    /*
+     * ------------------------
      *      star ratings
      * ------------------------
      */
 
-    public static double getStarRating(int mapID, String mods) throws ClassNotFoundException, SQLException, IllegalAccessException {
+    public static double getStarRating(int mapID, String mods)
+            throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+            Statement stmnt = c.createStatement();
+            ResultSet rs = stmnt.executeQuery("select " + mods + " from starRatings where mapID='" + mapID + "'");
+            rs.next();
+            double response = rs.getDouble(mods);
+            if (response > -1)
+                return response;
+            else
+                throw new IllegalAccessException("Mods '" + mods + "' not yet calculated for mapID " + mapID);
+        } catch (SQLException e) {
+            switch (e.getErrorCode()) {
+                case 1054: throw new IllegalArgumentException("Mods '" + mods + "' not available");
+                default: throw e;
+            }
+        }
+    }
+
+    public static void addMapStars(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select " + mods + " from starRatings where mapID='" + mapID + "'");
-        rs.next();
-        double response = rs.getDouble(mods);
-        if (response > -1)
-            return response;
-        else
-            throw new IllegalAccessException("Mods '" + mods + "' not yet calculated for mapID " + mapID);
+        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1)");
     }
 
-    public static void addMap(int mapID) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1, -1, -1)");
-    }
-
-    public static void  addMods(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
+    public static void addModsStars(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();

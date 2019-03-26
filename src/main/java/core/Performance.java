@@ -9,9 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_str;
@@ -52,8 +50,10 @@ public class Performance {
 
     private Logger logger = Logger.getLogger(this.getClass());
 
-    private static final Set<Mod> ratingModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
+    private static final Set<Mod> starModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
             Mod.DOUBLE_TIME, Mod.HARD_ROCK));
+    private static final Set<Mod> ppModifier = new HashSet<>(Arrays.asList(Mod.NIGHTCORE, Mod.HIDDEN, Mod.DOUBLE_TIME,
+            Mod.HARD_ROCK));
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
 
@@ -63,6 +63,7 @@ public class Performance {
         this.mapID =  map.getBeatmapId();
         this.maxCombo = map.getMaxCombo();
 
+        this.ppMax = 0;
         this.baseStarRating = (double)map.getDifficultyRating();
         //this.od =  map.getDifficultyOverall();
         //this.ar = map.getDifficultyApproach();
@@ -92,6 +93,8 @@ public class Performance {
         this.acc = 0;
         this.starRating = 0;
 
+        if (this.mods != score.getEnabledMods())
+            this.ppMax = 0;
         this.mods = score.getEnabledMods();
 
         this.rank = score.getRank();
@@ -117,6 +120,8 @@ public class Performance {
         this.acc = 0;
         this.starRating = 0;
 
+        if (this.mods != score.getEnabledMods())
+            this.ppMax = 0;
         this.mods = score.getEnabledMods();
 
         this.rank = score.getRank();
@@ -141,6 +146,8 @@ public class Performance {
         this.acc = 0;
         this.starRating = 0;
 
+        if (this.mods != score.getEnabledMods())
+            this.ppMax = 0;
         this.mods = score.getEnabledMods();
 
         this.rank = score.getRank();
@@ -197,6 +204,35 @@ public class Performance {
     public double getPpMaxDouble() {
         if (ppMax != 0) return ppMax;
         try {
+            this.ppMax = DBProvider.getPpRating(mapID, abbrvModSet(mods));
+        } catch (IllegalAccessException e) {    // pp rating not yet calculated
+            calculateMaxPp();
+            try {
+                DBProvider.addModsPp(mapID, abbrvModSet(mods), this.ppMax);
+            } catch (ClassNotFoundException | SQLException e1) {
+                logger.error("Something went wrong while interacting with ppRating database: ");
+                e1.printStackTrace();
+            }
+        } catch (SQLException e) {              // map not in database
+            try {
+                DBProvider.addMapPp(mapID);
+                calculateMaxPp();
+                DBProvider.addModsPp(mapID, abbrvModSet(mods), this.ppMax);
+            } catch (ClassNotFoundException | SQLException e1) {
+                logger.error("Something went wrong while interacting with ppRating database: ");
+                e1.printStackTrace();
+            }
+        } catch (IllegalArgumentException e) {  // mod combination not stored
+            calculateMaxPp();
+        } catch (ClassNotFoundException e) {    // won't happen
+            logger.error("Something went wrong while setting the pp rating: ");
+            e.printStackTrace();
+        }
+        return ppMax;
+    }
+
+    private void calculateMaxPp() {
+        try {
             String modeStr;
             switch (mode) {
                 case STANDARD: modeStr = "osu"; break;
@@ -239,7 +275,6 @@ public class Performance {
             logger.error("Something went wrong while calculating the pp of a map: ");
             e.printStackTrace();
         }
-        return this.ppMax;
     }
 
     public String getPpMax() {
@@ -352,7 +387,7 @@ public class Performance {
     public double getStarRatingDouble() {
         if (starRating != 0) return starRating;
         HashSet<Mod> modsImportant = new HashSet<>(mods);
-        modsImportant.retainAll(ratingModifier);
+        modsImportant.retainAll(starModifier);
         if (modsImportant.isEmpty())
             return baseStarRating;
         if (modsImportant.contains(Mod.NIGHTCORE)) {
@@ -364,20 +399,22 @@ public class Performance {
         } catch (IllegalAccessException e) {    // star rating not yet calculated
             calculateStarRating(modsImportant);
             try {
-                DBProvider.addMods(mapID, abbrvModSet(modsImportant), this.starRating);
+                DBProvider.addModsStars(mapID, abbrvModSet(modsImportant), this.starRating);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();
             }
         } catch (SQLException e) {              // map not in database
             try {
-                DBProvider.addMap(mapID);
+                DBProvider.addMapStars(mapID);
                 calculateStarRating(modsImportant);
-                DBProvider.addMods(mapID, abbrvModSet(modsImportant), this.starRating);
+                DBProvider.addModsStars(mapID, abbrvModSet(modsImportant), this.starRating);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();
             }
+        } catch (IllegalArgumentException e) {  // mod combination not stored
+            calculateStarRating(modsImportant);
         } catch (ClassNotFoundException e) {    // won't happen
             logger.error("Something went wrong while setting the star rating: ");
             e.printStackTrace();
