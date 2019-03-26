@@ -1,11 +1,11 @@
 package main.java.commands.Utility;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-public class cmdPing implements Command {
+public class cmdPing implements ICommand {
 
     public boolean called(String[] args, MessageReceivedEvent event) {
         return true;

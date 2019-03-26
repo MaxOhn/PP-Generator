@@ -3,7 +3,7 @@ package main.java.commands.Osu;
 import de.maxikg.osuapi.model.Beatmap;
 import de.maxikg.osuapi.model.BeatmapScore;
 import de.maxikg.osuapi.model.User;
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class cmdScores implements Command {
+public class cmdScores implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {

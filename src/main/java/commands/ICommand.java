@@ -3,7 +3,7 @@ package main.java.commands;
 import main.java.util.utilGeneral.Category;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-public interface Command {
+public interface ICommand {
 
     // called can check if certain conditions are satisfied to make the bot respond
     boolean called(String[] args, MessageReceivedEvent event);

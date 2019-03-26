@@ -4,7 +4,7 @@ import de.maxikg.osuapi.model.Beatmap;
 import de.maxikg.osuapi.model.GameMode;
 import de.maxikg.osuapi.model.User;
 import de.maxikg.osuapi.model.UserScore;
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-public class cmdTopScores implements Command {
+public class cmdTopScores implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {

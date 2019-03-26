@@ -1,12 +1,12 @@
 package main.java.commands.Twitch;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-public class cmdTrackedStreams implements Command {
+public class cmdTrackedStreams implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         return true;

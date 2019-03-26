@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import static main.java.util.utilGeneral.isAuthority;
 
-public abstract class PrivilegedCommand implements Command {
+public abstract class PrivilegedCommand implements ICommand {
 
     protected Logger logger = Logger.getLogger(this.getClass());
 

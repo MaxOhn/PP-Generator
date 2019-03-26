@@ -1,6 +1,7 @@
 package main.java.core;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
+import main.java.commands.INumberedICommand;
 import main.java.util.utilGeneral;
 import org.apache.log4j.Logger;
 
@@ -11,7 +12,7 @@ import java.util.stream.Collectors;
 public class commandHandler {
 
     // commands contains all invoke words with their corresponding action
-    static HashMap<String, Command> commands = new HashMap<>();
+    static HashMap<String, ICommand> commands = new HashMap<>();
 
     public static Set<String> getCommands() {
         return commands.keySet();
@@ -36,7 +37,12 @@ public class commandHandler {
             try {
                 // If so, perform the action in new thread
                 if (safe) {
-                    final Thread t = new Thread(() -> commands.get(invoke).action(cmd.args, cmd.event));
+                    final Thread t = new Thread(() -> {
+                        if (commands.get(invoke) instanceof INumberedICommand)
+                            ((INumberedICommand) commands.get(invoke)).setNumber(cmd.number).action(cmd.args, cmd.event);
+                        else
+                            commands.get(invoke).action(cmd.args, cmd.event);
+                    });
                     t.start();
                 }
                 // Log the occurrence of the invoke

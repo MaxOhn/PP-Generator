@@ -1,7 +1,7 @@
 package main.java.commands.Osu;
 
 import de.maxikg.osuapi.model.*;
-import main.java.commands.Command;
+import main.java.commands.INumberedICommand;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -10,7 +10,10 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.*;
 
-public class cmdRecentBest implements Command {
+public class cmdRecentBest implements INumberedICommand {
+
+    private int number = 1;
+
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         return true;
@@ -18,26 +21,15 @@ public class cmdRecentBest implements Command {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+
+        if (number > 100) {
+            event.getTextChannel().sendMessage("The number must be between 1 and 100").queue();
+            return;
+        }
+
         GameMode mode = GameMode.STANDARD;
-        int number = 1;
         for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-n") || args[i].equals("-number")) {
-                if (i+1 < args.length) {
-                    try {
-                        number = Integer.parseInt(args[i + 1]);
-                        if (number < 1 || number > 100) {
-                            event.getTextChannel().sendMessage(help(2)).queue();
-                            return;
-                        }
-                    } catch (Exception e) {
-                        event.getTextChannel().sendMessage(help(3)).queue();
-                        return;
-                    }
-                } else {
-                    event.getTextChannel().sendMessage(help(3)).queue();
-                    return;
-                }
-            } else if (args[i].equals("-m") || args[i].equals("-mode")) {
+            if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
                     switch (args[i+1]) {
                         case "s": mode = GameMode.STANDARD; break;
@@ -109,8 +101,6 @@ public class cmdRecentBest implements Command {
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 2:
-                return "The number must be between 1 and 100!" + help;
             case 3:
                 return "Specify a number after '-n'" + help;
             case 4:
@@ -125,5 +115,11 @@ public class cmdRecentBest implements Command {
     @Override
     public utilGeneral.Category getCategory() {
         return utilGeneral.Category.OSU;
+    }
+
+    @Override
+    public cmdRecentBest setNumber(int number) {
+        this.number = number;
+        return this;
     }
 }

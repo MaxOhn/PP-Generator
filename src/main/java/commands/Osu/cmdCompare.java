@@ -1,7 +1,7 @@
 package main.java.commands.Osu;
 
 import de.maxikg.osuapi.model.*;
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -16,7 +16,7 @@ import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdCompare implements Command {
+public class cmdCompare implements ICommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

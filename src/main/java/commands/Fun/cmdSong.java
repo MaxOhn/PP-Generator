@@ -1,6 +1,6 @@
 package main.java.commands.Fun;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
-public abstract class cmdSong implements Command {
+public abstract class cmdSong implements ICommand {
 
     abstract String[] getLyrics();
 

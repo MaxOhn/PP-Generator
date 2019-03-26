@@ -1,6 +1,6 @@
 package main.java.commands.Utility;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.core.Main;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -8,7 +8,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.Arrays;
 import java.util.List;
 
-public class cmdDevTool implements Command {
+public class cmdDevTool implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (utilGeneral.isDev(event.getAuthor())) return true;

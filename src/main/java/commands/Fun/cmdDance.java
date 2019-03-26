@@ -1,12 +1,12 @@
 package main.java.commands.Fun;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-public class cmdDance implements Command {
+public class cmdDance implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length == 0)

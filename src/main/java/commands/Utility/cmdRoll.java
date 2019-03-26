@@ -1,13 +1,13 @@
 package main.java.commands.Utility;
 
-import main.java.commands.Command;
+import main.java.commands.ICommand;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class cmdRoll implements Command {
+public class cmdRoll implements ICommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
