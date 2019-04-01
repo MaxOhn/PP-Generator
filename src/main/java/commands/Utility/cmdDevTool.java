@@ -1,10 +1,12 @@
 package main.java.commands.Utility;
 
 import main.java.commands.ICommand;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,6 +25,47 @@ public class cmdDevTool implements ICommand {
             return;
         }
         switch (args[0]) {
+            case "ppRating":
+            case "ppRatings":
+            case "ppSaved":
+                if (args.length == 1) {
+                    event.getTextChannel().sendMessage("Second argument must be `count` or `avg`").queue();
+                    break;
+                } else if (args[1].equals("count")) {
+                    try {
+                        if (args.length == 2 || args[2].equals("all")) {
+                            StringBuilder msg = new StringBuilder("Amount of saved pp values for all mods:\n");
+                            for (String mod : new String[] { "NM", "HD", "HR", "DT", "HDHR", "HDDT"})
+                                msg.append(mod).append(": ").append(DBProvider.getAmount(mod)).append("\n");
+                            event.getTextChannel().sendMessage(msg.toString()).queue();
+                        } else {
+                            int response = DBProvider.getAmount(args[2]);
+                            event.getTextChannel().sendMessage("Amount of saved pp values for `" + args[2] + "` scores: " + response).queue();
+                        }
+                    } catch (SQLException | ClassNotFoundException e) {
+                        event.getTextChannel().sendMessage("Third argument must be `all` or a valid mod combination").queue();
+                        break;
+                    }
+                } else if (args[1].equals("avg")) {
+                    try {
+                        if (args.length == 2 || args[2].equals("all")) {
+                            StringBuilder msg = new StringBuilder("Averages of saved pp values for all mods:\n");
+                            for (String mod : new String[] { "NM", "HD", "HR", "DT", "HDHR", "HDDT"})
+                                msg.append(mod).append(": ").append(DBProvider.getAverage(mod)).append("\n");
+                            event.getTextChannel().sendMessage(msg.toString()).queue();
+                        } else {
+                            int response = DBProvider.getAverage(args[2]);
+                            event.getTextChannel().sendMessage("Average of saved pp values for `" + args[2] + "` scores: " + response).queue();
+                        }
+                    } catch (SQLException | ClassNotFoundException e) {
+                        event.getTextChannel().sendMessage("Third argument must be `all` or a valid mod combination").queue();
+                        break;
+                    }
+                } else {
+                    event.getTextChannel().sendMessage("Second argument must be `count` or `avg`").queue();
+                    break;
+                }
+                break;
             case "send":
             case "sendmessage":
             case "sendmsg":

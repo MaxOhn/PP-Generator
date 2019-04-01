@@ -42,6 +42,26 @@ public class DBProvider {
         }
     }
 
+    public static int getAmount(String mods) throws ClassNotFoundException, SQLException {
+        mods = prepareMods(mods);
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select count(" + mods + ") as " + mods + " from ppRatings where " + mods + "!=-1");
+        rs.next();
+        return rs.getInt(mods);
+    }
+
+    public static int getAverage(String mods) throws ClassNotFoundException, SQLException {
+        mods = prepareMods(mods);
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select avg(" + mods + ") as " + mods + " from ppRatings where " + mods + "!=-1");
+        rs.next();
+        return rs.getInt(mods);
+    }
+
     public static void addMapPp(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
