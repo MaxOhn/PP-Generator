@@ -81,12 +81,14 @@ public class cmdCompare implements ICommand {
         }
 
         BeatmapScore score = scores.iterator().next();
-        Iterator<BeatmapScore> it = scores.iterator();
-        while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods));
-        if (!score.getEnabledMods().equals(mods)) {
-            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                    mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
-            score = scores.iterator().next();
+        if (mIdx > -1) {
+            Iterator<BeatmapScore> it = scores.iterator();
+            while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods)) ;
+            if (!score.getEnabledMods().equals(mods)) {
+                event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
+                        mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
+                score = scores.iterator().next();
+            }
         }
         User user;
         try {
