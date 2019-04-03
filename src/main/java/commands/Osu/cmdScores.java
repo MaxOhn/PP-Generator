@@ -5,11 +5,13 @@ import de.maxikg.osuapi.model.BeatmapScore;
 import de.maxikg.osuapi.model.User;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -62,7 +64,17 @@ public class cmdScores implements ICommand {
                     mapID + "`").queue();
             return;
         }
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).query().iterator().next();
+        Beatmap map;
+        try {
+            map = DBProvider.getBeatmap(Integer.parseInt(mapID));
+        } catch (SQLException | ClassNotFoundException e) {
+            map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).query().iterator().next();
+            try {
+                DBProvider.addBeatmap(map);
+            } catch (ClassNotFoundException | SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
         new BotMessage(event, BotMessage.MessageType.SCORES).user(user).map(map).beatmapscore(scores).buildAndSend();
     }
 

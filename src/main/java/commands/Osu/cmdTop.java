@@ -3,11 +3,13 @@ package main.java.commands.Osu;
 import de.maxikg.osuapi.model.*;
 import main.java.commands.INumberedICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -87,7 +89,17 @@ public class cmdTop implements INumberedICommand {
         UserScore rbScore = itr.next();
         while(itr.hasNext() && --number > 0)
             rbScore = itr.next();
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(rbScore.getBeatmapId()).limit(1).query().iterator().next();
+        Beatmap map;
+        try {
+            map = DBProvider.getBeatmap(rbScore.getBeatmapId());
+        } catch (SQLException | ClassNotFoundException e) {
+            map = Main.osu.getBeatmaps().beatmapId(rbScore.getBeatmapId()).limit(1).query().iterator().next();
+            try {
+                DBProvider.addBeatmap(map);
+            } catch (ClassNotFoundException | SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
         new BotMessage(event, BotMessage.MessageType.SINGLETOP).user(user).map(map).userscore(rbScore)
                 .mode(mode).topplays(topPlays, globalPlays).buildAndSend();

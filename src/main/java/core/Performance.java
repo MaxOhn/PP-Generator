@@ -100,7 +100,7 @@ public class Performance {
         return this;
     }
 
-    public Performance usergame(UserGame score) {
+    public void usergame(UserGame score) {
         this.mapID = score.getBeatmapId();
         this.userID = score.getUserId();
         this.n300 = score.getCount300();
@@ -123,11 +123,9 @@ public class Performance {
         this.mods = score.getEnabledMods();
 
         this.rank = score.getRank();
-
-        return this;
     }
 
-    public Performance beatmapscore(BeatmapScore score) {
+    public void beatmapscore(BeatmapScore score) {
         this.userID = score.getUserId();
         this.n300 = score.getCount300();
         this.n100 = score.getCount100();
@@ -149,16 +147,13 @@ public class Performance {
         this.mods = score.getEnabledMods();
 
         this.rank = score.getRank();
-
-        return this;
     }
 
-    public Performance mode(GameMode mode) {
+    public void mode(GameMode mode) {
         this.mode = mode;
-        return this;
     }
 
-    public Performance noChoke() {
+    public void noChoke() {
         this.combo = this.maxCombo;
         if (mode == GameMode.OSU_MANIA) this.nGeki += this.nMisses;
         else this.n300 += this.nMisses;
@@ -166,12 +161,19 @@ public class Performance {
         this.acc = 0;
         this.pp = 0;
         if (mode == GameMode.STANDARD) {
-            if (n100 == 0 && n50 == 0)
+            if (n300 == getNObjects())
                 this.rank = mods.contains(Mod.HIDDEN) ? "XH" : "X";
-            else
+            else if ((double)n300/getNObjects() > 0.9 && (double)n50/getNObjects() < 0.01 && nMisses == 0)
                 this.rank = mods.contains(Mod.HIDDEN) ? "SH" : "S";
+            else if (((double)n300/getNObjects() > 0.8 && nMisses == 0) || (double)n300/getNObjects() > 0.9)
+                this.rank = "A";
+            else if (((double)n300/getNObjects() > 0.7 && nMisses == 0) || (double)n300/getNObjects() > 0.8)
+                this.rank = "B";
+            else if ((double)n300/getNObjects() > 0.6)
+                this.rank = "C";
+            else
+                this.rank = "D";
         }
-        return this;
     }
 
     public int getNPassedObjects() {

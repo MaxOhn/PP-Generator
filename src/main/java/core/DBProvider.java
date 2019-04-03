@@ -1,15 +1,93 @@
 package main.java.core;
 
 import de.maxikg.osuapi.model.Beatmap;
+import de.maxikg.osuapi.model.BeatmapState;
+import de.maxikg.osuapi.model.GameMode;
 import main.java.util.secrets;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class DBProvider {
+
+    /*
+     * ------------------------
+     *      beatmap info
+     * ------------------------
+     */
+
+    public static void addBeatmap(Beatmap map) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into beatmapInfo values ('" + map.getBeatmapId() + "','"
+                + map.getBeatmapSetId() + "','"
+                + map.getApproved().getValue() + "','"
+                + map.getVersion().replace("'", "ö") + "','"
+                + map.getTitle().replace("'", "ö") + "','"
+                + map.getArtist().replace("'", "ö") + "',"
+                + map.getMode().getValue() + ","
+                + map.getDifficultyDrain() + ","
+                + map.getDifficultySize() + ","
+                + map.getDifficultyApproach() + ","
+                + map.getDifficultyOverall() + ","
+                + map.getDifficultyRating() + ","
+                + map.getTotalLength() + ","
+                + map.getHitLength() + ","
+                + map.getBpm() + ","
+                + map.getMaxCombo() + ",'"
+                + map.getCreator() + "',"
+                + map.getApprovedDate().getTime() + ","
+                + map.getLastUpdate().getTime() + ",'"
+                + map.getSource().replace("'", "ö") + "')");
+    }
+
+    public static Beatmap getBeatmap(int mapID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from beatmapInfo where mapID='" + mapID + "'");
+        rs.next();
+        Beatmap m = new Beatmap();
+        m.setBeatmapId(rs.getInt("mapID"));
+        m.setBeatmapSetId(rs.getInt("mapSetID"));
+        switch (rs.getInt("approved")) {
+            case 4:
+            case 3: m.setApproved(BeatmapState.QUALIFIED); break;
+            case 2: m.setApproved(BeatmapState.APPROVED); break;
+            case 1: m.setApproved(BeatmapState.RANKED); break;
+            case 0: m.setApproved(BeatmapState.PENDING); break;
+            case -1: m.setApproved(BeatmapState.WORK_IN_PROGRESS); break;
+            default: m.setApproved(BeatmapState.GRAVEYARD); break;
+        }
+        m.setVersion(rs.getString("version").replace("ö", "'"));
+        m.setTitle(rs.getString("title").replace("ö", "'"));
+        m.setArtist(rs.getString("artist").replace("ö", "'"));
+        switch (rs.getInt("mode")) {
+            case 0: m.setMode(GameMode.STANDARD); break;
+            case 1: m.setMode(GameMode.TAIKO); break;
+            case 2: m.setMode(GameMode.CTB); break;
+            default: m.setMode(GameMode.OSU_MANIA); break;
+        }
+        m.setDifficultyDrain(rs.getDouble("hp"));
+        m.setDifficultySize(rs.getDouble("cs"));
+        m.setDifficultyApproach(rs.getDouble("ar"));
+        m.setDifficultyOverall(rs.getDouble("od"));
+        m.setDifficultyRating(rs.getFloat("stars"));
+        m.setTotalLength(rs.getInt("tlength"));
+        m.setHitLength(rs.getInt("hlength"));
+        m.setBpm(rs.getInt("bpm"));
+        m.setMaxCombo(rs.getInt("combo"));
+        m.setCreator(rs.getString("creator"));
+        m.setApprovedDate(new Date(rs.getLong("date")));
+        m.setLastUpdate(new Date(rs.getLong("updated")));
+        m.setSource(rs.getString("source").replace("ö", "'"));
+        return m;
+    }
 
     private static String prepareMods(String mods) {
         return mods.equals("") ? "NM" : mods.replace("NC", "DT");

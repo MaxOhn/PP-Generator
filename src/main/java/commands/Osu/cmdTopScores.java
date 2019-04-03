@@ -6,15 +6,16 @@ import de.maxikg.osuapi.model.User;
 import de.maxikg.osuapi.model.UserScore;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.NoSuchElementException;
 
 public class cmdTopScores implements ICommand {
     @Override
@@ -76,16 +77,22 @@ public class cmdTopScores implements ICommand {
         Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(5).query();
         ArrayList<Beatmap> maps = new ArrayList<>();
         for (UserScore score : scores) {
+            Beatmap map;
             try {
-            maps.add(Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next());
-                Thread.sleep(300);
-            } catch (InterruptedException ignored) {
-            } catch (NoSuchElementException e) {
-                event.getTextChannel().sendMessage("Something went wrong, go ping bade or smth :p").queue();
-                e.printStackTrace();
-                return;
+                map = DBProvider.getBeatmap(score.getBeatmapId());
+            } catch (SQLException | ClassNotFoundException e) {
+                map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next();
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {}
+                try {
+                    DBProvider.addBeatmap(map);
+                } catch (ClassNotFoundException | SQLException e1) {
+                    e1.printStackTrace();
+                }
             }
-
+            Main.fileInteractor.prepareFiles(map);
+            maps.add(map);
         }
         new BotMessage(event, BotMessage.MessageType.TOPSCORES).user(user).userscore(scores).maps(maps).mode(mode)
                 .buildAndSend();

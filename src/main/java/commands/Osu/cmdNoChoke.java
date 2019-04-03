@@ -6,13 +6,16 @@ import de.maxikg.osuapi.model.User;
 import de.maxikg.osuapi.model.UserScore;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.core.Performance;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class cmdNoChoke implements ICommand {
     @Override
@@ -42,31 +45,41 @@ public class cmdNoChoke implements ICommand {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        event.getTextChannel().sendMessage("Gathering data: 0%").queue(message -> {
-            ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(50).query());
+        event.getTextChannel().sendMessage("Gathering data, I'll ping you once I'm done").queue(message -> {
+            ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
             Performance p = new Performance();
             ArrayList<Beatmap> maps = new ArrayList<>();
             for (UserScore score : scoresList) {
-                //System.out.print("\rMap retrieving: " + (int)(100 * (double)scoresList.indexOf(score) / scoresList.size()) + "%");
-                message.editMessage("Gathering data: " + (int)(100 * (double)scoresList.indexOf(score) / scoresList.size()) + "%").queue();
+                Beatmap map;
                 try {
-                    Beatmap map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(GameMode.STANDARD).query().iterator().next();
-                    maps.add(map);
-                    p.map(map).userscore(score).noChoke();
-                    score.setCount300(p.getN300());
-                    score.setCountMiss(p.getNMisses());
-                    score.setMaxCombo(p.getCombo());
-                    score.setPp((float)p.getPpDouble());
-                    score.setRank(p.getRank());
-                    Thread.sleep(600);
-                } catch (InterruptedException ignored) {
-                } catch (NoSuchElementException e) {
-                    event.getTextChannel().sendMessage("Something went wrong, go ping bade or smth :p").queue();
-                    e.printStackTrace();
-                    return;
+                    map = DBProvider.getBeatmap(score.getBeatmapId());
+                } catch (SQLException | ClassNotFoundException e) {
+                    try {
+                        map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(GameMode.STANDARD).query().iterator().next();
+                        try {
+                            Thread.sleep(600);
+                        } catch (InterruptedException ignored) {}
+                        try {
+                            DBProvider.addBeatmap(map);
+                        } catch (ClassNotFoundException | SQLException e2) {
+                            e2.printStackTrace();
+                        }
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                        continue;
+                    }
                 }
+                Main.fileInteractor.prepareFiles(map);
+                maps.add(map);
+                p.map(map).userscore(score).noChoke();
+                if (ThreadLocalRandom.current().nextInt(0, 4) > 2)
+                    message.editMessage("Gathering data: " + (int)(100 * (double)scoresList.indexOf(score) / scoresList.size()) + "%").queue();
+                score.setCount300(p.getN300());
+                score.setCountMiss(p.getNMisses());
+                score.setMaxCombo(p.getCombo());
+                score.setPp((float)p.getPpDouble());
+                score.setRank(p.getRank());
             }
-            //System.out.print("\rMap retrieving done!\n");
             scoresList.sort(Comparator.comparing(UserScore::getPp).reversed());
             Collection<UserScore> scores = scoresList.subList(0, 5);
             ArrayList<Beatmap> finalMaps = new ArrayList<>();

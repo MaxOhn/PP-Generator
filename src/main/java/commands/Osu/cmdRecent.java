@@ -3,11 +3,13 @@ package main.java.commands.Osu;
 import de.maxikg.osuapi.model.*;
 import main.java.commands.INumberedICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -60,7 +62,17 @@ public class cmdRecent implements INumberedICommand {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
         }
-        Beatmap map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(getMode()).limit(1).query().iterator().next();
+        Beatmap map;
+        try {
+            map = DBProvider.getBeatmap(recent.getBeatmapId());
+        } catch (SQLException | ClassNotFoundException e) {
+            map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(getMode()).limit(1).query().iterator().next();
+            try {
+                DBProvider.addBeatmap(map);
+            } catch (ClassNotFoundException | SQLException e1) {
+                e1.printStackTrace();
+            }
+        }
         Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(getMode()).limit(50).query();
         Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(getMode()).query();
         new BotMessage(event, BotMessage.MessageType.RECENT)
