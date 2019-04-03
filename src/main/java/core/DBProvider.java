@@ -24,26 +24,28 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into beatmapInfo values ('" + map.getBeatmapId() + "','"
-                + map.getBeatmapSetId() + "','"
-                + map.getApproved().getValue() + "','"
-                + map.getVersion().replace("'", "ö") + "','"
-                + map.getTitle().replace("'", "ö") + "','"
-                + map.getArtist().replace("'", "ö") + "',"
-                + map.getMode().getValue() + ","
-                + map.getDifficultyDrain() + ","
-                + map.getDifficultySize() + ","
-                + map.getDifficultyApproach() + ","
-                + map.getDifficultyOverall() + ","
-                + map.getDifficultyRating() + ","
-                + map.getTotalLength() + ","
-                + map.getHitLength() + ","
-                + map.getBpm() + ","
-                + map.getMaxCombo() + ",'"
-                + map.getCreator() + "',"
-                + map.getApprovedDate().getTime() + ","
-                + map.getLastUpdate().getTime() + ",'"
-                + map.getSource().replace("'", "ö") + "')");
+        try {
+            stmnt.execute("insert into beatmapInfo values ('" + map.getBeatmapId() + "','"
+                    + map.getBeatmapSetId() + "','"
+                    + map.getApproved().getValue() + "','"
+                    + map.getVersion().replace("'", "ö") + "','"
+                    + map.getTitle().replace("'", "ö") + "','"
+                    + map.getArtist().replace("'", "ö") + "',"
+                    + map.getMode().getValue() + ","
+                    + map.getDifficultyDrain() + ","
+                    + map.getDifficultySize() + ","
+                    + map.getDifficultyApproach() + ","
+                    + map.getDifficultyOverall() + ","
+                    + map.getDifficultyRating() + ","
+                    + map.getTotalLength() + ","
+                    + map.getHitLength() + ","
+                    + map.getBpm() + ","
+                    + map.getMaxCombo() + ",'"
+                    + map.getCreator() + "',"
+                    + map.getApprovedDate().getTime() + ","
+                    + map.getLastUpdate().getTime() + ",'"
+                    + map.getSource().replace("'", "ö") + "')");
+        } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
     }
@@ -113,6 +115,8 @@ public class DBProvider {
             ResultSet rs = stmnt.executeQuery("select " + mods + " from ppRatings where mapID='" + mapID + "'");
             rs.next();
             double response = rs.getDouble(mods);
+            stmnt.close();
+            c.close();
             if (response > -1)
                 return response;
             else
@@ -149,7 +153,9 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into ppRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1)");
+        try {
+            stmnt.execute("insert into ppRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1)");
+        } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
     }
@@ -196,7 +202,9 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1)");
+        try {
+            stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1)");
+        } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
     }

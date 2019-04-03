@@ -16,6 +16,7 @@ import java.text.NumberFormat;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static de.maxikg.osuapi.model.Mod.createSum;
 import static main.java.util.utilGeneral.howLongAgo;
@@ -177,11 +178,14 @@ public class BotMessage {
                 mb.append(event.getAuthor().getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
             case TOPSOTARKS:
                 if (mb.isEmpty()) {
-                    if (usc.size() < 5) {
-                        mb.append("I found ").append(String.valueOf(usc.size())).append(" Sotarks scores in the top 100 and this is very sad \\:(");
+                    if (usc.size() < 10) {
+                        mb.append("I found ").append(String.valueOf(usc.size())).append(" Sotarks scores in `")
+                                .append(u.getUsername()).append("`'s top 100 and this is kinda sad \\:(");
                     } else {
-                        mb.append("There are at least 5 Sotarks scores in the top 100 and this is very sad \\:(");
+                        mb.append("There are ").append(String.valueOf(usc.size())).append(" Sotarks scores in `")
+                                .append(u.getUsername()).append("`'s top 100 and this is very sad \\:(");
                     }
+                    usc = usc.stream().limit(5).collect(Collectors.toList());
                 }
             case TOPSCORES:
                 if (usc == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());

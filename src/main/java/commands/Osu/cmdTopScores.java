@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class cmdTopScores implements ICommand {
@@ -82,7 +83,11 @@ public class cmdTopScores implements ICommand {
             try {
                 map = DBProvider.getBeatmap(score.getBeatmapId());
             } catch (SQLException | ClassNotFoundException e) {
-                map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next();
+                try {
+                    map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next();
+                } catch (NoSuchElementException e1) {
+                    continue;
+                }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException ignored) {}
@@ -95,8 +100,6 @@ public class cmdTopScores implements ICommand {
             if (getCondition(map)) {
                 Main.fileInteractor.prepareFiles(map);
                 maps.add(map);
-                if (maps.size() >= 5)
-                    break;
             }
         }
         if (!getCondition(null)) {
