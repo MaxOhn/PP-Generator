@@ -46,6 +46,7 @@ public class BotMessage {
     private String topplays;
     private int retries;
 
+    private boolean noChoke;
     private boolean filesPrepared;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
@@ -172,6 +173,8 @@ public class BotMessage {
                     eb.addField(fieldName, fieldValue, false);
                 }
                 break;
+            case NOCHOKESCORES:
+                mb.append(event.getAuthor().getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
             case TOPSCORES:
                 if (usc == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("https://a.ppy.sh/" + u.getUserId());
@@ -191,6 +194,7 @@ public class BotMessage {
                     mods = getModString();
                     if (!description.toString().equals("")) description.append("\n");
                     p.userscore(s).mode(mode);
+                    if (noChoke) p.noChoke();
                     description.append("**").append(idx++).append(".** [**")
                             .append(m.getTitle()).append("[").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(m.getBeatmapId()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
@@ -244,8 +248,9 @@ public class BotMessage {
                     } catch (InterruptedException ignored) { }
                 });
                 break;
-            case SCORES: ma.queue(); break;
-            case TOPSCORES: ma.queue(); break;
+            case SCORES:
+            case TOPSCORES:
+            case NOCHOKESCORES: ma.queue(); break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
     }
@@ -306,6 +311,11 @@ public class BotMessage {
     public BotMessage usergame(Collection<UserGame> scores) {
         this.ugc = scores;
         this.typeS = ScoreType.USERGAME;
+        return this;
+    }
+
+    public BotMessage noChoke(boolean nc) {
+        this.noChoke = nc;
         return this;
     }
 
@@ -421,6 +431,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, TEXT
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, TEXT, NOCHOKESCORES
     }
 }

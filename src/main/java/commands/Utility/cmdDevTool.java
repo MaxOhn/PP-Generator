@@ -54,7 +54,7 @@ public class cmdDevTool implements ICommand {
                                 msg.append(mod).append(": ").append(DBProvider.getAverage(mod)).append("\n");
                             event.getTextChannel().sendMessage(msg.toString()).queue();
                         } else {
-                            int response = DBProvider.getAverage(args[2]);
+                            double response = DBProvider.getAverage(args[2]);
                             event.getTextChannel().sendMessage("Average of saved pp values for `" + args[2] + "` scores: " + response).queue();
                         }
                     } catch (SQLException | ClassNotFoundException e) {

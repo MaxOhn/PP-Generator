@@ -83,6 +83,9 @@ public class Main {
         commandHandler.commands.put("scores", new cmdScores());
         commandHandler.commands.put("topscores", new cmdTopScores());
         commandHandler.commands.put("osutop", new cmdTopScores());
+        commandHandler.commands.put("nochoke", new cmdNoChoke());
+        commandHandler.commands.put("nochokes", new cmdNoChoke());
+        commandHandler.commands.put("nc", new cmdNoChoke());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

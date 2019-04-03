@@ -52,8 +52,6 @@ public class Performance {
 
     private static final Set<Mod> starModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
             Mod.DOUBLE_TIME, Mod.HARD_ROCK));
-    private static final Set<Mod> ppModifier = new HashSet<>(Arrays.asList(Mod.NIGHTCORE, Mod.HIDDEN, Mod.DOUBLE_TIME,
-            Mod.HARD_ROCK));
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
 
@@ -157,6 +155,22 @@ public class Performance {
 
     public Performance mode(GameMode mode) {
         this.mode = mode;
+        return this;
+    }
+
+    public Performance noChoke() {
+        this.combo = this.maxCombo;
+        if (mode == GameMode.OSU_MANIA) this.nGeki += this.nMisses;
+        else this.n300 += this.nMisses;
+        this.nMisses = 0;
+        this.acc = 0;
+        this.pp = 0;
+        if (mode == GameMode.STANDARD) {
+            if (n100 == 0 && n50 == 0)
+                this.rank = mods.contains(Mod.HIDDEN) ? "XH" : "X";
+            else
+                this.rank = mods.contains(Mod.HIDDEN) ? "SH" : "S";
+        }
         return this;
     }
 
