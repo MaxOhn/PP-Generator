@@ -175,6 +175,14 @@ public class BotMessage {
                 break;
             case NOCHOKESCORES:
                 mb.append(event.getAuthor().getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
+            case TOPSOTARKS:
+                if (mb.isEmpty()) {
+                    if (usc.size() < 5) {
+                        mb.append("I found ").append(String.valueOf(usc.size())).append(" Sotarks scores in the top 100 and this is very sad \\:(");
+                    } else {
+                        mb.append("There are at least 5 Sotarks scores in the top 100 and this is very sad \\:(");
+                    }
+                }
             case TOPSCORES:
                 if (usc == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("https://a.ppy.sh/" + u.getUserId());
@@ -196,7 +204,7 @@ public class BotMessage {
                     p.userscore(s).mode(mode);
                     if (noChoke) p.noChoke();
                     description.append("**").append(idx++).append(".** [**")
-                            .append(m.getTitle()).append("[").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
+                            .append(m.getTitle()).append(" [").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(m.getBeatmapId()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
                             .append(p.getStarRating()).append("★]\n ")
                             .append(getRank()).append(" **").append(p.getPp()).append("**/").append(p.getPpMax())
@@ -250,6 +258,7 @@ public class BotMessage {
                 break;
             case SCORES:
             case TOPSCORES:
+            case TOPSOTARKS:
             case NOCHOKESCORES: ma.queue(); break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
@@ -431,6 +440,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, TEXT, NOCHOKESCORES
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, TEXT, NOCHOKESCORES, TOPSOTARKS
     }
 }

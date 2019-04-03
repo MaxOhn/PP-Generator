@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 public class cmdTopScores implements ICommand {
     @Override
@@ -74,7 +75,7 @@ public class cmdTopScores implements ICommand {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(5).query();
+        Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(getAmount()).query();
         ArrayList<Beatmap> maps = new ArrayList<>();
         for (UserScore score : scores) {
             Beatmap map;
@@ -91,11 +92,37 @@ public class cmdTopScores implements ICommand {
                     e1.printStackTrace();
                 }
             }
-            Main.fileInteractor.prepareFiles(map);
-            maps.add(map);
+            if (getCondition(map)) {
+                Main.fileInteractor.prepareFiles(map);
+                maps.add(map);
+                if (maps.size() >= 5)
+                    break;
+            }
         }
-        new BotMessage(event, BotMessage.MessageType.TOPSCORES).user(user).userscore(scores).maps(maps).mode(mode)
+        if (!getCondition(null)) {
+            scores = scores.stream()
+                    .filter(s -> maps.stream().anyMatch(m -> m.getBeatmapId() == s.getBeatmapId()))
+                    .collect(Collectors.toList());
+        }
+        if (scores.size() == 0) {
+            event.getTextChannel().sendMessage("`" + name + "` appears to not have any Sotarks scores in the"
+                    + " personal top 100 and I could not be any prouder \\:')").queue();
+            return;
+        }
+        new BotMessage(event, getMessageType()).user(user).userscore(scores).maps(maps).mode(mode)
                 .buildAndSend();
+    }
+
+    int getAmount() {
+        return 5;
+    }
+
+    boolean getCondition(Beatmap m) {
+        return true;
+    }
+
+    BotMessage.MessageType getMessageType() {
+        return BotMessage.MessageType.TOPSCORES;
     }
 
     @Override

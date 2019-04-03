@@ -12,6 +12,7 @@ import main.java.core.Performance;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -29,6 +30,7 @@ public class cmdNoChoke implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        Logger logger = Logger.getLogger(this.getClass());
         String name;
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -46,55 +48,64 @@ public class cmdNoChoke implements ICommand {
             return;
         }
         event.getTextChannel().sendMessage("Gathering data, I'll ping you once I'm done").queue(message -> {
-            ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
-            Performance p = new Performance();
-            ArrayList<Beatmap> maps = new ArrayList<>();
-            for (UserScore score : scoresList) {
-                Beatmap map;
-                try {
-                    map = DBProvider.getBeatmap(score.getBeatmapId());
-                } catch (SQLException | ClassNotFoundException e) {
+            try {
+                ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
+                Performance p = new Performance();
+                ArrayList<Beatmap> maps = new ArrayList<>();
+                for (UserScore score : scoresList) {
+                    Beatmap map;
                     try {
-                        map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(GameMode.STANDARD).query().iterator().next();
+                        map = DBProvider.getBeatmap(score.getBeatmapId());
+                    } catch (SQLException | ClassNotFoundException e) {
                         try {
-                            Thread.sleep(600);
-                        } catch (InterruptedException ignored) {}
-                        try {
-                            DBProvider.addBeatmap(map);
-                        } catch (ClassNotFoundException | SQLException e2) {
-                            e2.printStackTrace();
+                            map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(GameMode.STANDARD).query().iterator().next();
+                            try {
+                                Thread.sleep(600);
+                            } catch (InterruptedException ignored) {
+                            }
+                            try {
+                                DBProvider.addBeatmap(map);
+                            } catch (ClassNotFoundException | SQLException e2) {
+                                e2.printStackTrace();
+                            }
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                            continue;
                         }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                        continue;
+                    }
+                    Main.fileInteractor.prepareFiles(map);
+                    maps.add(map);
+                    p.map(map).userscore(score).noChoke();
+                    if (ThreadLocalRandom.current().nextInt(0, 4) > 2)
+                        message.editMessage("Gathering data: " + (int) (100 * (double) scoresList.indexOf(score) / scoresList.size()) + "%").queue();
+                    score.setCount300(p.getN300());
+                    score.setCountMiss(p.getNMisses());
+                    score.setMaxCombo(p.getCombo());
+                    score.setPp((float) p.getPpDouble());
+                    score.setRank(p.getRank());
+                }
+                scoresList.sort(Comparator.comparing(UserScore::getPp).reversed());
+                Collection<UserScore> scores = scoresList.subList(0, 5);
+                ArrayList<Beatmap> finalMaps = new ArrayList<>();
+                for (UserScore s : scores) {
+                    for (Beatmap m : maps) {
+                        if (s.getBeatmapId() == m.getBeatmapId()) {
+                            finalMaps.add(m);
+                            break;
+                        }
                     }
                 }
-                Main.fileInteractor.prepareFiles(map);
-                maps.add(map);
-                p.map(map).userscore(score).noChoke();
-                if (ThreadLocalRandom.current().nextInt(0, 4) > 2)
-                    message.editMessage("Gathering data: " + (int)(100 * (double)scoresList.indexOf(score) / scoresList.size()) + "%").queue();
-                score.setCount300(p.getN300());
-                score.setCountMiss(p.getNMisses());
-                score.setMaxCombo(p.getCombo());
-                score.setPp((float)p.getPpDouble());
-                score.setRank(p.getRank());
+                maps = finalMaps;
+                message.delete().queue();
+                new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).userscore(scores).maps(maps)
+                        .mode(GameMode.STANDARD).buildAndSend();
+                logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
+                        "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));
+            } catch (Exception e0) {
+                event.getTextChannel().sendMessage("There was some problem, you might wanna retry later again and maybe"
+                + " ping bade or smth :p").queue();
+                e0.printStackTrace();
             }
-            scoresList.sort(Comparator.comparing(UserScore::getPp).reversed());
-            Collection<UserScore> scores = scoresList.subList(0, 5);
-            ArrayList<Beatmap> finalMaps = new ArrayList<>();
-            for (UserScore s : scores) {
-                for (Beatmap m : maps) {
-                    if (s.getBeatmapId() == m.getBeatmapId()) {
-                        finalMaps.add(m);
-                        break;
-                    }
-                }
-            }
-            maps = finalMaps;
-            message.delete().queue();
-            new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).userscore(scores).maps(maps)
-                    .mode(GameMode.STANDARD).buildAndSend();
         });
     }
 

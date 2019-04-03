@@ -86,6 +86,9 @@ public class Main {
         commandHandler.commands.put("nochoke", new cmdNoChoke());
         commandHandler.commands.put("nochokes", new cmdNoChoke());
         commandHandler.commands.put("nc", new cmdNoChoke());
+        commandHandler.commands.put("topsotarks", new cmdTopSotarks());
+        commandHandler.commands.put("sotarkstop", new cmdTopSotarks());
+        commandHandler.commands.put("sotarks", new cmdTopSotarks());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
