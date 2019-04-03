@@ -76,8 +76,10 @@ public class cmdNoChoke implements ICommand {
                     Main.fileInteractor.prepareFiles(map);
                     maps.add(map);
                     p.map(map).userscore(score).noChoke();
-                    if (ThreadLocalRandom.current().nextInt(0, 4) > 2)
-                        message.editMessage("Gathering data: " + (int) (100 * (double) scoresList.indexOf(score) / scoresList.size()) + "%").queue();
+                    if (100 * (double) scoresList.indexOf(score) / scoresList.size() > 5
+                            && ThreadLocalRandom.current().nextInt(0, 4) > 2)
+                        message.editMessage("Gathering data: "
+                                + (int) (100 * (double) scoresList.indexOf(score) / scoresList.size()) + "%").queue();
                     score.setCount300(p.getN300());
                     score.setCountMiss(p.getNMisses());
                     score.setMaxCombo(p.getCombo());

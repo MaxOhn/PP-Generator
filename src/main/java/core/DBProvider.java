@@ -41,7 +41,7 @@ public class DBProvider {
                     + map.getHitLength() + ","
                     + map.getBpm() + ","
                     + map.getMaxCombo() + ",'"
-                    + map.getCreator() + "',"
+                    + map.getCreator().replace("'", "ö") + "',"
                     + map.getApprovedDate().getTime() + ","
                     + map.getLastUpdate().getTime() + ",'"
                     + map.getSource().replace("'", "ö") + "')");
@@ -86,7 +86,7 @@ public class DBProvider {
         m.setHitLength(rs.getInt("hlength"));
         m.setBpm(rs.getInt("bpm"));
         m.setMaxCombo(rs.getInt("combo"));
-        m.setCreator(rs.getString("creator"));
+        m.setCreator(rs.getString("creator").replace("ö", "'"));
         m.setApprovedDate(new Date(rs.getLong("date")));
         m.setLastUpdate(new Date(rs.getLong("updated")));
         m.setSource(rs.getString("source").replace("ö", "'"));
