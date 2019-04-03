@@ -44,6 +44,8 @@ public class DBProvider {
                 + map.getApprovedDate().getTime() + ","
                 + map.getLastUpdate().getTime() + ",'"
                 + map.getSource().replace("'", "ö") + "')");
+        stmnt.close();
+        c.close();
     }
 
     public static Beatmap getBeatmap(int mapID) throws ClassNotFoundException, SQLException {
@@ -86,11 +88,9 @@ public class DBProvider {
         m.setApprovedDate(new Date(rs.getLong("date")));
         m.setLastUpdate(new Date(rs.getLong("updated")));
         m.setSource(rs.getString("source").replace("ö", "'"));
+        stmnt.close();
+        c.close();
         return m;
-    }
-
-    private static String prepareMods(String mods) {
-        return mods.equals("") ? "NM" : mods.replace("NC", "DT");
     }
 
     /*
@@ -98,6 +98,10 @@ public class DBProvider {
      *      pp ratings
      * ------------------------
      */
+
+    private static String prepareMods(String mods) {
+        return mods.equals("") ? "NM" : mods.replace("NC", "DT");
+    }
 
     public static double getPpRating(int mapID, String mods)
             throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
@@ -146,6 +150,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("insert into ppRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1)");
+        stmnt.close();
+        c.close();
     }
 
     public static void  addModsPp(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
@@ -154,6 +160,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("update ppRatings set " + mods + "=" + rating + " where mapID='" + mapID + "'");
+        stmnt.close();
+        c.close();
     }
 
     /*
@@ -189,6 +197,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1)");
+        stmnt.close();
+        c.close();
     }
 
     public static void addModsStars(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
@@ -197,6 +207,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("update starRatings set " + mods + "=" + rating + " where mapID='" + mapID + "'");
+        stmnt.close();
+        c.close();
     }
 
     /*
@@ -210,7 +222,6 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select lyricsAvailable from serverProperties where server='" + serverID + "'");
-        rs.next();
         return rs.getBoolean("lyricsAvailable");
     }
 
@@ -236,6 +247,8 @@ public class DBProvider {
         Statement stmnt = c.createStatement();
         stmnt.execute("update serverProperties set authorityRoles = '" + String.join("##", roles) +
                 "' where server='" + serverID + "'");
+        stmnt.close();
+        c.close();
     }
 
     public static void setAuthorityRoles(String serverID, List<String> roles) throws ClassNotFoundException, SQLException {
@@ -244,6 +257,8 @@ public class DBProvider {
         Statement stmnt = c.createStatement();
         stmnt.execute("update serverProperties set authorityRoles = '" + String.join("##", roles) +
                 "' where server='" + serverID + "'");
+        stmnt.close();
+        c.close();
     }
 
     /*
@@ -267,6 +282,8 @@ public class DBProvider {
         Statement stmnt = c.createStatement();
         stmnt.execute("delete from discosu where discord='" + discordID + "'");
         stmnt.execute("insert into discosu(discord, osu) values ('" + discordID + "', '" + osuname + "')");
+        stmnt.close();
+        c.close();
     }
 
     static HashMap<String, String> getDiscosu() throws SQLException, ClassNotFoundException {
@@ -278,6 +295,8 @@ public class DBProvider {
         while(rs.next()) {
             links.put(rs.getString("discord"), rs.getString("osu"));
         }
+        stmnt.close();
+        c.close();
         return links;
     }
 
@@ -295,6 +314,8 @@ public class DBProvider {
         ResultSet rs = stmnt.executeQuery("select name from twitch where channel='" + channelID + "'");
         while (rs.next())
             streamers.add(rs.getString("name"));
+        stmnt.close();
+        c.close();
         return streamers;
     }
 
@@ -306,6 +327,8 @@ public class DBProvider {
         ResultSet rs = stmnt.executeQuery("select channel from twitch where name='" + streamer + "'");
         while (rs.next())
             channels.add(rs.getString("channel"));
+        stmnt.close();
+        c.close();
         return channels;
     }
 
@@ -314,6 +337,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("delete from twitch where name='" + streamer + "' and channel='" + channelID + "'");
+        stmnt.close();
+        c.close();
     }
 
     static void addStreamer(String streamer, String channelID) throws ClassNotFoundException, SQLException {
@@ -321,6 +346,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("insert into twitch(name, channel) values ('" + streamer + "', '" + channelID + "')");
+        stmnt.close();
+        c.close();
     }
 
     public static HashMap<String, ArrayList<String>> getTwitch() throws SQLException, ClassNotFoundException {
@@ -336,6 +363,8 @@ public class DBProvider {
                 streamers.put(rs.getString("name"),
                         new ArrayList<>(Collections.singletonList(rs.getString("channel"))));
         }
+        stmnt.close();
+        c.close();
         return streamers;
     }
 }
