@@ -26,22 +26,34 @@ public class utilGeneral {
     public static String howLongAgo(Date d) {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime date = OffsetDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
+        System.out.println(date);
+        System.out.println(now);
         int temp = now.getYear() - date.getYear();
-        if (temp > 0)
+        if (temp > 1 || (temp == 1 && now.getMonthValue() > date.getMonthValue()))
             return temp + " year" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getMonthValue() - date.getMonthValue();
-        if (temp > 0)
+        if (temp < 0)
+            temp += 12;
+        if (temp > 1 || temp == 1 && now.getDayOfMonth() > date.getDayOfMonth())
             return temp + " month" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getDayOfMonth() - date.getDayOfMonth();
-        if (temp > 0)
+        if (temp < 0)
+            temp += date.getMonth().length(false);
+        if (temp > 1 || temp == 1 && now.getHour() > date.getHour())
             return temp + " day" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getHour() - date.getHour();
-        if (temp > 0)
+        if (temp < 0)
+            temp += 24;
+        if (temp > 1 || temp == 1 && now.getMinute() > date.getMinute())
             return temp + " hour" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getMinute() - date.getMinute();
-        if (temp > 0)
+        if (temp < 0)
+            temp += 60;
+        if (temp > 1 || temp == 1 && now.getSecond() > date.getSecond())
             return temp + " minute" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getSecond() - date.getSecond();
+        if (temp < 0)
+            temp += 60;
         if (temp > 0)
             return temp + " second" + (temp == 1 ? "" : "s") + " ago";
         return "";
