@@ -13,6 +13,8 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
@@ -61,11 +63,23 @@ public class cmdCompare implements ICommand {
             if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                 MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                 List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                if (fields.get(0).getValue().matches(getRegex())
-                        || (fields.size() >= 5 &&
-                        fields.get(5).getValue().matches(getRegex()))) {
-                    mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/")+1);
-                    break;
+                if (fields.size() > 0) {
+                    if (fields.get(0).getValue().matches(getRegex())
+                            || (fields.size() >= 5 &&
+                            fields.get(5).getValue().matches(getRegex()))) {
+                        mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                        break;
+                    }
+                } else {
+                    String description = msgEmbed.getDescription();
+                    if (description.startsWith("**1.**")) {
+                        Pattern p = Pattern.compile("(.*)(\\(https:\\/\\/osu.*\\/b\\/([0-9]{1,8}))(.*)");
+                        Matcher m = p.matcher(description);
+                        if (m.find()) {
+                            mapID = m.group(3);
+                            break;
+                        }
+                    }
                 }
             }
             if (--counter == 0) {

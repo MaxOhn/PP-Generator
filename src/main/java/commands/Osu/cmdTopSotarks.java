@@ -14,8 +14,13 @@ public class cmdTopSotarks extends cmdTopScores {
     @Override
     boolean getCondition(Beatmap m) {
         if (m == null) return false;
-        return (m.getCreator().equals("Sotarks") && !m.getVersion().contains("'s Extra"))
-                || m.getVersion().contains("Sotarks");
+        return (m.getCreator().equals("Sotarks")
+                && !m.getVersion().contains("'s Hard")
+                && !m.getVersion().contains("'s Insane")
+                && !m.getVersion().contains("'s Expert")
+                && !m.getVersion().contains("'s Extra")
+                && !m.getVersion().contains("'s Extreme"))
+                    || m.getVersion().contains("Sotarks");
     }
 
     @Override

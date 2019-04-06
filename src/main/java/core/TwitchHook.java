@@ -74,16 +74,10 @@ public class TwitchHook {
                     }
 
                     @Override
-                    public void onFailure(int i, String s, String s1) {
-                        logger.info("onFailure: " + i + ", " + s + ", " + s1 + " (remove " + streamer + ")");
-                        isOnline.remove(streamer);
-                    }
+                    public void onFailure(int i, String s, String s1) {}
 
                     @Override
-                    public void onFailure(Throwable throwable) {
-                        logger.info("onFailure: " + throwable.getMessage() + " (remove " + streamer + ")");
-                        isOnline.remove(streamer);
-                    }
+                    public void onFailure(Throwable throwable) {}
                 });
             }
         });

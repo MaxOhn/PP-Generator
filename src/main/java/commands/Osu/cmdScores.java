@@ -31,7 +31,7 @@ public class cmdScores implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Pattern p = Pattern.compile("((https:\\/\\/osu\\.ppy\\.sh\\/b\\/)([0-9]{1,8})(.*))|((https:\\/\\/osu\\.ppy\\.sh\\/beatmapsets\\/446774\\#osu\\/)([0-9]{1,8})(.*))");
+        Pattern p = Pattern.compile("((https:\\/\\/osu\\.ppy\\.sh\\/b\\/)([0-9]{1,8})(.*))|((https:\\/\\/osu\\.ppy\\.sh\\/beatmapsets\\/[0-9]*\\#osu\\/)([0-9]{1,8})(.*))");
         String mapID = "-1";
         try {
             Matcher m = p.matcher(args[0]);
