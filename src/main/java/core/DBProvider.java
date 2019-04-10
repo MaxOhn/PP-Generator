@@ -102,7 +102,10 @@ public class DBProvider {
      */
 
     private static String prepareMods(String mods) {
-        return mods.equals("") ? "NM" : mods.replace("NC", "DT");
+        return mods.equals("") ? "NM" :
+                mods.replace("NC", "DT")
+                        .replace("SD", "")
+                        .replace("PF", "");
     }
 
     public static double getPpRating(int mapID, String mods)
