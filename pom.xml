@@ -6,7 +6,7 @@
 
     <groupId>ppgen.bot</groupId>
     <artifactId>PP-Generator</artifactId>
-    <version>3.3</version>
+    <version>3.3.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

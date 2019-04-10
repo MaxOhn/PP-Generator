@@ -66,6 +66,10 @@ public class BotMessage {
     }
 
     public void buildAndSend() {
+        buildAndSend(null);
+    }
+
+    public void buildAndSend(Runnable runnable) {
         if (u == null) throw new IllegalStateException(Error.USER.getMsg());
         eb.setThumbnail("attachment://thumb.jpg");
         eb.setAuthor(u.getUsername() + ": "
@@ -264,6 +268,7 @@ public class BotMessage {
             case NOCHOKESCORES: ma.queue(); break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
+        if (runnable != null) runnable.run();
     }
 
     public BotMessage user(User user) {

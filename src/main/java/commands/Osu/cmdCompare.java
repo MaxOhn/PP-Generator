@@ -73,7 +73,7 @@ public class cmdCompare implements INumberedCommand {
                             || (fields.size() >= 5 &&
                             fields.get(5).getValue().matches(getRegex()))) {
                         mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
-                        if (--number == 0) break;
+                        if (--number <= 0) break;
                     }
                 }
             }
