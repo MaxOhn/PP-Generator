@@ -50,20 +50,6 @@ public class cmdScores implements ICommand {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
         }
-
-        User user;
-        try {
-            user = Main.osu.getUserByUsername(name).query().iterator().next();
-        } catch (Exception e) {
-            event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
-            return;
-        }
-        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).username(name).query();
-        if (scores.size() == 0) {
-            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                    mapID + "`").queue();
-            return;
-        }
         Beatmap map;
         try {
             map = DBProvider.getBeatmap(Integer.parseInt(mapID));
@@ -75,7 +61,20 @@ public class cmdScores implements ICommand {
                 e1.printStackTrace();
             }
         }
-        new BotMessage(event, BotMessage.MessageType.SCORES).user(user).map(map).beatmapscore(scores).buildAndSend();
+        User user;
+        try {
+            user = Main.osu.getUserByUsername(name).mode(map.getMode()).query().iterator().next();
+        } catch (Exception e) {
+            event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
+            return;
+        }
+        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).username(name).mode(map.getMode()).query();
+        if (scores.size() == 0) {
+            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
+                    mapID + "`").queue();
+            return;
+        }
+        new BotMessage(event, BotMessage.MessageType.SCORES).user(user).map(map).beatmapscore(scores).mode(map.getMode()).buildAndSend();
     }
 
     @Override

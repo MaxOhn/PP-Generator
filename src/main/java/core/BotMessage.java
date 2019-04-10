@@ -41,13 +41,11 @@ public class BotMessage {
     private UserGame ug;
     private Collection<BeatmapScore> bsc;
     private Collection<UserScore> usc;
-    private Collection<UserGame> ugc;
     private ArrayList<Beatmap> maps;
 
     private String topplays;
     private int retries;
 
-    private boolean noChoke;
     private boolean filesPrepared;
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
@@ -150,7 +148,7 @@ public class BotMessage {
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + m.getBeatmapSetId() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
-                eb.setTitle(getKeyString() + " " + m.getArtist() + " - " + m.getTitle() + " [" + m.getVersion()
+                eb.setTitle(m.getArtist() + " - " + m.getTitle() + " [" + m.getVersion()
                                 + "]","https://osu.ppy.sh/b/" + m.getBeatmapId());
                 List<BeatmapScore> orderedScores = new ArrayList<>(bsc);
                 orderedScores.sort(Comparator.comparing(BeatmapScore::getPp).reversed());
@@ -159,6 +157,7 @@ public class BotMessage {
                     beatmapscore(s);
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
                             NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
+                    if (mode == GameMode.OSU_MANIA) fieldName += "\t" + getKeyString();
                     String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ "
                             + s.getMaxCombo() + "x/" + p.getMaxCombo() + "x ]\t {";
                     switch (mode) {
@@ -205,7 +204,7 @@ public class BotMessage {
                     userscore(s);
                     mods = getModString();
                     if (!description.toString().equals("")) description.append("\n");
-                    if (noChoke) p.noChoke();
+                    if (typeM == MessageType.NOCHOKESCORES) p.noChoke();
                     description.append("**").append(idx++).append(".** [**")
                             .append(m.getTitle()).append(" [").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(m.getBeatmapId()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
@@ -317,17 +316,6 @@ public class BotMessage {
         this.ug = score;
         this.typeS = ScoreType.USERGAME;
         this.p.usergame(score);
-        return this;
-    }
-
-    public BotMessage usergame(Collection<UserGame> scores) {
-        this.ugc = scores;
-        this.typeS = ScoreType.USERGAME;
-        return this;
-    }
-
-    public BotMessage noChoke(boolean nc) {
-        this.noChoke = nc;
         return this;
     }
 
