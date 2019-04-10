@@ -2,7 +2,7 @@
 
 
 
-Small [osu!](https://osu.ppy.sh/home) discord bot written in Java on IntelliJ as Maven project.
+PP-Generator is an [osu!](https://osu.ppy.sh/home) discord bot written in Java on IntelliJ as Maven project.
 
 I honestly don't expect anyone to get this one running on their PC but feel free to browse through whatever I did :)
 
@@ -13,7 +13,7 @@ If you have any questions, ideas, suggestions, improvements, ..., feel free to e
 
 
 
-Since I can't be bothered to update this file regularly with new commands, I suggest to take a look in `core/Main.java` to see which commands are added in the `addCommands` function.
+I can't be bothered to update this file regularly with new commands but you can either take a look into `core/Main.java` to see which commands are added in the `addCommands` function or you can simply use the `<help` command which lists all commands.
 
 
 
@@ -25,7 +25,7 @@ If you are crazy enough to try and set it up yourself, here's some things to con
 
 - To access the osu! API I'm using the [osu-api-Java-Client](https://github.com/osuWorks/osu-api-Java-Client) which needs to be installed locally first.
 
-- Calculating the [performance points](https://osu.ppy.sh/help/wiki/Performance_Points) of a map/play is done via [oppai-ng](https://github.com/Francesco149/oppai-ng)'s command line function so this one must be installed aswell.
+- Calculating the [performance points](https://osu.ppy.sh/help/wiki/Performance_Points) of a map/play is done via slight modification (to get outputs that are easier to parse) of [osu-tools](https://github.com/ppy/osu-tools)' command line function so this one must be installed aswell.
 
 - Another minor struggle was the [log4j](https://logging.apache.org/log4j/2.x/) import. Its pom.xml dependency as of now is working though so it might be fine.
 
@@ -41,6 +41,6 @@ If you are crazy enough to try and set it up yourself, here's some things to con
 
 
 
-The bot is by no means written in a professional manner. Just a little project for me to get back into Java and give our discord server some more utility.
+The bot is by no means written in a professional manner. Just a side project for me to get back into Java and give our discord server some more utility.
 
 Since [iaace](https://www.iaace.gg/)'s amazing BoatBot was our previous go-to bot, the message format of PP-Generator is strongly based on BoatBot. I encourage you to check BoatBot out yourself if you don't know it yet :)
