@@ -47,7 +47,7 @@ public class cmdNoChoke implements ICommand {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        event.getTextChannel().sendMessage("Gathering data, I'll ping you once I'm done").queue(message -> {
+        event.getTextChannel().sendMessage("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done").queue(message -> {
             try {
                 ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
                 Performance p = new Performance();
@@ -76,10 +76,10 @@ public class cmdNoChoke implements ICommand {
                     Main.fileInteractor.prepareFiles(map);
                     maps.add(map);
                     p.map(map).userscore(score).noChoke();
-                    if (100 * (double) scoresList.indexOf(score) / scoresList.size() > 5
-                            && ThreadLocalRandom.current().nextInt(0, 4) > 2)
-                        message.editMessage("Gathering data: "
-                                + (int) (100 * (double) scoresList.indexOf(score) / scoresList.size()) + "%").queue();
+                    double progress = 100 * (double) scoresList.indexOf(score) / scoresList.size();
+                    if (progress > 6 && ThreadLocalRandom.current().nextInt(0, 4) > 2)
+                        message.editMessage("Gathering data for `" + user.getUsername() + "`: "
+                                + (int)progress + "%").queue();
                     score.setCount300(p.getN300());
                     score.setCountMiss(p.getNMisses());
                     score.setMaxCombo(p.getCombo());

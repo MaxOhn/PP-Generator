@@ -22,7 +22,7 @@ public class cmdHelp implements ICommand {
         mb.append("To get help for a specific command, type `" + statics.prefix + "[command] -h`");
         EmbedBuilder eb = new EmbedBuilder()
                 .setColor(Color.green)
-                .setAuthor("ICommand list", "https://github.com/MaxOhn/PP-Generator");
+                .setAuthor("Command list", "https://github.com/MaxOhn/PP-Generator");
         for (utilGeneral.Category c : utilGeneral.Category.values()) {
             eb.addField("__**" + c.getName() + "**__",
                     String.join(", ", commandHandler.getCommands(c)), false);

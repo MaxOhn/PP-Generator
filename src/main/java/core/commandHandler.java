@@ -6,6 +6,7 @@ import main.java.util.utilGeneral;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,11 +19,12 @@ public class commandHandler {
         return commands.keySet();
     }
 
-    public static Set<String> getCommands(utilGeneral.Category c) {
+    public static List<String> getCommands(utilGeneral.Category c) {
         return commands.keySet()
                 .stream()
                 .filter(invoke -> commands.get(invoke).getCategory() == c)
-                .collect(Collectors.toSet());
+                .sorted()
+                .collect(Collectors.toList());
     }
 
     public static void handleCommand(commandParser.commandContainer cmd) {
