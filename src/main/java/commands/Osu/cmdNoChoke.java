@@ -49,10 +49,17 @@ public class cmdNoChoke implements ICommand {
         }
         event.getTextChannel().sendMessage("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done").queue(message -> {
             try {
+                int currScore = 0;
+                double ppThreshold = 0;
                 ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
                 Performance p = new Performance();
                 ArrayList<Beatmap> maps = new ArrayList<>();
                 for (UserScore score : scoresList) {
+                    double progress = 100 * (double)currScore / scoresList.size();
+                    if (progress > 7 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
+                        message.editMessage("Gathering data for `" + user.getUsername() + "`: "
+                                + (int)progress + "%").queue();
+                    if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
                     Beatmap map;
                     try {
                         map = DBProvider.getBeatmap(score.getBeatmapId());
@@ -73,13 +80,11 @@ public class cmdNoChoke implements ICommand {
                             continue;
                         }
                     }
+                    double comboRatio = (double)score.getMaxCombo()/map.getMaxCombo();
+                    if (ppThreshold > 0 && score.getPp() < ppThreshold && comboRatio > 0.97) continue;
                     Main.fileInteractor.prepareFiles(map);
                     maps.add(map);
                     p.map(map).userscore(score).noChoke();
-                    double progress = 100 * (double) scoresList.indexOf(score) / scoresList.size();
-                    if (progress > 6 && ThreadLocalRandom.current().nextInt(0, 4) > 2)
-                        message.editMessage("Gathering data for `" + user.getUsername() + "`: "
-                                + (int)progress + "%").queue();
                     score.setCount300(p.getN300());
                     score.setCountMiss(p.getNMisses());
                     score.setMaxCombo(p.getCombo());

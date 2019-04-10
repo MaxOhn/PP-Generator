@@ -1,7 +1,7 @@
 package main.java.commands;
 
-public interface INumberedICommand extends ICommand {
+public interface INumberedCommand extends ICommand {
 
-    INumberedICommand setNumber(int number);
+    INumberedCommand setNumber(int number);
 
 }

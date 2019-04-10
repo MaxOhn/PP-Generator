@@ -1,7 +1,7 @@
 package main.java.commands.Osu;
 
 import de.maxikg.osuapi.model.*;
-import main.java.commands.INumberedICommand;
+import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -18,7 +18,7 @@ import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdCompare implements INumberedICommand {
+public class cmdCompare implements INumberedCommand {
 
     private int number = 1;
 
@@ -162,7 +162,7 @@ public class cmdCompare implements INumberedICommand {
     }
 
     @Override
-    public INumberedICommand setNumber(int number) {
+    public INumberedCommand setNumber(int number) {
         this.number = number;
         return this;
     }

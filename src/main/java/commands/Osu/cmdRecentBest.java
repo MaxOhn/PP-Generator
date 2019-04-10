@@ -1,7 +1,7 @@
 package main.java.commands.Osu;
 
 import de.maxikg.osuapi.model.*;
-import main.java.commands.INumberedICommand;
+import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.sql.SQLException;
 import java.util.*;
 
-public class cmdRecentBest implements INumberedICommand {
+public class cmdRecentBest implements INumberedCommand {
 
     private int number = 1;
 

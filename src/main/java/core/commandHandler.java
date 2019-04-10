@@ -1,7 +1,7 @@
 package main.java.core;
 
 import main.java.commands.ICommand;
-import main.java.commands.INumberedICommand;
+import main.java.commands.INumberedCommand;
 import main.java.util.utilGeneral;
 import org.apache.log4j.Logger;
 
@@ -40,8 +40,8 @@ public class commandHandler {
                 // If so, perform the action in new thread
                 if (safe) {
                     final Thread t = new Thread(() -> {
-                        if (commands.get(invoke) instanceof INumberedICommand)
-                            ((INumberedICommand) commands.get(invoke)).setNumber(cmd.number).action(cmd.args, cmd.event);
+                        if (commands.get(invoke) instanceof INumberedCommand)
+                            ((INumberedCommand) commands.get(invoke)).setNumber(cmd.number).action(cmd.args, cmd.event);
                         else
                             commands.get(invoke).action(cmd.args, cmd.event);
                     });
