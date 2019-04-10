@@ -1,7 +1,7 @@
 package main.java.commands.Osu;
 
 import de.maxikg.osuapi.model.*;
-import main.java.commands.ICommand;
+import main.java.commands.INumberedICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -13,14 +13,14 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdCompare implements ICommand {
+public class cmdCompare implements INumberedICommand {
+
+    private int number = 1;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -32,6 +32,11 @@ public class cmdCompare implements ICommand {
 
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             event.getTextChannel().sendMessage(help(0)).queue();
+            return;
+        }
+
+        if (number > 50) {
+            event.getTextChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
 
@@ -68,17 +73,7 @@ public class cmdCompare implements ICommand {
                             || (fields.size() >= 5 &&
                             fields.get(5).getValue().matches(getRegex()))) {
                         mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
-                        break;
-                    }
-                } else {
-                    String description = msgEmbed.getDescription();
-                    if (description.startsWith("**1.**")) {
-                        Pattern p = Pattern.compile("(.*)(\\(https:\\/\\/osu.*\\/b\\/([0-9]{1,8}))(.*)");
-                        Matcher m = p.matcher(description);
-                        if (m.find()) {
-                            mapID = m.group(3);
-                            break;
-                        }
+                        if (--number == 0) break;
                     }
                 }
             }
@@ -164,5 +159,11 @@ public class cmdCompare implements ICommand {
 
     String getName() {
         return "";
+    }
+
+    @Override
+    public INumberedICommand setNumber(int number) {
+        this.number = number;
+        return this;
     }
 }
