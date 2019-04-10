@@ -91,7 +91,7 @@ public class cmdRecent implements INumberedICommand {
         switch(hCode) {
             case 0:
               return "Enter `" + statics.prefix + getName() + " [osu name]` to make me respond with info about the players last play."
-                      + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
+                      + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             default:

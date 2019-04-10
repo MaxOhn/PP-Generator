@@ -135,8 +135,11 @@ public class cmdCompare implements ICommand {
         String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare" + getName() + "[osu name] [-m <nm/hd/nfeznc/...>]` to make me show your best play on the map of "
-                + "the last `" + statics.prefix + "recent" + getName() + "`.\n If `-m` is added with a given mod combination, I will only take these mods into account.";
+                return "Enter `" + statics.prefix + "compare" + getName() + "[osu name] [-m <nm/hd/nfeznc/...>]` to make "
+                        + "me show your best play on the map of the last `" + statics.prefix + "recent" + getName() + "`.\n"
+                        + "If `-m` is added with a given mod combination, I will only take these mods into account.\n"
+                        + "If no player name is specified, your discord must be linked to an osu profile via `"
+                        + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             case 2:

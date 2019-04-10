@@ -83,7 +83,10 @@ public class cmdScores implements ICommand {
         String help = " (`" + statics.prefix + "scores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "scores TODO` to make me show ...";
+                return "Enter `" + statics.prefix + "scores <beatmap url> [osu name]` to make me show the user's "
+                        + "top scores for each mod combination of the specified map.\nBeatmap urls from both the new " +
+                        "and old website are supported.\nIf no player name is specified, your discord must be linked to " +
+                        "an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name as second argument or link your discord to an osu profile via `" +
                         statics.prefix + "link <osu name>" + "`" + help;
