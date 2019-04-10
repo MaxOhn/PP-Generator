@@ -11,7 +11,7 @@ public class roleLostListener extends ListenerAdapter {
     public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
         if (event.getRoles().iterator().next().getName().equals("Not Checked")) {
             Logger logger = Logger.getLogger(this.getClass());
-            String welcomeMessage = "welcome on the server " + event.getUser().getName() + " o/";
+            String welcomeMessage = "welcome " + event.getUser().getName() + ", enjoy ur stay o/";
             Main.sendCustomMessage(welcomeMessage, secrets.welcomeMsgChannelID);
             logger.info(event.getUser().getName() + " lost the 'Not Checked'-role");
         }
