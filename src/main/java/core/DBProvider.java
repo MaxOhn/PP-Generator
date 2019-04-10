@@ -294,6 +294,15 @@ public class DBProvider {
         c.close();
     }
 
+    static void removeLink(String discordID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("delete from discosu where discord='" + discordID + "'");
+        stmnt.close();
+        c.close();
+    }
+
     static HashMap<String, String> getDiscosu() throws SQLException, ClassNotFoundException {
         HashMap<String, String> links = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");

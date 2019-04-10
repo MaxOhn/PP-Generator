@@ -26,8 +26,6 @@ public class utilGeneral {
     public static String howLongAgo(Date d) {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime date = OffsetDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
-        System.out.println(date);
-        System.out.println(now);
         int temp = now.getYear() - date.getYear();
         if (temp > 1 || (temp == 1 && now.getMonthValue() > date.getMonthValue()))
             return temp + " year" + (temp == 1 ? "" : "s") + " ago";
@@ -52,8 +50,6 @@ public class utilGeneral {
         if (temp > 1 || temp == 1 && now.getSecond() > date.getSecond())
             return temp + " minute" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getSecond() - date.getSecond();
-        if (temp < 0)
-            temp += 60;
         if (temp > 0)
             return temp + " second" + (temp == 1 ? "" : "s") + " ago";
         return "";

@@ -29,7 +29,20 @@ public class DiscordLink {
             link.put(discordID, osuname);
             return true;
         } catch (ClassNotFoundException | SQLException e) {
-            logger.error("Could not link user: " + e);
+            logger.error("Could not link user:");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean removeLink(String discordID) {
+        try {
+            DBProvider.removeLink(discordID);
+            link.remove(discordID);
+            return true;
+        } catch (SQLException | ClassNotFoundException e) {
+            logger.error("Could not remove link:");
+            e.printStackTrace();
         }
         return false;
     }

@@ -205,7 +205,6 @@ public class BotMessage {
                     userscore(s);
                     mods = getModString();
                     if (!description.toString().equals("")) description.append("\n");
-                    p.userscore(s).mode(mode);
                     if (noChoke) p.noChoke();
                     description.append("**").append(idx++).append(".** [**")
                             .append(m.getTitle()).append(" [").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")

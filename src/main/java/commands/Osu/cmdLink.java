@@ -9,15 +9,22 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 public class cmdLink implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        if (args.length < 1) {
-            event.getTextChannel().sendMessage(help(0)).queue();
-            return false;
-        }
         return true;
     }
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+
+        if (args.length == 0) {
+            if (Main.discLink.removeLink(event.getAuthor().getId())) {
+                event.getTextChannel().sendMessage("You are no longer linked").queue();
+                return;
+            } else {
+                event.getTextChannel().sendMessage("I could not remove the link, blame bade").queue();
+                return;
+            }
+        }
+
         if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
@@ -37,7 +44,8 @@ public class cmdLink implements ICommand {
         String help = " (`" + statics.prefix + "link -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "link <osu name>` to make me link your discord with that osu name";
+                return "Enter `" + statics.prefix + "link [osu name]` to make me link your discord with that osu name."
+                        + "\nIf no name is specified, I will unlink you instead.";
             default:
                 return help(0);
         }
