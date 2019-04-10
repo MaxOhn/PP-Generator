@@ -56,7 +56,7 @@ public class cmdNoChoke implements ICommand {
                 ArrayList<Beatmap> maps = new ArrayList<>();
                 for (UserScore score : scoresList) {
                     double progress = 100 * (double)currScore / scoresList.size();
-                    if (progress > 7 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
+                    if (progress > 7 && ThreadLocalRandom.current().nextInt(0, 7) > 5)
                         message.editMessage("Gathering data for `" + user.getUsername() + "`: "
                                 + (int)progress + "%").queue();
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
@@ -86,6 +86,7 @@ public class cmdNoChoke implements ICommand {
                     maps.add(map);
                     p.map(map).userscore(score).noChoke();
                     score.setCount300(p.getN300());
+                    score.setCount100(p.getN100());
                     score.setCountMiss(p.getNMisses());
                     score.setMaxCombo(p.getCombo());
                     score.setPp((float) p.getPpDouble());
@@ -103,9 +104,10 @@ public class cmdNoChoke implements ICommand {
                     }
                 }
                 maps = finalMaps;
-                message.delete().queue();
                 new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).userscore(scores).maps(maps)
                         .mode(GameMode.STANDARD).buildAndSend();
+                Thread.sleep(5000);
+                message.delete().queue();
                 logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
                         "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));
             } catch (Exception e0) {

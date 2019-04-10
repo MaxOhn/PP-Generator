@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_str;
@@ -154,26 +155,28 @@ public class Performance {
     }
 
     public void noChoke() {
+        if (mode != GameMode.STANDARD) return;
         this.combo = this.maxCombo;
-        if (mode == GameMode.OSU_MANIA) this.nGeki += this.nMisses;
-        else this.n300 += this.nMisses;
+        double ratio = (double)n300/(n300 + n100 + n50);
+        for (; this.nMisses > 0; this.nMisses--) {
+            if (ThreadLocalRandom.current().nextDouble(1) < ratio) n100++;
+            else n300++;
+        }
         this.nMisses = 0;
         this.acc = 0;
         this.pp = 0;
-        if (mode == GameMode.STANDARD) {
-            if (n300 == getNObjects())
-                this.rank = mods.contains(Mod.HIDDEN) ? "XH" : "X";
-            else if ((double)n300/getNObjects() > 0.9 && (double)n50/getNObjects() < 0.01 && nMisses == 0)
-                this.rank = mods.contains(Mod.HIDDEN) ? "SH" : "S";
-            else if (((double)n300/getNObjects() > 0.8 && nMisses == 0) || (double)n300/getNObjects() > 0.9)
-                this.rank = "A";
-            else if (((double)n300/getNObjects() > 0.7 && nMisses == 0) || (double)n300/getNObjects() > 0.8)
-                this.rank = "B";
-            else if ((double)n300/getNObjects() > 0.6)
-                this.rank = "C";
-            else
-                this.rank = "D";
-        }
+        if (n300 == getNObjects())
+            this.rank = mods.contains(Mod.HIDDEN) ? "XH" : "X";
+        else if ((double)n300/getNObjects() > 0.9 && (double)n50/getNObjects() < 0.01 && nMisses == 0)
+            this.rank = mods.contains(Mod.HIDDEN) ? "SH" : "S";
+        else if (((double)n300/getNObjects() > 0.8 && nMisses == 0) || (double)n300/getNObjects() > 0.9)
+            this.rank = "A";
+        else if (((double)n300/getNObjects() > 0.7 && nMisses == 0) || (double)n300/getNObjects() > 0.8)
+            this.rank = "B";
+        else if ((double)n300/getNObjects() > 0.6)
+            this.rank = "C";
+        else
+            this.rank = "D";
     }
 
     public int getNPassedObjects() {
