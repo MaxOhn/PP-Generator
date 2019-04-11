@@ -4,6 +4,8 @@ import main.java.commands.PrivilegedCommand;
 import main.java.core.DBProvider;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -60,6 +62,17 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
                         } else
                             argList.add(args[idx++]);
                     }
+                }
+                boolean remainsAuthority = utilGeneral.isDev(event.getAuthor());
+                for (Role r : event.getMember().getRoles()) {
+                    remainsAuthority |= r.hasPermission(Permission.ADMINISTRATOR);
+                    remainsAuthority |= argList.contains(r.getName()) || argList.contains(r.getName().toLowerCase());
+                    if (remainsAuthority) break;
+                }
+                if (!remainsAuthority) {
+                    event.getTextChannel().sendMessage("This would remove your privilege!\nIf you dont have the server "
+                            + "administration permission, you must include at least one of your own roles as authority role.").queue();
+                    return;
                 }
                 DBProvider.setAuthorityRoles(serverID, argList);
                 event.getTextChannel().sendMessage("Authority roles have been updated!").queue();
