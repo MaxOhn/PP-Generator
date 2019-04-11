@@ -233,6 +233,7 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select lyricsAvailable from serverProperties where server='" + serverID + "'");
+        rs.next();
         return rs.getBoolean("lyricsAvailable");
     }
 

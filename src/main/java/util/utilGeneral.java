@@ -61,7 +61,7 @@ public class utilGeneral {
             if(r.hasPermission(Permission.ADMINISTRATOR) ||
                     (authorityRoles.contains(r.getName().toLowerCase())))
                 return true;
-        return false;
+        return isDev(author.getUser());
     }
 
     public enum Category {
