@@ -108,8 +108,12 @@ public class cmdTopScores implements ICommand {
                     .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
-            event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
-                    + " personal top 100 and I could not be any prouder \\:')").queue();
+            if (getMessageType() == BotMessage.MessageType.TOPSCORES) {
+                event.getTextChannel().sendMessage("Could not find any scores from user `" + user.getUsername() + "`").queue();
+            } else if (getMessageType() == BotMessage.MessageType.TOPSOTARKS) {
+                event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
+                        + " personal top 100 and I could not be any prouder \\:')").queue();
+            }
             return;
         }
         new BotMessage(event, getMessageType()).user(user).userscore(scores)
