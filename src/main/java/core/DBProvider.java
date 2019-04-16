@@ -47,7 +47,6 @@ public class DBProvider {
             stmnt.addBatch();
         }
         stmnt.executeBatch();
-        c.commit();
         stmnt.close();
         c.close();
     }
