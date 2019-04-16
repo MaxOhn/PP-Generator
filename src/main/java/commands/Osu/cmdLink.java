@@ -1,5 +1,6 @@
 package main.java.commands.Osu;
 
+import de.maxikg.osuapi.model.User;
 import main.java.commands.ICommand;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -31,6 +32,13 @@ public class cmdLink implements ICommand {
         }
 
         String name = String.join(" ", args);
+
+        try {
+           User u = Main.osu.getUserByUsername(name).query().iterator().next();
+        } catch (Exception e) {
+            event.getTextChannel().sendMessage("Could not find osu user with name `" + name + "`").queue();
+            return;
+        }
 
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
             event.getTextChannel().sendMessage("I linked discord's `" + event.getAuthor().getName() +

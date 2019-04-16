@@ -6,13 +6,43 @@ import de.maxikg.osuapi.model.GameMode;
 import main.java.util.secrets;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 public class DBProvider {
+
+    /*
+     * ------------------------
+     *      map ranking
+     * ------------------------
+     */
+
+    public static TreeSet<Integer> getMapIds() throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select mapID from mapRanking");
+        TreeSet<Integer> mapIDs = new TreeSet<>();
+        while (rs.next())
+            mapIDs.add(rs.getInt("mapID"));
+        stmnt.close();
+        c.close();
+        return mapIDs;
+    }
+
+    public static void addMaps(List<Integer> mapIDs) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        PreparedStatement stmnt = c.prepareStatement("insert into mapRanking (mapID) values (?)");
+        for (Integer i : mapIDs) {
+            stmnt.setString(1, i + "");
+            stmnt.addBatch();
+        }
+        stmnt.executeBatch();
+        c.commit();
+        stmnt.close();
+        c.close();
+    }
 
     /*
      * ------------------------

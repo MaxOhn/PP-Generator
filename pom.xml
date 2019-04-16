@@ -142,6 +142,11 @@
             <artifactId>json</artifactId>
             <version>20160810</version>
         </dependency>
+        <dependency>
+            <groupId>com.oopsijpeg</groupId>
+            <artifactId>osu4j</artifactId>
+            <version>1.0</version>
+        </dependency>
 
     </dependencies>
 </project>
