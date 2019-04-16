@@ -78,10 +78,6 @@ public class cmdNoChoke implements ICommand {
                                     new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(score.getBeatmapID()).setLimit(1).setMode(GameMode.STANDARD).build()
                             ).get(0);
                             try {
-                                Thread.sleep(600);
-                            } catch (InterruptedException ignored) {
-                            }
-                            try {
                                 DBProvider.addBeatmap(map);
                             } catch (ClassNotFoundException | SQLException e2) {
                                 e2.printStackTrace();

@@ -96,9 +96,6 @@ public class cmdTopScores implements ICommand {
                     continue;
                 }
                 try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {}
-                try {
                     DBProvider.addBeatmap(map);
                 } catch (ClassNotFoundException | SQLException e1) {
                     e1.printStackTrace();

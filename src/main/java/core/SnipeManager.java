@@ -1,11 +1,16 @@
 package main.java.core;
 
-import de.maxikg.osuapi.client.DefaultOsuClient;
-import de.maxikg.osuapi.model.Beatmap;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.Osu;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class SnipeManager {
@@ -15,9 +20,9 @@ public class SnipeManager {
     private TreeSet<Integer> mapIDs;
     private boolean isUpdatingIDs;
     private boolean interruptIdUpdating;
-    private DefaultOsuClient osu;
+    private Osu osu;
 
-    private SnipeManager(DefaultOsuClient osu) {
+    private SnipeManager(Osu osu) {
         this.osu = osu;
         isUpdatingIDs = false;
         interruptIdUpdating = false;
@@ -31,7 +36,7 @@ public class SnipeManager {
         }
     }
 
-    public static SnipeManager getInstance(DefaultOsuClient osu) {
+    public static SnipeManager getInstance(Osu osu) {
         if (snipeManager == null) snipeManager = new SnipeManager(osu);
         return snipeManager;
     }
@@ -43,23 +48,16 @@ public class SnipeManager {
     public void updateMapIds() {
         isUpdatingIDs = true;
         final Thread t = new Thread(() -> {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(Calendar.YEAR, 2007);
-            calendar.set(Calendar.MONTH, 0);
-            calendar.set(Calendar.DATE, 1);
-            Date sinceDate = calendar.getTime();
+            ZonedDateTime sinceDate = ZonedDateTime.parse("2007-1-1 00:00:00");
             if (mapIDs.size() > 0) {
                 try {
-                    sinceDate = osu.getBeatmaps()
-                            .beatmapId(mapIDs.last())
-                            .limit(1)
-                            .query()
-                            .iterator()
-                            .next()
-                            .getApprovedDate();
-                } catch (Exception ignored) {}
+                    sinceDate = osu.beatmaps.query(
+                            new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(mapIDs.last()).setLimit(1).build()
+                    ).get(0).getApprovedDate();
+                } catch (OsuAPIException ignored) {}
             }
-            List<Integer> newMaps = new ArrayList<>();
+            List<OsuBeatmap> newMaps = new ArrayList<>();
+            List<Integer> newMapIDs = new ArrayList<>();
             boolean success = true;
             do {
                 if (interruptIdUpdating) {
@@ -69,26 +67,31 @@ public class SnipeManager {
                 if (success) {
                     success = false;
                     System.out.println(sinceDate.toString());
-                    Collection<Beatmap> temp = osu.getBeatmaps()
-                            .since(sinceDate)
-                            .limit(5)
-                            .query();
-                    newMaps = temp.stream()
-                            .map(Beatmap::getBeatmapId)
+                    try {
+                        newMaps = osu.beatmaps.query(
+                                new EndpointBeatmaps.ArgumentsBuilder().setSince(sinceDate).setLimit(500).build()
+                        );
+                    } catch (OsuAPIException e) {
+                        continue;
+                        // sinceDate stays the same, next iteration will try to retrieve the same maps again
+                    }
+                    sinceDate = newMaps.get(newMaps.size() - 1).getApprovedDate();
+                    newMapIDs = newMaps.stream()
+                            .map(OsuBeatmap::getID)
                             .filter(map -> mapIDs.contains(map))
                             .collect(Collectors.toList());
                 }
                 try {
-                    if (newMaps.size() > 0) {
-                        DBProvider.addMaps(newMaps);
+                    if (newMapIDs.size() > 0) {
+                        DBProvider.addMaps(newMapIDs);
                         success = true;
-                        Thread.sleep(1500);
+                        //Thread.sleep(1500);
                     }
-                } catch (InterruptedException | SQLException | ClassNotFoundException ignored) {
+                } catch (SQLException | ClassNotFoundException ignored) {
                     logger.warn("Error while adding new map id, trying again now");
-                    // success is still false, next iteration will try to add newMaps to DB again
+                    // success is still false, next iteration will try to add newMapIDs to DB again
                 }
-            } while (newMaps.size() > 0);
+            } while (newMapIDs.size() > 0);
             isUpdatingIDs = false;
         });
         t.start();
