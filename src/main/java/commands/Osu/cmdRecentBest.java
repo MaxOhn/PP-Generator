@@ -17,6 +17,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class cmdRecentBest implements INumberedCommand {
 
@@ -56,7 +57,9 @@ public class cmdRecentBest implements INumberedCommand {
                 }
             }
         }
-        ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
+        ArrayList<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toCollection(ArrayList::new));
         int delIndex = Math.max(argList.indexOf("-n"), argList.indexOf("-number"));
         if (delIndex > -1) {
             argList.remove(delIndex + 1);

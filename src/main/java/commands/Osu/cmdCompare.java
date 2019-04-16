@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
@@ -46,7 +47,10 @@ public class cmdCompare implements INumberedCommand {
             return;
         }
 
-        List<String> argList = new LinkedList<>(Arrays.asList(args));
+        List<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
+
         GameMod[] mods = new GameMod[] {};
         int mIdx = argList.indexOf("-m");
         if (mIdx == -1) mIdx = argList.indexOf("-mod");

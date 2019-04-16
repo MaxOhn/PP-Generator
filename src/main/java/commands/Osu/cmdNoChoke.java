@@ -18,10 +18,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class cmdNoChoke implements ICommand {
     @Override
@@ -43,8 +42,12 @@ public class cmdNoChoke implements ICommand {
                 event.getTextChannel().sendMessage(help(1)).queue();
                 return;
             }
-        } else
-            name = String.join(" ", args);
+        } else {
+            List<String> argsList = Arrays.stream(args)
+                    .filter(arg -> !arg.isEmpty())
+                    .collect(Collectors.toList());
+            name = String.join(" ", argsList);
+        }
         OsuUser user;
         try {
             user = Main.osu.users.query(

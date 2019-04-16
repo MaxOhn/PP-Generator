@@ -4,7 +4,10 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
-import com.oopsjpeg.osu4j.backend.*;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.EndpointScores;
+import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -16,7 +19,10 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class cmdRecent implements INumberedCommand {
 
@@ -45,8 +51,12 @@ public class cmdRecent implements INumberedCommand {
         } else if (args[0].equals("-h") || args[0].equals("-help")) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return;
-        } else
-            name = String.join(" ", args);
+        } else {
+            List<String> argsList = Arrays.stream(args)
+                    .filter(arg -> !arg.isEmpty())
+                    .collect(Collectors.toList());
+            name = String.join(" ", argsList);
+        }
 
         ArrayList<OsuScore> userRecents;
         OsuScore recent;

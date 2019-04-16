@@ -54,7 +54,9 @@ public class cmdTopScores implements ICommand {
                 }
             }
         }
-        ArrayList<String> argList = new ArrayList<>(Arrays.asList(args));
+        ArrayList<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toCollection(ArrayList::new));
         int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
         if (delIndex > -1) {
             argList.remove(delIndex + 1);

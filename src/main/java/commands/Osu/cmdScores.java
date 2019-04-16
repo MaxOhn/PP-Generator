@@ -22,6 +22,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class cmdScores implements ICommand {
     @Override
@@ -51,7 +52,9 @@ public class cmdScores implements ICommand {
             event.getTextChannel().sendMessage("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?").queue();
             return;
         }
-        List<String> argList = new LinkedList<>(Arrays.asList(args));
+        List<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
         String name = argList.size() > 1
                 ? String.join(" ", argList.subList(1, argList.size()))
                 : Main.discLink.getOsu(event.getAuthor().getId());
