@@ -3,6 +3,7 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -116,7 +117,7 @@ public class cmdCompare implements INumberedCommand {
         }
         OsuUser user;
         try {
-            user = score.getUser().get();
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(score.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
             event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
             return;
