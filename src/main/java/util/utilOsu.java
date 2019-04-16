@@ -148,7 +148,11 @@ public class utilOsu {
     public static int indexInTopPlays(OsuScore score, Collection<OsuScore> topPlays) {
         int index = 0;
         for (OsuScore s: topPlays) {
-            if (s == score) return ++index;
+            if (s.getScore() == score.getScore()
+                    && s.getBeatmapID() == score.getBeatmapID()
+                    && s.getUserID() == score.getUserID()
+                    && s.getMaxCombo() == score.getMaxCombo())
+                return ++index;
             index++;
         }
         return -1;
