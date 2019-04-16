@@ -246,7 +246,7 @@ public class Performance {
                         .append(mode == GameMode.STANDARD ? " -M " + score.getHit50() : "")
                         .append(" -G ").append(score.getHit100());
             } else { // mode == 3
-                cmdLineString.append(" -s ").append(score);
+                cmdLineString.append(" -s ").append(score.getScore());
             }
             for (GameMod mod: mods)
                 cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
