@@ -44,6 +44,7 @@ public class cmdScores implements ICommand {
                 mapID = m.group(3);
                 if (mapID == null) mapID = m.group(7);
             }
+            if (mapID.equals("-1")) mapID = Integer.parseInt(args[0]) + "";
         } catch (Exception e) {
             event.getTextChannel().sendMessage(help(2)).queue();
             return;
@@ -117,7 +118,7 @@ public class cmdScores implements ICommand {
                 return "Either specify an osu name as second argument or link your discord to an osu profile via `" +
                         statics.prefix + "link <osu name>" + "`" + help;
             case 2:
-                return "The first argument must be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`" + help;
+                return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
             default:
                 return help(0);
         }
