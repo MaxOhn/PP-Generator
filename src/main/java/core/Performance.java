@@ -276,7 +276,7 @@ public class Performance {
         return score.getPp();
     }
 
-    public OsuBeatmap getBeatmap() {
+    public OsuBeatmap getMap() {
         return map;
     }
 
@@ -319,6 +319,10 @@ public class Performance {
     public int getMaxCombo() {
         if (mode != GameMode.STANDARD) return 0;
         return map.getMaxCombo();
+    }
+
+    public GameMode getMode() {
+        return this.mode;
     }
 
     public int getScore() {
