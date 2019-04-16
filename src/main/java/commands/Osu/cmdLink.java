@@ -1,6 +1,7 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.User;
+import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -34,7 +35,7 @@ public class cmdLink implements ICommand {
         String name = String.join(" ", args);
 
         try {
-           User u = Main.osu.getUserByUsername(name).query().iterator().next();
+           OsuUser u = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).build());
         } catch (Exception e) {
             event.getTextChannel().sendMessage("Could not find osu user with name `" + name + "`").queue();
             return;

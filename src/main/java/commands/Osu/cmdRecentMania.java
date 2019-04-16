@@ -1,12 +1,12 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.GameMode;
+import com.oopsjpeg.osu4j.GameMode;
 
 public class cmdRecentMania extends cmdRecent {
 
     @Override
     GameMode getMode() {
-        return GameMode.OSU_MANIA;
+        return GameMode.MANIA;
     }
 
     @Override

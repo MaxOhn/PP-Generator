@@ -1,9 +1,12 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.Beatmap;
-import de.maxikg.osuapi.model.GameMode;
-import de.maxikg.osuapi.model.User;
-import de.maxikg.osuapi.model.UserScore;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.EndpointUserBests;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
@@ -15,7 +18,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class cmdNoChoke implements ICommand {
@@ -40,9 +45,11 @@ public class cmdNoChoke implements ICommand {
             }
         } else
             name = String.join(" ", args);
-        User user;
+        OsuUser user;
         try {
-            user = Main.osu.getUserByUsername(name).mode(GameMode.STANDARD).query().iterator().next();
+            user = Main.osu.users.query(
+                    new EndpointUsers.ArgumentsBuilder(name).setMode(GameMode.STANDARD).build()
+            );
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
@@ -51,21 +58,25 @@ public class cmdNoChoke implements ICommand {
             try {
                 int currScore = 0;
                 double ppThreshold = 0;
-                ArrayList<UserScore> scoresList = new ArrayList<>(Main.osu.getUserBestByUsername(name).mode(GameMode.STANDARD).limit(100).query());
+                ArrayList<OsuScore> scoresList = new ArrayList<>(Main.osu.userBests.query(
+                        new EndpointUserBests.ArgumentsBuilder(name).setMode(GameMode.STANDARD).setLimit(100).build()
+                ));
                 Performance p = new Performance();
-                ArrayList<Beatmap> maps = new ArrayList<>();
-                for (UserScore score : scoresList) {
+                ArrayList<OsuBeatmap> maps = new ArrayList<>();
+                for (OsuScore score : scoresList) {
                     double progress = 100 * (double)currScore / scoresList.size();
                     if (progress > 7 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
                         message.editMessage("Gathering data for `" + user.getUsername() + "`: "
                                 + (int)progress + "%").queue();
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
-                    Beatmap map;
+                    OsuBeatmap map;
                     try {
-                        map = DBProvider.getBeatmap(score.getBeatmapId());
+                        map = DBProvider.getBeatmap(score.getBeatmapID());
                     } catch (SQLException | ClassNotFoundException e) {
                         try {
-                            map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(GameMode.STANDARD).query().iterator().next();
+                            map = Main.osu.beatmaps.query(
+                                    new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(score.getBeatmapID()).setLimit(1).setMode(GameMode.STANDARD).build()
+                            ).get(0);
                             try {
                                 Thread.sleep(600);
                             } catch (InterruptedException ignored) {
@@ -84,20 +95,20 @@ public class cmdNoChoke implements ICommand {
                     if (ppThreshold > 0 && score.getPp() < ppThreshold && comboRatio > 0.97) continue;
                     Main.fileInteractor.prepareFiles(map);
                     maps.add(map);
-                    p.map(map).userscore(score).noChoke();
+                    p.map(map).osuscore(score).noChoke();
                     score.setCount300(p.getN300());
                     score.setCount100(p.getN100());
-                    score.setCountMiss(p.getNMisses());
-                    score.setMaxCombo(p.getCombo());
-                    score.setPp((float) p.getPpDouble());
+                    score.setCountmiss(p.getNMisses());
+                    score.setMaxcombo(p.getCombo());
+                    score.setPp((float)p.getPpDouble());
                     score.setRank(p.getRank());
                 }
-                scoresList.sort(Comparator.comparing(UserScore::getPp).reversed());
-                Collection<UserScore> scores = scoresList.subList(0, 5);
-                ArrayList<Beatmap> finalMaps = new ArrayList<>();
-                for (UserScore s : scores) {
-                    for (Beatmap m : maps) {
-                        if (s.getBeatmapId() == m.getBeatmapId()) {
+                scoresList.sort(Comparator.comparing(OsuScore::getPp).reversed());
+                Collection<OsuScore> scores = scoresList.subList(0, 5);
+                ArrayList<OsuBeatmap> finalMaps = new ArrayList<>();
+                for (OsuScore s : scores) {
+                    for (OsuBeatmap m : maps) {
+                        if (s.getBeatmapID() == m.getID()) {
                             finalMaps.add(m);
                             break;
                         }
@@ -105,7 +116,7 @@ public class cmdNoChoke implements ICommand {
                 }
                 maps = finalMaps;
                 message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%").queue();
-                new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).userscore(scores).maps(maps)
+                new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).osuscores(scores).maps(maps)
                         .mode(GameMode.STANDARD).buildAndSend(() -> message.delete().queue());
                 logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
                         "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));

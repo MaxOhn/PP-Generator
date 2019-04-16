@@ -14,7 +14,8 @@ public class DiscordLink {
         try {
             this.link = DBProvider.getDiscosu();
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Could not load links: " + e);
+            logger.error("Could not load links:");
+            e.printStackTrace();
             this.link = new HashMap<>();
         }
     }

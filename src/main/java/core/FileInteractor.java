@@ -1,6 +1,6 @@
 package main.java.core;
 
-import de.maxikg.osuapi.model.Beatmap;
+import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.util.secrets;
 import org.apache.log4j.Logger;
 
@@ -127,12 +127,12 @@ public class FileInteractor {
         }
     }
 
-    public boolean prepareFiles(Beatmap map) {
+    public boolean prepareFiles(OsuBeatmap map) {
         boolean success = true;
-        if (!new File(secrets.thumbPath + map.getBeatmapSetId() + "l.jpg").isFile())
-            success = downloadMapThumb(map.getBeatmapSetId());
-        if (!new File(secrets.mapPath + map.getBeatmapId() + ".osu").isFile())
-            success &= downloadMap(map.getBeatmapId());
+        if (!new File(secrets.thumbPath + map.getBeatmapSetID() + "l.jpg").isFile())
+            success = downloadMapThumb(map.getBeatmapSetID());
+        if (!new File(secrets.mapPath + map.getID() + ".osu").isFile())
+            success &= downloadMap(map.getID());
         return success;
     }
 }

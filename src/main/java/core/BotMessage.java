@@ -1,6 +1,9 @@
 package main.java.core;
 
-import de.maxikg.osuapi.model.*;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.OsuUser;
 import main.java.util.secrets;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -13,15 +16,16 @@ import java.awt.*;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.maxikg.osuapi.model.Mod.createSum;
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
 import static main.java.util.utilOsu.abbrvModSet;
+import static main.java.util.utilOsu.createSum;
 import static main.java.util.utilOsu.key_mods_str;
 
 public class BotMessage {
@@ -32,16 +36,18 @@ public class BotMessage {
     private MessageBuilder mb;
     private Performance p;
 
-    private User u;
-    private Beatmap m;
+    private OsuUser u;
+    private OsuBeatmap m;
     private GameMode mode;
-    private ScoreType typeS;
-    private BeatmapScore bs;
-    private UserScore us;
-    private UserGame ug;
-    private Collection<BeatmapScore> bsc;
-    private Collection<UserScore> usc;
-    private ArrayList<Beatmap> maps;
+    //private ScoreType typeS;
+    //private OsuScore bs;
+    //private OsuScore us;
+    //private OsuScore ug;
+    private OsuScore score;
+    private Collection<OsuScore> scores;
+    //private Collection<OsuScore> bsc;
+    //private Collection<OsuScore> usc;
+    private ArrayList<OsuBeatmap> maps;
 
     private String topplays;
     private int retries;
@@ -73,16 +79,16 @@ public class BotMessage {
         if (u == null) throw new IllegalStateException(Error.USER.getMsg());
         eb.setThumbnail("attachment://thumb.jpg");
         eb.setAuthor(u.getUsername() + ": "
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRaw()) + "pp (#"
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRank()) + " "
-                + u.getCountry().toString().toUpperCase()
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRankCountry()) + ")",
-        "https://osu.ppy.sh/u/" + u.getUserId(), "https://a.ppy.sh/" + u.getUserId());
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                + u.getCountry()
+                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+        "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
         File thumbFile;
         int idx;
         String ppString = "**", hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
-        Date date = new Date();
+        ZonedDateTime date = ZonedDateTime.now();
         switch (typeM) {
             case RECENT:
                 if (retries == 0) throw new IllegalStateException(Error.HISTORY.getMsg());
@@ -92,23 +98,10 @@ public class BotMessage {
             case SINGLETOP:
                 if (m == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
-                        ? new File(secrets.thumbPath + m.getBeatmapSetId() + "l.jpg")
+                        ? new File(secrets.thumbPath + m.getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
-                switch (typeS) {
-                    case BEATMAPSCORE:
-                        date = bs.getDate();
-                        timestamp = date.toInstant();
-                        break;
-                    case USERSCORE:
-                        date = us.getDate();
-                        timestamp = date.toInstant();
-                        break;
-                    case USERGAME:
-                        date = ug.getDate();
-                        timestamp = date.toInstant();
-                        break;
-                    default: throw new IllegalStateException(Error.TYPES.getMsg());
-                }
+                date = score.getDate();
+                timestamp = date.toInstant();
                 switch (mode) {
                     case STANDARD:
                         hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
@@ -119,7 +112,7 @@ public class BotMessage {
                         hitString += p.getN300() + " / " + p.getN100();
                         extendedTitle = m.getArtist() + " - " + m.getTitle() + " [" +
                                 m.getVersion() + "]" + " [" + p.getStarRating() + "★]";
-                    case OSU_MANIA:
+                    case MANIA:
                         hitString += hitString.equals("{ ") ? p.getNGeki() + " / " + p.getN300() + " / "
                                 + p.getNKatu() + " / " + p.getN100() + " / " + p.getN50() : "";
                         extendedTitle += extendedTitle.equals("") ? getKeyString() + " " + m.getArtist() + " - "
@@ -130,14 +123,14 @@ public class BotMessage {
                 ppString += p.getPp();
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(m.getTotalLength()) + "` (`"
-                        + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBpm() + "` Objects: `"
-                        + p.getNObjects() + "`\nCS: `" + m.getDifficultySize() + "` AR: `"
-                        + m.getDifficultyApproach() + "` OD: `" + m.getDifficultyOverall() + "` HP: `"
-                        + m.getDifficultyDrain() + "` Stars: `" + df.format(m.getDifficultyRating()) + "`";
+                        + secondsToTimeFormat(m.getHitLength()) + "`) BPM: `" + m.getBPM() + "` Objects: `"
+                        + p.getNObjects() + "`\nCS: `" + m.getSize() + "` AR: `"
+                        + m.getApproach() + "` OD: `" + m.getOverall() + "` HP: `"
+                        + m.getDrain() + "` Stars: `" + df.format(m.getDifficulty()) + "`";
                 eb.setTimestamp(timestamp)
                     .setDescription(topplays)
                     .setTitle(getKeyString() + " " + m.getArtist() + " - " + m.getTitle() + " [" + m.getVersion()
-                                    + "]","https://osu.ppy.sh/b/" + m.getBeatmapId())
+                                    + "]","https://osu.ppy.sh/b/" + m.getID())
                     .addField("Rank", getRank() + getModString(),true)
                     .addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()),true)
                     .addField("Acc", p.getAcc() + "%",true)
@@ -148,32 +141,32 @@ public class BotMessage {
                 break;
             case SCORES:
                 if (m == null) throw new IllegalStateException(Error.MAP.getMsg());
-                if (bsc == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 thumbFile = filesPrepared
-                        ? new File(secrets.thumbPath + m.getBeatmapSetId() + "l.jpg")
+                        ? new File(secrets.thumbPath + m.getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setTitle(m.getArtist() + " - " + m.getTitle() + " [" + m.getVersion()
-                                + "]","https://osu.ppy.sh/b/" + m.getBeatmapId());
-                List<BeatmapScore> orderedScores = new ArrayList<>(bsc);
-                orderedScores.sort(Comparator.comparing(BeatmapScore::getPp).reversed());
+                                + "]","https://osu.ppy.sh/b/" + m.getID());
+                List<OsuScore> orderedScores = new ArrayList<>(scores);
+                orderedScores.sort(Comparator.comparing(OsuScore::getPp).reversed());
                 idx = 1;
-                for (BeatmapScore s : orderedScores) {
-                    beatmapscore(s);
+                for (OsuScore s : orderedScores) {
+                    osuscore(s);
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
                             NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
-                    if (mode == GameMode.OSU_MANIA) fieldName += "\t" + getKeyString();
+                    if (mode == GameMode.MANIA) fieldName += "\t" + getKeyString();
                     String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ "
                             + s.getMaxCombo() + "x/" + p.getMaxCombo() + "x ]\t {";
                     switch (mode) {
-                        case STANDARD: fieldValue += s.getCount300() + "/" + s.getCount100() + "/" + s.getCount50(); break;
-                        case TAIKO: fieldValue +=  s.getCount300() + "/" + s.getCount100(); break;
-                        case OSU_MANIA:
-                            fieldValue += s.getCountGeki() + "/" + s.getCount300() + "/" + s.getCountKatu()
-                                    + "/" + s.getCount100() + "/" + s.getCount50();
+                        case STANDARD: fieldValue += s.getHit300() + "/" + s.getHit100() + "/" + s.getHit50(); break;
+                        case TAIKO: fieldValue +=  s.getHit300() + "/" + s.getHit100(); break;
+                        case MANIA:
+                            fieldValue += s.getGekis() + "/" + s.getHit300() + "/" + s.getKatus()
+                                    + "/" + s.getHit100() + "/" + s.getHit50();
                             break;
                         default: throw new IllegalStateException(Error.MODE.getMsg());
                     }
-                    fieldValue += "/" + s.getCountMiss() + "}\t" + howLongAgo(s.getDate());
+                    fieldValue += "/" + s.getMisses() + "}\t" + howLongAgo(s.getDate());
                     eb.addField(fieldName, fieldValue, false);
                 }
                 break;
@@ -181,37 +174,37 @@ public class BotMessage {
                 mb.append(event.getAuthor().getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
             case TOPSOTARKS:
                 if (mb.isEmpty()) {
-                    if (usc.size() < 10) {
-                        mb.append("I found ").append(String.valueOf(usc.size())).append(" Sotarks scores in `")
+                    if (scores.size() < 10) {
+                        mb.append("I found ").append(String.valueOf(scores.size())).append(" Sotarks scores in `")
                                 .append(u.getUsername()).append("`'s top 100 and this is kinda sad \\:(");
                     } else {
-                        mb.append("There are ").append(String.valueOf(usc.size())).append(" Sotarks scores in `")
+                        mb.append("There are ").append(String.valueOf(scores.size())).append(" Sotarks scores in `")
                                 .append(u.getUsername()).append("`'s top 100 and this is very sad \\:(");
                     }
-                    usc = usc.stream().limit(5).collect(Collectors.toList());
+                    scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
             case TOPSCORES:
-                if (usc == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
-                eb.setThumbnail("https://a.ppy.sh/" + u.getUserId());
+                if (scores == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                eb.setThumbnail("https://a.ppy.sh/" + u.getID());
                 eb.setAuthor(u.getUsername() + ": "
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRaw()) + "pp (#"
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRank()) + " "
-                            + u.getCountry().toString().toUpperCase()
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getPpRankCountry()) + ")",
-                    "https://osu.ppy.sh/u/" + u.getUserId(), "attachment://thumb.jpg");
-                thumbFile = new File(secrets.flagPath + u.getCountry().toString().toUpperCase() + ".png");
+                            + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                            + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                            + u.getCountry()
+                            + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                    "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
+                thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
                 String mods;
                 StringBuilder description = new StringBuilder();
                 idx = 1;
-                for (UserScore s : usc) {
+                for (OsuScore s : scores) {
                     map(maps.get(idx - 1));
-                    userscore(s);
+                    osuscore(s);
                     mods = getModString();
                     if (!description.toString().equals("")) description.append("\n");
                     if (typeM == MessageType.NOCHOKESCORES) p.noChoke();
                     description.append("**").append(idx++).append(".** [**")
                             .append(m.getTitle()).append(" [").append(m.getVersion()).append("]**](https://osu.ppy.sh/b/")
-                            .append(m.getBeatmapId()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
+                            .append(m.getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
                             .append(p.getStarRating()).append("★]\n ")
                             .append(getRank()).append(" **").append(p.getPp()).append("**/").append(p.getPpMax())
                             .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
@@ -219,20 +212,20 @@ public class BotMessage {
                             .append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ] ~ { ");
                     switch (mode) {
                         case STANDARD:
-                            description.append(s.getCount300()).append(" / ").append(s.getCount100()).append(" / ")
-                                    .append(s.getCount50());
+                            description.append(s.getHit300()).append(" / ").append(s.getHit100()).append(" / ")
+                                    .append(s.getHit50());
                             break;
-                        case OSU_MANIA:
-                            description.append(s.getCountGeki()).append(" / ").append(s.getCount300()).append(" / ")
-                                    .append(s.getCountKatu()).append(" / ").append(s.getCount100()).append(" / ")
-                                    .append(s.getCount50());
+                        case MANIA:
+                            description.append(s.getGekis()).append(" / ").append(s.getHit300()).append(" / ")
+                                    .append(s.getKatus()).append(" / ").append(s.getHit100()).append(" / ")
+                                    .append(s.getHit50());
                             break;
                         case TAIKO:
-                            description.append(s.getCount300()).append(" / ").append(s.getCount100());
+                            description.append(s.getHit300()).append(" / ").append(s.getHit100());
                             break;
                         default: break;
                     }
-                    description.append(" / ").append(s.getCountMiss()).append(" } ~ ").append(howLongAgo(s.getDate()));
+                    description.append(" / ").append(s.getMisses()).append(" } ~ ").append(howLongAgo(s.getDate()));
                 }
                 eb.setDescription(description);
                 break;
@@ -257,7 +250,7 @@ public class BotMessage {
                                         p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
                                         "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
                                         p.getMaxCombo() + "x ]\t " + hString, false));
-                        eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + m.getBeatmapId());
+                        eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + m.getID());
                         message.editMessage(eb.build()).queue();
                     } catch (InterruptedException ignored) { }
                 });
@@ -271,12 +264,12 @@ public class BotMessage {
         if (runnable != null) runnable.run();
     }
 
-    public BotMessage user(User user) {
+    public BotMessage user(OsuUser user) {
         this.u = user;
         return this;
     }
 
-    public BotMessage map(Beatmap map) {
+    public BotMessage map(OsuBeatmap map) {
         this.m = map;
         this.p.map(map);
         this.filesPrepared = Main.fileInteractor.prepareFiles(map);
@@ -285,68 +278,33 @@ public class BotMessage {
     }
 
     public BotMessage mode(GameMode mode) {
-        if (mode == GameMode.CTB) throw new IllegalStateException(Error.MODE.getMsg());
+        if (mode == GameMode.CATCH_THE_BEAT) throw new IllegalStateException(Error.MODE.getMsg());
         this.mode = mode;
         this.p.mode(mode);
         return this;
     }
 
-    public BotMessage beatmapscore(BeatmapScore score) {
-        this.bs = score;
-        this.typeS = ScoreType.BEATMAPSCORE;
-        this.p.beatmapscore(score);
+    public BotMessage osuscore(OsuScore score) {
+        this.score = score;
+        this.p.osuscore(score);
         return this;
     }
 
-    public BotMessage beatmapscore(Collection<BeatmapScore> scores) {
-        this.bsc = scores;
-        this.typeS = ScoreType.BEATMAPSCORE;
+    public BotMessage osuscores(Collection<OsuScore> scores) {
+        this.scores = scores;
         return this;
     }
 
-    public BotMessage userscore(UserScore score) {
-        this.us = score;
-        this.typeS = ScoreType.USERSCORE;
-        this.p.userscore(score);
-        return this;
-    }
-
-    public BotMessage userscore(Collection<UserScore> scores) {
-        this.usc = scores;
-        this.typeS = ScoreType.USERSCORE;
-        return this;
-    }
-
-    public BotMessage usergame(UserGame score) {
-        this.ug = score;
-        this.typeS = ScoreType.USERGAME;
-        this.p.usergame(score);
-        return this;
-    }
-
-    public BotMessage maps(ArrayList<Beatmap> maps) {
+    public BotMessage maps(ArrayList<OsuBeatmap> maps) {
         this.maps = maps;
         return this;
     }
 
-    public BotMessage topplays(Collection<UserScore> playsT, Collection<BeatmapScore> playsG) {
+    public BotMessage topplays(Collection<OsuScore> playsT, Collection<OsuScore> playsG) {
         int topPlayIdx = 0;
         int globalPlayIdx = 0;
-        switch (typeS) {
-            case BEATMAPSCORE:
-                if (playsT != null) topPlayIdx = utilOsu.indexInTopPlays(bs, playsT);
-                if (playsG != null) globalPlayIdx = utilOsu.indexInGlobalPlays(bs, playsG);
-                break;
-            case USERSCORE:
-                if (playsT != null) topPlayIdx = utilOsu.indexInTopPlays(us, playsT);
-                if (playsG != null) globalPlayIdx = utilOsu.indexInGlobalPlays(us, playsG);
-                break;
-            case USERGAME:
-                if (playsT != null) topPlayIdx = utilOsu.indexInTopPlays(ug, playsT);
-                if (playsG != null) globalPlayIdx = utilOsu.indexInGlobalPlays(ug, playsG);
-                break;
-            default: throw new IllegalStateException(Error.TYPES.getMsg());
-        }
+        if (playsT != null) topPlayIdx = utilOsu.indexInTopPlays(score, playsT);
+        if (playsG != null) globalPlayIdx = utilOsu.indexInTopPlays(score, playsG);
         String descriptionStr = "__**";
         if (topPlayIdx > 0) {
             descriptionStr += "Personal Best #" + topPlayIdx;
@@ -359,15 +317,10 @@ public class BotMessage {
         return this;
     }
 
-    public BotMessage history(Collection<UserGame> history) {
-        int mapID;
-        switch (typeS) {
-            case USERSCORE: mapID = us.getBeatmapId(); break;
-            case USERGAME: mapID = ug.getBeatmapId(); break;
-            default: throw new IllegalStateException(Error.TYPES.getMsg());
-        }
-        for (UserGame game : history) {
-            if (game.getBeatmapId() == mapID)
+    public BotMessage history(Collection<OsuScore> history) {
+        int mapID = score.getBeatmapID();
+        for (OsuScore game : history) {
+            if (game.getBeatmapID() == mapID)
                 if (game.getScore() > 10000)
                     retries++;
                 else
@@ -377,52 +330,29 @@ public class BotMessage {
     }
 
     private String getRank() {
-        String scoreRank;
-        switch (typeS) {
-            case BEATMAPSCORE: scoreRank = bs.getRank(); break;
-            case USERSCORE: scoreRank = us.getRank(); break;
-            case USERGAME: scoreRank = ug.getRank(); break;
-            default: throw new IllegalStateException(Error.TYPES.getMsg());
-        }
+        String scoreRank = score.getRank();
         return event.getJDA().getGuildById(secrets.devGuildID)
                 .getEmoteById(utilOsu.getRankEmote(scoreRank).getValue()).getAsMention()
             + (scoreRank.equals("F") ? " (" + p.getCompletion() + "%)" : "");
     }
 
     private String getModString() {
-        String out;
-        switch (typeS) {
-            case BEATMAPSCORE: out = abbrvModSet(bs.getEnabledMods()); break;
-            case USERSCORE: out = abbrvModSet(us.getEnabledMods()); break;
-            case USERGAME: out = abbrvModSet(ug.getEnabledMods()); break;
-            default: throw new IllegalStateException(Error.TYPES.getMsg());
-        }
+        String out = abbrvModSet(score.getEnabledMods());
         if (!out.equals(""))
             out = " +" + out;
         return out;
     }
 
     private String getKeyString() {
-        if (mode != GameMode.OSU_MANIA) return "";
-        String keys;
-        switch (typeS) {
-            case BEATMAPSCORE: keys = key_mods_str(createSum(bs.getEnabledMods())); break;
-            case USERSCORE: keys = key_mods_str(createSum(us.getEnabledMods())); break;
-            case USERGAME: keys = key_mods_str(createSum(ug.getEnabledMods())); break;
-            default: throw new IllegalStateException(Error.TYPES.getMsg());
-        }
-        return "[" + (keys.equals("") ? ((int)m.getDifficultySize() + "K") : keys) + "]";
-    }
-
-    private enum ScoreType {
-        BEATMAPSCORE, USERSCORE, USERGAME
+        if (mode != GameMode.MANIA) return "";
+        String keys = key_mods_str(createSum(score.getEnabledMods()));
+        return "[" + (keys.equals("") ? ((int)m.getSize() + "K") : keys) + "]";
     }
 
     private enum Error {
         USER("Unspecified user"),
         MAP("Unspecified map"),
         HISTORY("Unspecified history"),
-        TYPES("Invalid score type"),
         TYPEM("Invalid message type"),
         MODE("Unsupported game mode"),
         COLLECTION("Collection is undefined");

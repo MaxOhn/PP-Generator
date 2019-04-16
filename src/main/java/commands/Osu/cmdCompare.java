@@ -1,6 +1,9 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.*;
+import com.oopsjpeg.osu4j.*;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.EndpointScores;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
@@ -12,9 +15,11 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
-import static de.maxikg.osuapi.model.Mod.parseFlagSum;
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
@@ -41,14 +46,14 @@ public class cmdCompare implements INumberedCommand {
         }
 
         List<String> argList = new LinkedList<>(Arrays.asList(args));
-        Set<Mod> mods = new HashSet<>();
+        GameMod[] mods = new GameMod[] {};
         int mIdx = argList.indexOf("-m");
         if (mIdx == -1) mIdx = argList.indexOf("-mod");
         if (mIdx == -1) mIdx = argList.indexOf("-mods");
         if (mIdx != -1) {
             argList.remove(mIdx);
             if (argList.size() > mIdx) {
-                mods = parseFlagSum(mods_flag(argList.get(mIdx).toUpperCase()));
+                mods = GameMod.get(mods_flag(argList.get(mIdx).toUpperCase()));
                 argList.remove(mIdx);
             } else {
                 event.getTextChannel().sendMessage(help(2)).queue();
@@ -84,44 +89,71 @@ public class cmdCompare implements INumberedCommand {
             }
         }
 
-        Collection<BeatmapScore> scores =  Main.osu.getScores(Integer.parseInt(mapID)).mode(getMode()).username(name).query();
+        List<OsuScore> scores;
+        try {
+            scores = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(
+                    Integer.parseInt(mapID)).setMode(getMode()).setUserName(name).setLimit(1).build()
+            );
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve score of `" + name + "` on map id `" + mapID + "`").queue();
+            return;
+        }
         if (scores.size() == 0) {
             event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
                     mapID + "`").queue();
             return;
         }
 
-        BeatmapScore score = scores.iterator().next();
+        OsuScore score = scores.get(0);
         if (mIdx > -1) {
-            Iterator<BeatmapScore> it = scores.iterator();
-            while (it.hasNext() && !(score = it.next()).getEnabledMods().equals(mods)) ;
-            if (!score.getEnabledMods().equals(mods)) {
+            Iterator<OsuScore> it = scores.iterator();
+            while (it.hasNext() && !Arrays.equals((score = it.next()).getEnabledMods(), mods));
+            if (!Arrays.equals(score.getEnabledMods(), mods)) {
                 event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
                         mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
                 score = scores.iterator().next();
             }
         }
-        User user;
+        OsuUser user;
         try {
-            user = Main.osu.getUserByUsername(name).mode(getMode()).query().iterator().next();
+            user = score.getUser().get();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
             return;
         }
-        Beatmap map;
+        OsuBeatmap map;
         try {
             map = DBProvider.getBeatmap(Integer.parseInt(mapID));
         } catch (SQLException | ClassNotFoundException e) {
-            map = Main.osu.getBeatmaps().beatmapId(Integer.parseInt(mapID)).mode(getMode()).limit(1).query().iterator().next();
+            try {
+                map = Main.osu.beatmaps.query(
+                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).setMode(getMode()).setLimit(1).build()
+                ).get(0);
+            } catch (OsuAPIException e1) {
+                event.getTextChannel().sendMessage("Could not retrieve beatmap with id `" + mapID + "`").queue();
+                return;
+            }
             try {
                 DBProvider.addBeatmap(map);
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }
         }
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(getMode()).limit(50).query();
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(getMode()).query();
-        new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).beatmapscore(score)
+        List<OsuScore> topPlays;
+        try {
+            topPlays = user.getTopScores(50).get();
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve top scores of `" + name + "`").queue();
+            return;
+        }
+        List<OsuScore> globalPlays;
+        try {
+            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve global scores of map id `" + map.getID() + "`").queue();
+            return;
+        }
+        new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).osuscore(score)
                 .mode(getMode()).topplays(topPlays, globalPlays).buildAndSend();
     }
 

@@ -1,6 +1,11 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.*;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.backend.*;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
@@ -43,11 +48,13 @@ public class cmdRecent implements INumberedCommand {
         } else
             name = String.join(" ", args);
 
-        ArrayList<UserGame> userRecents;
-        UserGame recent;
-        User user;
+        ArrayList<OsuScore> userRecents;
+        OsuScore recent;
+        OsuUser user;
         try {
-            userRecents = new ArrayList<>(Main.osu.getUserRecentByUsername(name).mode(getMode()).limit(50).query());
+            userRecents = new ArrayList<>(Main.osu.userRecents.query(
+                    new EndpointUserRecents.ArgumentsBuilder(name).setMode(getMode()).setLimit(50).build())
+            );
             recent = userRecents.get(0);
             while (--number > 0 && userRecents.size() > 1) {
                 userRecents.remove(0);
@@ -57,28 +64,43 @@ public class cmdRecent implements INumberedCommand {
                 event.getTextChannel().sendMessage("User's recent history doesn't go that far back").queue();
                 return;
             }
-            user = Main.osu.getUserByUsername(name).mode(getMode()).query().iterator().next();
+            user = recent.getUser().get();
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
         }
-        Beatmap map;
+        OsuBeatmap map;
         try {
-            map = DBProvider.getBeatmap(recent.getBeatmapId());
+            map = DBProvider.getBeatmap(recent.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
-            map = Main.osu.getBeatmaps().beatmapId(recent.getBeatmapId()).mode(getMode()).limit(1).query().iterator().next();
+            try {
+                //map = recent.getBeatmap().get();
+                map = Main.osu.beatmaps.query(
+                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(recent.getBeatmapID()).setMode(getMode()).setLimit(1).build()
+                ).get(0);
+            } catch (OsuAPIException e1) {
+                event.getTextChannel().sendMessage("Could not retrieve beatmap id `" + recent.getBeatmapID() + "`").queue();
+                return;
+            }
             try {
                 DBProvider.addBeatmap(map);
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }
         }
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(getMode()).limit(50).query();
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).mode(getMode()).query();
+        Collection<OsuScore> topPlays;
+        Collection<OsuScore> globalPlays;
+        try {
+            topPlays = user.getTopScores(50).get();
+            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve top scores").queue();
+            return;
+        }
         new BotMessage(event, BotMessage.MessageType.RECENT)
                 .user(user)
                 .map(map)
-                .usergame(recent)
+                .osuscore(recent)
                 .history(userRecents)
                 .mode(getMode())
                 .topplays(topPlays, globalPlays)

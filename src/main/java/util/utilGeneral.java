@@ -9,8 +9,8 @@ import net.dv8tion.jda.core.entities.User;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 public class utilGeneral {
@@ -23,7 +23,7 @@ public class utilGeneral {
         return String.format("%02d:%02d", secs/60, secs%60);
     }
 
-    public static String howLongAgo(Date d) {
+    public static String howLongAgo(ZonedDateTime d) {
         OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime date = OffsetDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
         int temp = now.getYear() - date.getYear();

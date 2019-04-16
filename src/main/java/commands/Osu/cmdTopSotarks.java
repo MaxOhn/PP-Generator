@@ -1,6 +1,6 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.Beatmap;
+import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 
@@ -12,9 +12,9 @@ public class cmdTopSotarks extends cmdTopScores {
     }
 
     @Override
-    boolean getCondition(Beatmap m) {
+    boolean getCondition(OsuBeatmap m) {
         if (m == null) return false;
-        return (m.getCreator().equals("Sotarks")
+        return (m.getCreatorName().equals("Sotarks")
                 && !m.getVersion().contains("'s Hard")
                 && !m.getVersion().contains("'s Insane")
                 && !m.getVersion().contains("'s Expert")

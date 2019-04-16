@@ -1,15 +1,23 @@
 package main.java.core;
 
-import de.maxikg.osuapi.model.Beatmap;
-import de.maxikg.osuapi.model.BeatmapState;
-import de.maxikg.osuapi.model.GameMode;
+import com.oopsjpeg.osu4j.ApprovalState;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.util.Utility;
 import main.java.util.secrets;
 
 import java.sql.*;
 import java.util.*;
-import java.util.Date;
 
 public class DBProvider {
+
+    private static String addReplacer(String str) {
+        return str.replaceAll("'", "ö");
+    }
+
+    private static String removeReplacer(String str) {
+        return str.replaceAll("ö", "'");
+    }
 
     /*
      * ------------------------
@@ -50,76 +58,77 @@ public class DBProvider {
      * ------------------------
      */
 
-    public static void addBeatmap(Beatmap map) throws ClassNotFoundException, SQLException {
+    public static void addBeatmap(OsuBeatmap map) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         try {
-            stmnt.execute("insert into beatmapInfo values ('" + map.getBeatmapId() + "','"
-                    + map.getBeatmapSetId() + "','"
-                    + map.getApproved().getValue() + "','"
-                    + map.getVersion().replace("'", "ö") + "','"
-                    + map.getTitle().replace("'", "ö") + "','"
-                    + map.getArtist().replace("'", "ö") + "',"
-                    + map.getMode().getValue() + ","
-                    + map.getDifficultyDrain() + ","
-                    + map.getDifficultySize() + ","
-                    + map.getDifficultyApproach() + ","
-                    + map.getDifficultyOverall() + ","
-                    + map.getDifficultyRating() + ","
+            stmnt.execute("insert into beatmapInfo values ('" + map.getID() + "','"
+                    + map.getBeatmapSetID() + "','"
+                    + map.getApproved().getID() + "','"
+                    + addReplacer(map.getVersion()) + "','"
+                    + addReplacer(map.getTitle()) + "','"
+                    + addReplacer(map.getArtist()) + "',"
+                    + map.getMode().getID() + ","
+                    + map.getDrain() + ","
+                    + map.getSize() + ","
+                    + map.getApproach() + ","
+                    + map.getOverall() + ","
+                    + map.getDifficulty() + ","
                     + map.getTotalLength() + ","
                     + map.getHitLength() + ","
-                    + map.getBpm() + ","
+                    + map.getBPM() + ","
                     + map.getMaxCombo() + ",'"
-                    + map.getCreator().replace("'", "ö") + "',"
-                    + map.getApprovedDate().getTime() + ","
-                    + map.getLastUpdate().getTime() + ",'"
-                    + map.getSource().replace("'", "ö") + "')");
+                    + addReplacer(map.getCreatorName()) + "','"
+                    + addReplacer(map.getSource()) + "','"
+                    + addReplacer(Utility.toMySqlString(map.getApprovedDate())) + "','"
+                    + addReplacer(Utility.toMySqlString(map.getLastUpdate())) + "')" );
         } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
+
     }
 
-    public static Beatmap getBeatmap(int mapID) throws ClassNotFoundException, SQLException {
+    public static OsuBeatmap getBeatmap(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select * from beatmapInfo where mapID='" + mapID + "'");
         rs.next();
-        Beatmap m = new Beatmap();
-        m.setBeatmapId(rs.getInt("mapID"));
-        m.setBeatmapSetId(rs.getInt("mapSetID"));
+        OsuBeatmap m = new OsuBeatmap(Main.osu);
+        m.setBeatmapID(rs.getInt("mapID"));
+        m.setBeatmapSetID(rs.getInt("mapSetID"));
         switch (rs.getInt("approved")) {
             case 4:
-            case 3: m.setApproved(BeatmapState.QUALIFIED); break;
-            case 2: m.setApproved(BeatmapState.APPROVED); break;
-            case 1: m.setApproved(BeatmapState.RANKED); break;
-            case 0: m.setApproved(BeatmapState.PENDING); break;
-            case -1: m.setApproved(BeatmapState.WORK_IN_PROGRESS); break;
-            default: m.setApproved(BeatmapState.GRAVEYARD); break;
+            case 3: m.setApproved(ApprovalState.QUALIFIED); break;
+            case 2: m.setApproved(ApprovalState.APPROVED); break;
+            case 1: m.setApproved(ApprovalState.RANKED); break;
+            case 0: m.setApproved(ApprovalState.PENDING); break;
+            case -1: m.setApproved(ApprovalState.WIP); break;
+            default: m.setApproved(ApprovalState.GRAVEYARD); break;
         }
-        m.setVersion(rs.getString("version").replace("ö", "'"));
-        m.setTitle(rs.getString("title").replace("ö", "'"));
-        m.setArtist(rs.getString("artist").replace("ö", "'"));
+        m.setVersion(removeReplacer(rs.getString("version")));
+        m.setTitle(removeReplacer(rs.getString("title")));
+        m.setArtist(removeReplacer(rs.getString("artist")));
         switch (rs.getInt("mode")) {
             case 0: m.setMode(GameMode.STANDARD); break;
             case 1: m.setMode(GameMode.TAIKO); break;
-            case 2: m.setMode(GameMode.CTB); break;
-            default: m.setMode(GameMode.OSU_MANIA); break;
+            case 2: m.setMode(GameMode.CATCH_THE_BEAT); break;
+            default: m.setMode(GameMode.MANIA); break;
         }
-        m.setDifficultyDrain(rs.getDouble("hp"));
-        m.setDifficultySize(rs.getDouble("cs"));
-        m.setDifficultyApproach(rs.getDouble("ar"));
-        m.setDifficultyOverall(rs.getDouble("od"));
-        m.setDifficultyRating(rs.getFloat("stars"));
+        m.setDiffDrain((float)rs.getDouble("hp"));
+        m.setDiffSize((float)rs.getDouble("cs"));
+        m.setDiffApproach((float)rs.getDouble("ar"));
+        m.setDiffOverall((float)rs.getDouble("od"));
+        m.setDifficultyrating(rs.getFloat("stars"));
         m.setTotalLength(rs.getInt("tlength"));
         m.setHitLength(rs.getInt("hlength"));
         m.setBpm(rs.getInt("bpm"));
         m.setMaxCombo(rs.getInt("combo"));
-        m.setCreator(rs.getString("creator").replace("ö", "'"));
-        m.setApprovedDate(new Date(rs.getLong("date")));
-        m.setLastUpdate(new Date(rs.getLong("updated")));
-        m.setSource(rs.getString("source").replace("ö", "'"));
+        m.setCreatorName(removeReplacer(rs.getString("creator")));
+        m.setSource(removeReplacer(rs.getString("source")));
+        m.setApprovedDate(Utility.parseDate(rs.getString("date")));
+        m.setApprovedDate(Utility.parseDate(rs.getString("updated")));
         stmnt.close();
         c.close();
         return m;
@@ -408,11 +417,12 @@ public class DBProvider {
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select * from twitch");
         while(rs.next()) {
-            if (streamers.containsKey(rs.getString("name")))
-                streamers.get(rs.getString("name")).add(rs.getString("channel"));
+            String twitchName = rs.getString("name");
+            String channelID = rs.getString("channel");
+            if (streamers.containsKey(twitchName))
+                streamers.get(twitchName).add(channelID);
             else
-                streamers.put(rs.getString("name"),
-                        new ArrayList<>(Collections.singletonList(rs.getString("channel"))));
+                streamers.put(twitchName, new ArrayList<>(Collections.singletonList(channelID)));
         }
         stmnt.close();
         c.close();

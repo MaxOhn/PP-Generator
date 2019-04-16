@@ -1,6 +1,6 @@
 package main.java.core;
 
-import de.maxikg.osuapi.model.*;
+import com.oopsjpeg.osu4j.*;
 import main.java.util.secrets;
 import org.apache.log4j.Logger;
 
@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static main.java.util.utilOsu.abbrvModSet;
@@ -45,25 +47,25 @@ public class Performance {
 
     private String rank;
 
-    private Set<Mod> mods;
+    private Set<GameMod> mods;
 
     private GameMode mode;
 
     private Logger logger = Logger.getLogger(this.getClass());
 
-    private static final Set<Mod> starModifier = new HashSet<>(Arrays.asList(Mod.EASY, Mod.HALF_TIME, Mod.NIGHTCORE,
-            Mod.DOUBLE_TIME, Mod.HARD_ROCK));
+    private static final Set<GameMod> starModifier = new HashSet<>(Arrays.asList(GameMod.EASY, GameMod.HALF_TIME,
+            GameMod.NIGHTCORE, GameMod.DOUBLE_TIME, GameMod.HARD_ROCK));
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
 
     public Performance() {}
 
-    public Performance map(Beatmap map) {
-        this.mapID =  map.getBeatmapId();
+    public Performance map(OsuBeatmap map) {
+        this.mapID =  map.getID();
         this.maxCombo = map.getMaxCombo();
 
         this.ppMax = 0;
-        this.baseStarRating = (double)map.getDifficultyRating();
+        this.baseStarRating = (double)map.getDifficulty();
         //this.od =  map.getDifficultyOverall();
         //this.ar = map.getDifficultyApproach();
         //this.cs = map.getDifficultySize();
@@ -74,80 +76,32 @@ public class Performance {
         return this;
     }
 
-    public Performance userscore(UserScore score) {
-        this.mapID = score.getBeatmapId();
-        this.userID = score.getUserId();
-        this.n300 = score.getCount300();
-        this.n100 = score.getCount100();
-        this.n50 = score.getCount50();
-        this.nMisses = score.getCountMiss();
-        this.nGeki = score.getCountGeki();
-        this.nKatu = score.getCountKatu();
-        this.score = score.getScore();
-        this.combo = score.getMaxCombo();
+    public Performance osuscore(OsuScore score) {
+        if (score.getBeatmapID() != -1) this.mapID = score.getBeatmapID();
+        if (score.getUserID() != -1) this.userID = score.getUserID();
+        if (score.getHit300() != -1) this.n300 = score.getHit300();
+        if (score.getHit100() != -1) this.n100 = score.getHit100();
+        if (score.getHit50() != -1) this.n50 = score.getHit50();
+        if (score.getMisses() != -1) this.nMisses = score.getMisses();
+        if (score.getGekis() != -1) this.nGeki = score.getGekis();
+        if (score.getKatus() != -1) this.nKatu = score.getKatus();
+        if (score.getScore() != -1) this.score = score.getScore();
+        if (score.getMaxCombo() != -1) this.combo = score.getMaxCombo();
         this.nObjects = 0;
         this.nPassedObjects = 0;
 
-        this.pp = (double)score.getPp();
+        if (score.getPp() != -1) this.pp = score.getPp();
         this.acc = 0;
         this.starRating = 0;
 
-        if (this.mods != score.getEnabledMods())
+        Set<GameMod> scoreMods = new HashSet<>(Arrays.asList(score.getEnabledMods()));
+        if (this.mods != scoreMods)
             this.ppMax = 0;
-        this.mods = score.getEnabledMods();
+        this.mods = scoreMods;
 
-        this.rank = score.getRank();
+        if (!score.getRank().equals("")) this.rank = score.getRank();
 
         return this;
-    }
-
-    public void usergame(UserGame score) {
-        this.mapID = score.getBeatmapId();
-        this.userID = score.getUserId();
-        this.n300 = score.getCount300();
-        this.n100 = score.getCount100();
-        this.n50 = score.getCount50();
-        this.nMisses = score.getCountMiss();
-        this.nGeki = score.getCountGeki();
-        this.nKatu = score.getCountKatu();
-        this.score = score.getScore();
-        this.combo = score.getMaxCombo();
-        this.nObjects = 0;
-        this.nPassedObjects = 0;
-
-        this.pp = 0;
-        this.acc = 0;
-        this.starRating = 0;
-
-        if (this.mods != score.getEnabledMods())
-            this.ppMax = 0;
-        this.mods = score.getEnabledMods();
-
-        this.rank = score.getRank();
-    }
-
-    public void beatmapscore(BeatmapScore score) {
-        this.userID = score.getUserId();
-        this.n300 = score.getCount300();
-        this.n100 = score.getCount100();
-        this.n50 = score.getCount50();
-        this.nMisses = score.getCountMiss();
-        this.nGeki = score.getCountGeki();
-        this.nKatu = score.getCountKatu();
-        this.score = score.getScore();
-        this.combo = score.getMaxCombo();
-        this.nObjects = 0;
-        this.nPassedObjects = 0;
-
-        this.pp = (double)score.getPp();
-        this.acc = 0;
-        this.starRating = 0;
-
-        if (this.mods != score.getEnabledMods())
-            this.ppMax = 0;
-        this.mods = score.getEnabledMods();
-
-        this.rank = score.getRank();
     }
 
     public void mode(GameMode mode) {
@@ -166,9 +120,9 @@ public class Performance {
         this.acc = 0;
         this.pp = 0;
         if (n300 == getNObjects())
-            this.rank = mods.contains(Mod.HIDDEN) ? "XH" : "X";
+            this.rank = mods.contains(GameMod.HIDDEN) ? "XH" : "X";
         else if ((double)n300/getNObjects() > 0.9 && (double)n50/getNObjects() < 0.01 && nMisses == 0)
-            this.rank = mods.contains(Mod.HIDDEN) ? "SH" : "S";
+            this.rank = mods.contains(GameMod.HIDDEN) ? "SH" : "S";
         else if (((double)n300/getNObjects() > 0.8 && nMisses == 0) || (double)n300/getNObjects() > 0.9)
             this.rank = "A";
         else if (((double)n300/getNObjects() > 0.7 && nMisses == 0) || (double)n300/getNObjects() > 0.8)
@@ -184,7 +138,7 @@ public class Performance {
         switch (mode) {
             case STANDARD: return (nPassedObjects = n300 + n100 + n50 + nMisses);
             case TAIKO: return (nPassedObjects = n300 + n100 + nMisses);
-            case OSU_MANIA: return (nPassedObjects = nGeki + nKatu + n300 + n100 + n50 + nMisses);
+            case MANIA: return (nPassedObjects = nGeki + nKatu + n300 + n100 + n50 + nMisses);
             default: return 0;
         }
     }
@@ -202,7 +156,7 @@ public class Performance {
     public double getAccDouble() {
         if (acc != 0) return acc;
         double numerator = (double)n50 * 50.0D + (double)n100 * 100.0D + (double)n300 * 300.0D;
-        if (mode == GameMode.OSU_MANIA)
+        if (mode == GameMode.MANIA)
             numerator += (double)nKatu * 200.0D + (double)nGeki * 300.0D;
         else if (mode == GameMode.TAIKO)
             numerator = 0.5 * n100 + n300;
@@ -211,7 +165,7 @@ public class Performance {
             denominator = (double)(getNPassedObjects()) * 300.0D;
         else // taiko, mania
             denominator = getNPassedObjects();
-        if (mode == GameMode.OSU_MANIA) denominator *= 300;
+        if (mode == GameMode.MANIA) denominator *= 300;
         double res = numerator / denominator;
         return (acc = 100*Math.max(0.0D, Math.min(res, 1.0D)));
     }
@@ -256,14 +210,14 @@ public class Performance {
             switch (mode) {
                 case STANDARD: modeStr = "osu"; break;
                 case TAIKO: modeStr = "taiko"; break;
-                case OSU_MANIA: modeStr = "mania"; break;
+                case MANIA: modeStr = "mania"; break;
                 default: modeStr = ""; break;
             }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
             StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr +
                     " " + secrets.mapPath + mapID + ".osu");
-            for (Mod mod: mods)
-                cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
+            for (GameMod mod: mods)
+                cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
@@ -303,7 +257,7 @@ public class Performance {
     public double getPpDouble() {
         if (pp != 0) return pp;
         boolean failedPlay = rank.equals("F");
-        if (failedPlay && mode.getValue() > 0) return pp; // Don't calculate failed scores of non-standard plays
+        if (failedPlay && mode.getID() > 0) return pp; // Don't calculate failed scores of non-standard plays
         String mapPath = failedPlay ?
                 secrets.mapPath + "temp" + mapID + userID + ".osu" :
                 secrets.mapPath + mapID + ".osu";
@@ -315,12 +269,12 @@ public class Performance {
             String modeStr;
             switch (mode) {
                 case TAIKO: modeStr = "taiko"; break;
-                case OSU_MANIA: modeStr = "mania"; break;
+                case MANIA: modeStr = "mania"; break;
                 default: modeStr = "osu"; break;
             }
             StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr + " "
                     + secrets.mapPath + mapID + ".osu");
-            if (mode.getValue() < 3) {
+            if (mode.getID() < 3) {
                 cmdLineString.append(" -a ").append(getAccDouble())
                         .append(" -c ").append(combo)
                         .append(" -X ").append(nMisses)
@@ -328,8 +282,8 @@ public class Performance {
             } else { // mode == 3
                 cmdLineString.append(" -s ").append(score);
             }
-            for (Mod mod: mods)
-                cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
+            for (GameMod mod: mods)
+                cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
@@ -405,7 +359,7 @@ public class Performance {
 
     public double getStarRatingDouble() {
         if (starRating != 0) return starRating;
-        HashSet<Mod> modsImportant = new HashSet<>(mods);
+        HashSet<GameMod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(starModifier);
         if (modsImportant.isEmpty())
             return baseStarRating;
@@ -441,11 +395,11 @@ public class Performance {
         return df.format(getStarRatingDouble());
     }
 
-    private void calculateStarRating(Set<Mod> m) {
+    private void calculateStarRating(Set<GameMod> m) {
         StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " difficulty "
                 + secrets.mapPath + mapID + ".osu");
-        for (Mod mod: m)
-            cmdLineString.append(" -m ").append(mods_str(mod.getFlag()));
+        for (GameMod mod: m)
+            cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
         try {
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());

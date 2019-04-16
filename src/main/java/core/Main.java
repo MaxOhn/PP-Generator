@@ -1,6 +1,6 @@
 package main.java.core;
 
-import de.maxikg.osuapi.client.DefaultOsuClient;
+import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
 import main.java.commands.Osu.*;
 import main.java.commands.Twitch.cmdAddStream;
@@ -23,7 +23,7 @@ public class Main {
 
     private static JDABuilder builder;
     private static JDA jda;
-    public static DefaultOsuClient osu;
+    public static Osu osu;
     public static TwitchHook twitch;
     public static DiscordLink discLink;
     public static FileInteractor fileInteractor;

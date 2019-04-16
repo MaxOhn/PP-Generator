@@ -1,6 +1,6 @@
 package main.java.listeners;
 
-import de.maxikg.osuapi.client.DefaultOsuClient;
+import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.core.DiscordLink;
 import main.java.core.FileInteractor;
 import main.java.core.Main;
@@ -17,7 +17,7 @@ public class readyListener extends ListenerAdapter {
     public void onReady(ReadyEvent event) {
         Logger logger = Logger.getLogger(this.getClass());
         logger.info("API is ready!");
-        Main.osu = new DefaultOsuClient(secrets.osuAPIkey);
+        Main.osu = Osu.getAPI(secrets.osuAPIkey);
         if (secrets.RELEASE) Main.twitch = new TwitchHook();
         Main.discLink = new DiscordLink();
         Main.fileInteractor = new FileInteractor();

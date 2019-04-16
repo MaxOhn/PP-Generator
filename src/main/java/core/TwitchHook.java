@@ -39,7 +39,8 @@ public class TwitchHook {
         try {
             streamers = DBProvider.getTwitch();
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Could not load streamers: " + e);
+            logger.error("Could not load streamers:");
+            e.printStackTrace();
             streamers = new HashMap<>();
         }
     }

@@ -1,9 +1,11 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.Beatmap;
-import de.maxikg.osuapi.model.GameMode;
-import de.maxikg.osuapi.model.User;
-import de.maxikg.osuapi.model.UserScore;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
@@ -16,7 +18,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 public class cmdTopScores implements ICommand {
@@ -42,7 +43,7 @@ public class cmdTopScores implements ICommand {
                         case "c":
                             event.getTextChannel().sendMessage(help(2)).queue();
                             return;
-                        case "m": mode = GameMode.OSU_MANIA; break;
+                        case "m": mode = GameMode.MANIA; break;
                         default:
                             event.getTextChannel().sendMessage(help(3)).queue();
                             return;
@@ -69,23 +70,29 @@ public class cmdTopScores implements ICommand {
             }
         } else
             name = String.join(" ", argList);
-        User user;
+        OsuUser user;
         try {
-            user = Main.osu.getUserByUsername(name).mode(mode).query().iterator().next();
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        Collection<UserScore> scores = Main.osu.getUserBestByUsername(name).mode(mode).limit(getAmount()).query();
-        ArrayList<Beatmap> maps = new ArrayList<>();
-        for (UserScore score : scores) {
-            Beatmap map;
+        Collection<OsuScore> scores = null;
+        try {
+            scores = user.getTopScores(getAmount()).get();
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve top scores").queue();
+            return;
+        }
+        ArrayList<OsuBeatmap> maps = new ArrayList<>();
+        for (OsuScore score : scores) {
+            OsuBeatmap map;
             try {
-                map = DBProvider.getBeatmap(score.getBeatmapId());
+                map = DBProvider.getBeatmap(score.getBeatmapID());
             } catch (SQLException | ClassNotFoundException e) {
                 try {
-                    map = Main.osu.getBeatmaps().beatmapId(score.getBeatmapId()).limit(1).mode(mode).query().iterator().next();
-                } catch (NoSuchElementException e1) {
+                    map = score.getBeatmap().get();
+                } catch (OsuAPIException e1) {
                     continue;
                 }
                 try {
@@ -104,7 +111,7 @@ public class cmdTopScores implements ICommand {
         }
         if (!getCondition(null)) {
             scores = scores.stream()
-                    .filter(s -> maps.stream().anyMatch(m -> m.getBeatmapId() == s.getBeatmapId()))
+                    .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                     .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
@@ -116,7 +123,7 @@ public class cmdTopScores implements ICommand {
             }
             return;
         }
-        new BotMessage(event, getMessageType()).user(user).userscore(scores)
+        new BotMessage(event, getMessageType()).user(user).osuscores(scores)
                 .maps(maps.stream().limit(5).collect(Collectors.toCollection(ArrayList::new)))
                 .mode(mode)
                 .buildAndSend();
@@ -126,7 +133,7 @@ public class cmdTopScores implements ICommand {
         return 5;
     }
 
-    boolean getCondition(Beatmap m) {
+    boolean getCondition(OsuBeatmap m) {
         return true;
     }
 

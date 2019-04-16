@@ -1,6 +1,12 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.*;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.backend.EndpointScores;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
@@ -42,7 +48,7 @@ public class cmdTop implements INumberedCommand {
                         case "c":
                             event.getTextChannel().sendMessage(help(5)).queue();
                             return;
-                        case "m": mode = GameMode.OSU_MANIA; break;
+                        case "m": mode = GameMode.MANIA; break;
                         default:
                             event.getTextChannel().sendMessage(help(4)).queue();
                             return;
@@ -77,31 +83,48 @@ public class cmdTop implements INumberedCommand {
         } else {
             name = String.join(" ", argList);
         }
-        User user;
+        OsuUser user;
         try {
-            user = Main.osu.getUserByUsername(name).mode(mode).query().iterator().next();
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        Collection<UserScore> topPlays = Main.osu.getUserBestByUsername(name).mode(mode).limit(number).query();
-        final Iterator<UserScore> itr = topPlays.iterator();
-        UserScore rbScore = itr.next();
+        Collection<OsuScore> topPlays = null;
+        try {
+            topPlays = user.getTopScores(number).get();
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve top scores").queue();
+            return;
+        }
+        final Iterator<OsuScore> itr = topPlays.iterator();
+        OsuScore rbScore = itr.next();
         while(itr.hasNext() && --number > 0)
             rbScore = itr.next();
-        Beatmap map;
+        OsuBeatmap map;
         try {
-            map = DBProvider.getBeatmap(rbScore.getBeatmapId());
+            map = DBProvider.getBeatmap(rbScore.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
-            map = Main.osu.getBeatmaps().beatmapId(rbScore.getBeatmapId()).limit(1).query().iterator().next();
+            try {
+                map = rbScore.getBeatmap().get();
+            } catch (OsuAPIException e1) {
+                event.getTextChannel().sendMessage("Could not retrieve map").queue();
+                return;
+            }
             try {
                 DBProvider.addBeatmap(map);
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }
         }
-        Collection<BeatmapScore> globalPlays = Main.osu.getScores(map.getBeatmapId()).query();
-        new BotMessage(event, BotMessage.MessageType.SINGLETOP).user(user).map(map).userscore(rbScore)
+        Collection<OsuScore> globalPlays = null;
+        try {
+            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
+        } catch (OsuAPIException e) {
+            event.getTextChannel().sendMessage("Could not retrieve global scores").queue();
+            return;
+        }
+        new BotMessage(event, BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)
                 .mode(mode).topplays(topPlays, globalPlays).buildAndSend();
     }
 

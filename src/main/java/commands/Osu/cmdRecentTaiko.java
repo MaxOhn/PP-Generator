@@ -1,6 +1,6 @@
 package main.java.commands.Osu;
 
-import de.maxikg.osuapi.model.GameMode;
+import com.oopsjpeg.osu4j.GameMode;
 
 public class cmdRecentTaiko extends cmdRecent {
 

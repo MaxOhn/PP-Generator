@@ -1,14 +1,10 @@
 package main.java.util;
 
-import de.maxikg.osuapi.model.BeatmapScore;
-import de.maxikg.osuapi.model.Mod;
-import de.maxikg.osuapi.model.UserGame;
-import de.maxikg.osuapi.model.UserScore;
+import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.OsuScore;
 
 import java.util.Collection;
 import java.util.Set;
-
-import static de.maxikg.osuapi.model.Mod.createSum;
 
 public class utilOsu {
 
@@ -89,8 +85,19 @@ public class utilOsu {
         return "";
     }
 
-    public static String abbrvModSet(Set<Mod> mods) {
+    public static String abbrvModSet(GameMod[] mods) {
         return mods_str(createSum(mods));
+    }
+
+    public static String abbrvModSet(Set<GameMod> mods) {
+        return mods_str(createSum(mods.toArray(new GameMod[0])));
+    }
+
+    // TODO: test
+    public static int createSum(GameMod[] mods) {
+        int sum = 0;
+        for(int i = 0; i < mods.length; sum |= mods[i++].getBit());
+        return sum;
     }
 
     public static rankEmote getRankEmote(String rank) {
@@ -138,60 +145,10 @@ public class utilOsu {
         }
     }
 
-    public static int indexInTopPlays(UserGame score, Collection<UserScore> topPlays) {
+    public static int indexInTopPlays(OsuScore score, Collection<OsuScore> topPlays) {
         int index = 0;
-        for (UserScore s: topPlays) {
-            if (s.getScore() == score.getScore() && s.getDate() == s.getDate())
-                return ++index;
-            index++;
-        }
-        return -1;
-    }
-
-    public static int indexInTopPlays(BeatmapScore score, Collection<UserScore> topPlays) {
-        int index = 0;
-        for (UserScore s: topPlays) {
-            if (s.getScore() == score.getScore() && s.getDate() == s.getDate())
-                return ++index;
-            index++;
-        }
-        return -1;
-    }
-
-    public static int indexInTopPlays(UserScore score, Collection<UserScore> topPlays) {
-        int index = 0;
-        for (UserScore s: topPlays) {
+        for (OsuScore s: topPlays) {
             if (s == score) return ++index;
-            index++;
-        }
-        return -1;
-    }
-
-    public static int indexInGlobalPlays(UserGame score, Collection<BeatmapScore> globalPlays) {
-        int index = 0;
-        for (BeatmapScore s: globalPlays) {
-            if (s.getScore() == score.getScore() && s.getDate() == s.getDate() && score.getUserId() == s.getUserId())
-                return ++index;
-            index++;
-        }
-        return -1;
-    }
-
-    public static int indexInGlobalPlays(BeatmapScore score, Collection<BeatmapScore> globalPlays) {
-        int index = 0;
-        for (BeatmapScore s: globalPlays) {
-            if (score.equals(s))
-                return ++index;
-            index++;
-        }
-        return -1;
-    }
-
-    public static int indexInGlobalPlays(UserScore score, Collection<BeatmapScore> globalPlays) {
-        int index = 0;
-        for (BeatmapScore s: globalPlays) {
-            if (s.getScore() == score.getScore() && s.getDate() == s.getDate() && score.getUserId() == s.getUserId())
-                return ++index;
             index++;
         }
         return -1;
