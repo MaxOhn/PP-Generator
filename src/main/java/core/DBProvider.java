@@ -38,6 +38,36 @@ public class DBProvider {
         return mapIDs;
     }
 
+    public static void updateRanking(String mapID, String[] rankings) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        PreparedStatement stmnt = c.prepareStatement("update mapRanking set R1=?, R2=?, R3=?, R4=?, R5=?, R6=?, R7=?, R8=?, R9=?, R10=? where mapID='"
+                + mapID + "'");
+        for (int i = 0; i < 10; i++) {
+            stmnt.setString(i + 1, i < rankings.length ? rankings[i] : null);
+        }
+        stmnt.executeUpdate();
+        stmnt.close();
+        c.close();
+    }
+
+    public static String[] getRanking(String mapID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from mapRanking where mapID='" + mapID + "'");
+        rs.next();
+        List<String> ranking = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            String userID = rs.getString(i + 2);
+            if (userID != null && !userID.isEmpty())
+                ranking.add(userID);
+        }
+        stmnt.close();
+        c.close();
+        return ranking.toArray(new String[0]);
+    }
+
     public static TreeMap<Integer, String[]> getRankings() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -46,11 +76,13 @@ public class DBProvider {
         TreeMap<Integer, String[]> rankings = new TreeMap<>();
         while (rs.next()) {
             int id = rs.getInt("mapID");
-            String[] top10 = new String[10];
+            List<String> ranking = new ArrayList<>();
             for (int i = 0; i < 10; i++) {
-                top10[i] = rs.getString(i + 2);
+                String userID = rs.getString(i + 2);
+                if (userID != null && !userID.isEmpty())
+                    ranking.add(userID);
             }
-            rankings.put(id, top10);
+            rankings.put(id, ranking.toArray(new String[0]));
         }
         stmnt.close();
         c.close();

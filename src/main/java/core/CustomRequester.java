@@ -1,6 +1,6 @@
 package main.java.core;
 
-import com.oopsjpeg.osu4j.backend.RateLimiter;
+import com.google.common.util.concurrent.RateLimiter;
 import main.java.util.secrets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -22,8 +22,7 @@ public class CustomRequester {
     private RateLimiter limiter;
 
     public CustomRequester() {
-        this.limiter = Main.osuRateLimiter;
-        //this.limiter = new RateLimiter(120);
+        this.limiter = RateLimiter.create(0.60);
         CookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("osu_session", secrets.osu_session);
         cookie.setDomain("osu.ppy.sh");
@@ -34,14 +33,11 @@ public class CustomRequester {
                 .build();
     }
 
-    public void close() {
-        limiter.close();
-    }
-
     public JSONArray getScores(String mapID) throws IOException {
-        limiter.getOrWaitForTicket();
-        HttpGet getRequst = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?type=country");
-        HttpResponse response = client.execute(getRequst);
+        limiter.acquire();
+        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?type=country");
+        HttpResponse response = client.execute(getRequest);
+        if (response.getStatusLine().getStatusCode() != 200) throw new IOException("No valid response from server");
         BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
         StringBuilder responseStr = new StringBuilder();
         String line;

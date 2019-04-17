@@ -1,12 +1,14 @@
 package main.java.core;
 
 import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.Osu;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -15,18 +17,24 @@ import java.util.stream.Collectors;
 
 public class SnipeManager {
 
-    private Logger logger;
     private static SnipeManager snipeManager;
+
     private TreeMap<Integer, String[]> rankings;
+    private List<Integer> failedIds = new ArrayList<>();
+
     private boolean isUpdatingIDs = false;
     private boolean isUpdatingRankings = false;
     private boolean interruptIdUpdating = false;
     private boolean interruptRankingUpdating = false;
+
+    private Logger logger;
     private Osu osu;
+    private CustomRequester scoreRequester;
 
     private SnipeManager(Osu osu) {
         this.osu = osu;
         logger = Logger.getLogger(this.getClass());
+        scoreRequester = new CustomRequester();
         try {
             rankings = DBProvider.getRankings();
         } catch (SQLException | ClassNotFoundException e) {
@@ -100,23 +108,62 @@ public class SnipeManager {
     }
 
     public void updateRankings() {
+        updateRankings(rankings.firstKey());
+    }
+
+    public void setInterruptRankingUpdating() {
+        if (isUpdatingRankings) this.interruptRankingUpdating = true;
+    }
+
+    public void updateRankings(int startingID) {
         isUpdatingRankings = true;
         final Thread t = new Thread(() -> {
             Iterator it = rankings.keySet().iterator();
             while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
+                if ((Integer)it.next() == startingID)
+                    break;
             }
+            while (it.hasNext()) {
+                if (interruptRankingUpdating) {
+                    interruptRankingUpdating = false;
+                    return;
+                }
+                String mapID = it.next() + "";
+                try {
+                    String[] scores = getScores(mapID);
+
+                    if (scores.length > 0)
+                        logger.info("User " + scores[0] + " is first on map id " + mapID);
+                    else
+                        logger.info("No one is first place on map id " + mapID);
+
+                    /*
+                     *
+                     * /!\ CHECK HERE IF SCORES WERE SNIPED /!\
+                     *
+                     */
+
+                    DBProvider.updateRanking(mapID, scores);
+                } catch (IOException | JSONException e) {
+                    logger.warn("Data retrieval error for mapID " + mapID);
+                    failedIds.add(Integer.parseInt(mapID));
+                } catch (SQLException | ClassNotFoundException e) {
+                    logger.warn("Database error while updating ranking of mapID " + mapID);
+                    failedIds.add(Integer.parseInt(mapID));
+                }
+            }
+            logger.info("Done updating rankings");
+            isUpdatingRankings = false;
         });
         t.start();
     }
 
-    private List<OsuScore> retrieveScores(Integer mapID) {
-
-        List<OsuScore> scores = new ArrayList<>();
-
-        // TODO: http request and all that to retrieve via session
-        // Maybe try extending osu4j for that
-
-        return scores;
+    private String[] getScores(String mapID) throws IOException {
+        JSONArray scores = scoreRequester.getScores(mapID);
+        List<String> scoreList = new ArrayList<>();
+        for (int i = 0, n = Math.min(10, scores.length()); i < n; i++) {
+            scoreList.add(scores.getJSONObject(i).getInt("user_id") + "");
+        }
+        return scoreList.toArray(new String[0]);
     }
 }
