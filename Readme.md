@@ -23,7 +23,7 @@ I can't be bothered to update this file regularly with new commands but you can 
 
 If you are crazy enough to try and set it up yourself, here's some things to consider:
 
-- To access the osu! API I'm using the [osu-api-Java-Client](https://github.com/osuWorks/osu-api-Java-Client) which needs to be installed locally first.
+- To access the osu! API I'm using a modified version of the [osu4j](https://github.com/oopsjpeg/osu4j) wrapper which needs to be added locally first.
 
 - Calculating the [performance points](https://osu.ppy.sh/help/wiki/Performance_Points) of a map/play is done via slight modification (to get outputs that are easier to parse) of [osu-tools](https://github.com/ppy/osu-tools)' command line function so this one must be installed aswell.
 
