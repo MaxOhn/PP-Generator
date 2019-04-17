@@ -38,12 +38,12 @@ public class DBProvider {
         return mapIDs;
     }
 
-    public static HashMap<Integer, String[]> getRankings() throws ClassNotFoundException, SQLException {
+    public static TreeMap<Integer, String[]> getRankings() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select * from mapRanking");
-        HashMap<Integer, String[]> rankings = new HashMap<>();
+        TreeMap<Integer, String[]> rankings = new TreeMap<>();
         while (rs.next()) {
             int id = rs.getInt("mapID");
             String[] top10 = new String[10];
