@@ -38,6 +38,25 @@ public class DBProvider {
         return mapIDs;
     }
 
+    public static HashMap<Integer, String[]> getRankings() throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from mapRanking");
+        HashMap<Integer, String[]> rankings = new HashMap<>();
+        while (rs.next()) {
+            int id = rs.getInt("mapID");
+            String[] top10 = new String[10];
+            for (int i = 0; i < 10; i++) {
+                top10[i] = rs.getString(i + 2);
+            }
+            rankings.put(id, top10);
+        }
+        stmnt.close();
+        c.close();
+        return rankings;
+    }
+
     public static void addMaps(List<Integer> mapIDs) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);

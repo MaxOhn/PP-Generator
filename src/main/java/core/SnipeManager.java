@@ -9,9 +9,7 @@ import org.apache.log4j.Logger;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class SnipeManager {
@@ -74,8 +72,9 @@ public class SnipeManager {
                         // sinceDate stays the same, next iteration will try to retrieve the same maps again
                     }
                     newMapIDs = newMaps.stream()
+                            .filter(map -> !mapIDs.contains(map.getID()))
+                            .sorted(Comparator.comparingLong(map -> map.getApprovedDate().toEpochSecond()))
                             .map(OsuBeatmap::getID)
-                            .filter(map -> !mapIDs.contains(map))
                             .collect(Collectors.toList());
                 }
                 try {
