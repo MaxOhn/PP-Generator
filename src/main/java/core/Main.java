@@ -22,9 +22,10 @@ import java.util.HashSet;
 public class Main {
 
     private static JDABuilder builder;
-    private static JDA jda;
+    public static JDA jda;
     public static Osu osu;
     public static TwitchHook twitch;
+    public static SnipeManager snipeManager;
     public static DiscordLink discLink;
     public static FileInteractor fileInteractor;
     public static HashSet<String> runningLyrics;

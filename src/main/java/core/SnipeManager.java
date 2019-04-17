@@ -4,6 +4,7 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.Osu;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
+import main.java.listeners.SnipeListener;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,8 +31,10 @@ public class SnipeManager {
     private Logger logger;
     private Osu osu;
     private CustomRequester scoreRequester;
+    private SnipeListener snipeListener;
 
     private SnipeManager(Osu osu) {
+        this.snipeListener = new SnipeListener();
         this.osu = osu;
         logger = Logger.getLogger(this.getClass());
         scoreRequester = new CustomRequester();
@@ -137,11 +140,12 @@ public class SnipeManager {
                     else
                         logger.info("No one is first place on map id " + mapID);
 
-                    /*
-                     *
-                     * /!\ CHECK HERE IF SCORES WERE SNIPED /!\
-                     *
-                     */
+                    String[] currScores = rankings.get(mapID);
+                    if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
+                        if (snipeListener != null) snipeListener.onSnipe(mapID, scores[0], currScores[0]);
+                    } else if (currScores.length == 0 && scores.length > 0) {
+                        if (snipeListener != null) snipeListener.onClaim(mapID, scores[0]);
+                    }
 
                     DBProvider.updateRanking(mapID, scores);
                 } catch (IOException | JSONException e) {

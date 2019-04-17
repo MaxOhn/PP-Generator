@@ -1,10 +1,7 @@
 package main.java.listeners;
 
 import com.oopsjpeg.osu4j.backend.Osu;
-import main.java.core.DiscordLink;
-import main.java.core.FileInteractor;
-import main.java.core.Main;
-import main.java.core.TwitchHook;
+import main.java.core.*;
 import main.java.util.secrets;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -22,5 +19,6 @@ public class readyListener extends ListenerAdapter {
         Main.discLink = new DiscordLink();
         Main.fileInteractor = new FileInteractor();
         Main.runningLyrics = new HashSet<>();
+        Main.snipeManager = SnipeManager.getInstance(Main.osu);
     }
 }

@@ -21,6 +21,34 @@ public class DBProvider {
 
     /*
      * ------------------------
+     *      snipe channels
+     * ------------------------
+     */
+
+    public static HashSet<String> getSnipeChannels() throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select channelID from snipeChannels");
+        HashSet<String> channels = new HashSet<>();
+        while (rs.next())
+            channels.add(rs.getString("channelID"));
+        stmnt.close();
+        c.close();
+        return channels;
+    }
+
+    public static void addSnipeChannel(String channelID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.executeQuery("insert into snipeChannels values (" + channelID + ")");
+        stmnt.close();
+        c.close();
+    }
+
+    /*
+     * ------------------------
      *      map ranking
      * ------------------------
      */
