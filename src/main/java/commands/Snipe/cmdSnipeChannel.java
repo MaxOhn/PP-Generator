@@ -10,7 +10,7 @@ public class cmdSnipeChannel extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        if (Main.snipeManager.addSnipeChannel(event.getTextChannel().getId())) {
+        if (Main.snipeManager.addSnipeChannel(event.getTextChannel())) {
             event.getTextChannel()
                     .sendMessage("Added channel successfully. Now this channel gets spammed with snipe notifications too :))")
                     .queue();

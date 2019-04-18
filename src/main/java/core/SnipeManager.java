@@ -5,6 +5,8 @@ import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.Osu;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.listeners.SnipeListener;
+import main.java.util.secrets;
+import net.dv8tion.jda.core.entities.TextChannel;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,6 +58,10 @@ public class SnipeManager {
     public static SnipeManager getInstance(Osu osu) {
         if (snipeManager == null) snipeManager = new SnipeManager(osu);
         return snipeManager;
+    }
+
+    public boolean getIsUpdatingRankings() {
+        return isUpdatingRankings;
     }
 
     public void setInterruptIdUpdating() {
@@ -130,14 +136,13 @@ public class SnipeManager {
         final Thread t = new Thread(() -> {
             snipeListener.onStartUpdateRanking();
             while (!rankingsReady) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ignored) {}
+                try { Thread.sleep(500); }
+                catch (InterruptedException ignored) {}
             }
             Iterator it = rankings.keySet().iterator();
             int initialID = startingID;
             for (int largest = rankings.keySet().stream().max(Comparator.naturalOrder()).get(); initialID < largest; initialID++) {
-                if (rankings.containsKey(initialID++)) break;
+                if (rankings.containsKey(initialID)) break;
             }
             while (it.hasNext()) {
                 if ((Integer)it.next() == initialID)
@@ -154,11 +159,12 @@ public class SnipeManager {
                 mapID = it.next() + "";
                 try {
                     String[] scores = getScores(mapID);
-
-                    if (scores.length > 0)
-                        logger.info("User " + scores[0] + " is first on map id " + mapID);
-                    else
-                        logger.info("No one is first place on map id " + mapID);
+                    if (!secrets.RELEASE) {
+                        if (scores.length > 0)
+                            logger.info("User " + scores[0] + " is first on map id " + mapID);
+                        else
+                            logger.info("No one is first place on map id " + mapID);
+                    }
 
                     // ----------- Snipe handling -----------
 
@@ -189,6 +195,7 @@ public class SnipeManager {
                 }
             }
             logger.info("Done updating rankings");
+            snipeListener.onUpdateRankingDone(failedIds.size());
             isUpdatingRankings = false;
         });
         t.start();
@@ -203,7 +210,7 @@ public class SnipeManager {
         return scoreList.toArray(new String[0]);
     }
 
-    public boolean addSnipeChannel(String channelID) {
-        return snipeListener.addChannel(channelID);
+    public boolean addSnipeChannel(TextChannel channel) {
+        return snipeListener.addChannel(channel);
     }
 }

@@ -4,6 +4,7 @@ import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.TextChannel;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -15,24 +16,35 @@ import java.util.concurrent.ThreadLocalRandom;
 public class SnipeListener {
 
     private Logger logger = Logger.getLogger(this.getClass());
-    private Map<String, Message> channels;
+    private Map<TextChannel, Message> channels;
     private static final DecimalFormat df = new DecimalFormat("0.00");
 
     {
-        try {
-            channels = DBProvider.getSnipeChannels().stream()
-                    .collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
-        } catch (ClassNotFoundException | SQLException e) {
-            logger.error("Could not retrieve snipe channels from database:");
-            e.printStackTrace();
-            channels = new HashMap<>();
-        }
+        new Thread(() -> {
+            try {
+                while (Main.jda == null) {
+                    try { Thread.sleep(500); }
+                    catch (InterruptedException ignored) {}
+                }
+                channels = DBProvider.getSnipeChannels().stream()
+                        .collect(HashMap::new, (m, v) -> m.put(Main.jda.getTextChannelById(v), null), HashMap::putAll);
+            } catch (ClassNotFoundException | SQLException e) {
+                logger.error("Could not retrieve snipe channels from database:");
+                e.printStackTrace();
+                channels = new HashMap<>();
+            }
+        }).start();
     }
 
-    public boolean addChannel(String channelID) {
+    public boolean addChannel(TextChannel channel) {
         try {
-            DBProvider.addSnipeChannel(channelID);
-            channels.put(channelID, null);
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) return false;
+            DBProvider.addSnipeChannel(channel.getId());
+            channels.put(channel, null);
+            if (Main.snipeManager.getIsUpdatingRankings()) {
+                channel.sendMessage("Building in progress...")
+                        .queue(message -> channels.put(channel, message));
+            }
             return true;
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -48,8 +60,9 @@ public class SnipeListener {
             sniperName = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(Integer.parseInt(sniperID)).build()).getUsername();
             snipeeName = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(Integer.parseInt(snipeeID)).build()).getUsername();
         } catch (Exception ignored) {}
-        for (String channelID : channels.keySet()) {
-            Main.jda.getTextChannelById(channelID).sendMessage(snipeeName + " was sniped by " + sniperName
+        for (TextChannel channel : channels.keySet()) {
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
+            channel.sendMessage(snipeeName + " was sniped by " + sniperName
                     + "\n" + mapString).queue();
         }
     }
@@ -60,17 +73,19 @@ public class SnipeListener {
         try {
             claimerName = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(Integer.parseInt(claimerID)).build()).getUsername();
         } catch (Exception ignored) {}
-        for (String channelID : channels.keySet()) {
-            Main.jda.getTextChannelById(channelID).sendMessage("New first place is " + claimerName + "\n" + mapString).queue();
+        for (TextChannel channel : channels.keySet()) {
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
+            channel.sendMessage("New first place is " + claimerName + "\n" + mapString).queue();
         }
     }
 
     public void onStartUpdateRanking() {
-        for (String channelID : channels.keySet()) {
-            if (channels.get(channelID) != null) channels.get(channelID).delete().queue();
-            Main.jda.getTextChannelById(channelID)
-                    .sendMessage("Initiate rebuild...")
-                    .queue(message -> channels.put(channelID, message));
+        for (TextChannel channel : channels.keySet()) {
+            if (channels.get(channel) != null) channels.get(channel).delete().queue();
+            logger.info("Can talk: " + channel.canTalk(channel.getGuild().getSelfMember()));
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
+            channel.sendMessage("Initiate rebuild...")
+                    .queue(message -> channels.put(channel, message));
         }
     }
 
@@ -78,17 +93,27 @@ public class SnipeListener {
         String editedMessage = "Building: " + df.format(100 * (double)currentIdx/totalAmount) + "% ("
                 + currentIdx + " of " + totalAmount + ") | " + amountFailed + " failed";
         if (ThreadLocalRandom.current().nextBoolean()) {
-            for (Message message : channels.values())
+            for (Message message : channels.values()) {
+                if (message == null) continue;
                 message.editMessage(editedMessage).queue();
+            }
         }
     }
 
     public void onUpdateRankingStop(int currentIdx) {
-        for (String channelID : channels.keySet()) {
-            if (channels.get(channelID) != null) channels.get(channelID).delete().queue();
-            Main.jda.getTextChannelById(channelID)
-                    .sendMessage("Rebuilding stopped at id " + currentIdx)
-                    .queue(message -> channels.put(channelID, message));
+        for (TextChannel channel : channels.keySet()) {
+            if (channels.get(channel) != null) channels.get(channel).delete().queue();
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
+            channel.sendMessage("Rebuilding stopped at id " + currentIdx)
+                    .queue(message -> channels.put(channel, message));
+        }
+    }
+
+    public void onUpdateRankingDone(int amountFailed) {
+        for (TextChannel channel : channels.keySet()) {
+            if (channels.get(channel) != null) channels.get(channel).delete().queue();
+            if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
+            channel.sendMessage("Rebuilding finished: " + amountFailed + " failed").queue();
         }
     }
 
