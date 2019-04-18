@@ -110,6 +110,7 @@ public class Main {
         commandHandler.commands.put("flamingo", new cmdFlamingo());
         commandHandler.commands.put("ding", new cmdDing());
         commandHandler.commands.put("brainpower", new cmdBrainpower());
+        commandHandler.commands.put("bombsaway", new cmdBombsAway());
 
         // utility
         commandHandler.commands.put("devtool", new cmdDevTool());
