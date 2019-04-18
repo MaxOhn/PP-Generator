@@ -30,6 +30,7 @@ public class SnipeManager {
     private boolean interruptIdUpdating = false;
     private boolean interruptRankingUpdating = false;
 
+    private String currentMapID = "0";
     private int updateRankingIdx = 0;
 
     private Logger logger;
@@ -149,45 +150,44 @@ public class SnipeManager {
                     break;
                 updateRankingIdx++;
             }
-            String mapID = "0";
             while (it.hasNext()) {
                 if (interruptRankingUpdating) {
                     interruptRankingUpdating = false;
-                    snipeListener.onUpdateRankingStop(Integer.parseInt(mapID));
+                    snipeListener.onUpdateRankingStop(Integer.parseInt(currentMapID));
                     return;
                 }
-                mapID = it.next() + "";
+                currentMapID = it.next() + "";
                 try {
-                    String[] scores = getScores(mapID);
+                    String[] scores = getScores(currentMapID);
                     if (!secrets.RELEASE) {
                         if (scores.length > 0)
-                            logger.info("User " + scores[0] + " is first on map id " + mapID);
+                            logger.info("User " + scores[0] + " is first on map id " + currentMapID);
                         else
-                            logger.info("No one is first place on map id " + mapID);
+                            logger.info("No one is first place on map id " + currentMapID);
                     }
 
                     // ----------- Snipe handling -----------
 
-                    String[] currScores = rankings.get(Integer.parseInt(mapID));
+                    String[] currScores = rankings.get(Integer.parseInt(currentMapID));
                     if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
                         if (snipeListener != null)
-                            snipeListener.onSnipe(mapID, scores[0], currScores[0]);
+                            snipeListener.onSnipe(currentMapID, scores[0], currScores[0]);
                     } else if (currScores.length == 0 && scores.length > 0) {
                         if (snipeListener != null)
-                            snipeListener.onClaim(mapID, scores[0]);
+                            snipeListener.onClaim(currentMapID, scores[0]);
                     }
 
                     // --------------------------------------
 
-                    DBProvider.updateRanking(mapID, scores);
+                    DBProvider.updateRanking(currentMapID, scores);
                 } catch (IOException | JSONException e) {
-                    logger.warn("Data retrieval error for mapID " + mapID);
+                    logger.warn("Data retrieval error for mapID " + currentMapID);
                     e.printStackTrace();
-                    failedIds.add(Integer.parseInt(mapID));
+                    failedIds.add(Integer.parseInt(currentMapID));
                 } catch (SQLException | ClassNotFoundException e) {
-                    logger.warn("Database error while updating ranking of mapID " + mapID);
+                    logger.warn("Database error while updating ranking of mapID " + currentMapID);
                     e.printStackTrace();
-                    failedIds.add(Integer.parseInt(mapID));
+                    failedIds.add(Integer.parseInt(currentMapID));
                 } finally {
                     updateRankingIdx++;
                     if (snipeListener != null)
@@ -197,6 +197,8 @@ public class SnipeManager {
             logger.info("Done updating rankings");
             snipeListener.onUpdateRankingDone(failedIds.size());
             isUpdatingRankings = false;
+            currentMapID = "";
+            updateRankingIdx = 0;
         });
         t.start();
     }
@@ -212,5 +214,13 @@ public class SnipeManager {
 
     public boolean addSnipeChannel(TextChannel channel) {
         return snipeListener.addChannel(channel);
+    }
+
+    public String getMessageId(TextChannel channel) {
+        return snipeListener.getMessageId(channel);
+    }
+
+    public String getCurrentMapID() {
+        return currentMapID;
     }
 }

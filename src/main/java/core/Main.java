@@ -91,6 +91,8 @@ public class Main {
 
         // snipe
         commandHandler.commands.put("snipechannel", new cmdSnipeChannel());
+        commandHandler.commands.put("snipeprogress", new cmdSnipeProgress());
+        commandHandler.commands.put("progress", new cmdSnipeProgress());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

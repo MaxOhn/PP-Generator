@@ -36,6 +36,15 @@ public class SnipeListener {
         }).start();
     }
 
+    public String getMessageId(TextChannel channel) {
+        if (channels.keySet().contains(channel)) {
+            Message msg = channels.get(channel);
+            if (msg != null) return msg.getId();
+            return "-1";
+        }
+        return "-2";
+    }
+
     public boolean addChannel(TextChannel channel) {
         try {
             if (!channel.canTalk(channel.getGuild().getSelfMember())) return false;
@@ -82,7 +91,6 @@ public class SnipeListener {
     public void onStartUpdateRanking() {
         for (TextChannel channel : channels.keySet()) {
             if (channels.get(channel) != null) channels.get(channel).delete().queue();
-            logger.info("Can talk: " + channel.canTalk(channel.getGuild().getSelfMember()));
             if (!channel.canTalk(channel.getGuild().getSelfMember())) continue;
             channel.sendMessage("Initiate rebuild...")
                     .queue(message -> channels.put(channel, message));
