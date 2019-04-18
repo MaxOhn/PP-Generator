@@ -28,6 +28,8 @@ public class SnipeManager {
     private boolean interruptIdUpdating = false;
     private boolean interruptRankingUpdating = false;
 
+    private int updateRankingIdx = 0;
+
     private Logger logger;
     private Osu osu;
     private CustomRequester scoreRequester;
@@ -120,11 +122,13 @@ public class SnipeManager {
 
     public void updateRankings(int startingID) {
         isUpdatingRankings = true;
+        updateRankingIdx = 0;
         final Thread t = new Thread(() -> {
             Iterator it = rankings.keySet().iterator();
             while (it.hasNext()) {
                 if ((Integer)it.next() == startingID)
                     break;
+                updateRankingIdx++;
             }
             while (it.hasNext()) {
                 if (interruptRankingUpdating) {
@@ -140,7 +144,7 @@ public class SnipeManager {
                     else
                         logger.info("No one is first place on map id " + mapID);
 
-                    String[] currScores = rankings.get(mapID);
+                    String[] currScores = rankings.get(Integer.parseInt(mapID));
                     if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
                         if (snipeListener != null) snipeListener.onSnipe(mapID, scores[0], currScores[0]);
                     } else if (currScores.length == 0 && scores.length > 0) {
@@ -154,6 +158,9 @@ public class SnipeManager {
                 } catch (SQLException | ClassNotFoundException e) {
                     logger.warn("Database error while updating ranking of mapID " + mapID);
                     failedIds.add(Integer.parseInt(mapID));
+                } finally {
+                    updateRankingIdx++;
+                    if (snipeListener != null) snipeListener.onUpdateRankingProgress(updateRankingIdx, rankings.size(), failedIds.size());
                 }
             }
             logger.info("Done updating rankings");
