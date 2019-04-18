@@ -37,13 +37,14 @@ public class cmdDevTool implements ICommand {
                         switch (args[2]) {
                             case "start":
                                 if (args.length >= 4) {
+                                    int id;
                                     try {
-                                        int id = Integer.parseInt(args[3]);
-                                        Main.snipeManager.updateRankings(id);
+                                        id = Integer.parseInt(args[3]);
                                     } catch (NumberFormatException e) {
                                         event.getTextChannel().sendMessage(help(0)).queue();
                                         break;
                                     }
+                                    Main.snipeManager.updateRankings(id);
                                 } else {
                                     Main.snipeManager.updateRankings();
                                 }

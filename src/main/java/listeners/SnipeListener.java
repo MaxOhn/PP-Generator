@@ -11,7 +11,6 @@ import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class SnipeListener {
 
@@ -21,15 +20,23 @@ public class SnipeListener {
 
     {
         try {
-            channels = DBProvider.getSnipeChannels().stream().collect(Collectors.toMap(
-                    channelID -> channelID, value -> null
-            ));
             channels = DBProvider.getSnipeChannels().stream()
                     .collect(HashMap::new, (m, v) -> m.put(v, null), HashMap::putAll);
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not retrieve snipe channels from database:");
             e.printStackTrace();
             channels = new HashMap<>();
+        }
+    }
+
+    public boolean addChannel(String channelID) {
+        try {
+            DBProvider.addSnipeChannel(channelID);
+            channels.put(channelID, null);
+            return true;
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -68,7 +75,7 @@ public class SnipeListener {
     }
 
     public void onUpdateRankingProgress(int currentIdx, int totalAmount, int amountFailed) {
-        String editedMessage = "Building: " + df.format((double)currentIdx/totalAmount) + "% ("
+        String editedMessage = "Building: " + df.format(100 * (double)currentIdx/totalAmount) + "% ("
                 + currentIdx + " of " + totalAmount + ") | " + amountFailed + " failed";
         if (ThreadLocalRandom.current().nextBoolean()) {
             for (Message message : channels.values())

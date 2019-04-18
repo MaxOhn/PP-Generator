@@ -21,7 +21,7 @@ public class SnipeManager {
     private static SnipeManager snipeManager;
 
     private TreeMap<Integer, String[]> rankings;
-    private List<Integer> failedIds = new ArrayList<>();
+    private List<Integer> failedIds;
 
     private boolean isUpdatingIDs = false;
     private boolean isUpdatingRankings = false;
@@ -35,11 +35,14 @@ public class SnipeManager {
     private CustomRequester scoreRequester;
     private SnipeListener snipeListener;
 
+    private boolean rankingsReady = false;
+
     private SnipeManager(Osu osu) {
         this.snipeListener = new SnipeListener();
         this.osu = osu;
         logger = Logger.getLogger(this.getClass());
         scoreRequester = new CustomRequester();
+        failedIds = new ArrayList<>();
         try {
             rankings = DBProvider.getRankings();
         } catch (SQLException | ClassNotFoundException e) {
@@ -47,6 +50,7 @@ public class SnipeManager {
             logger.error("Something went wrong while retrieving mapRanking map id's:");
             e.printStackTrace();
         }
+        rankingsReady = true;
     }
 
     public static SnipeManager getInstance(Osu osu) {
@@ -124,19 +128,30 @@ public class SnipeManager {
         isUpdatingRankings = true;
         updateRankingIdx = 0;
         final Thread t = new Thread(() -> {
+            snipeListener.onStartUpdateRanking();
+            while (!rankingsReady) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ignored) {}
+            }
             Iterator it = rankings.keySet().iterator();
+            int initialID = startingID;
+            for (int largest = rankings.keySet().stream().max(Comparator.naturalOrder()).get(); initialID < largest; initialID++) {
+                if (rankings.containsKey(initialID++)) break;
+            }
             while (it.hasNext()) {
-                if ((Integer)it.next() == startingID)
+                if ((Integer)it.next() == initialID)
                     break;
                 updateRankingIdx++;
             }
+            String mapID = "0";
             while (it.hasNext()) {
                 if (interruptRankingUpdating) {
                     interruptRankingUpdating = false;
-                    snipeListener.onUpdateRankingStop(updateRankingIdx);
+                    snipeListener.onUpdateRankingStop(Integer.parseInt(mapID));
                     return;
                 }
-                String mapID = it.next() + "";
+                mapID = it.next() + "";
                 try {
                     String[] scores = getScores(mapID);
 
@@ -161,13 +176,16 @@ public class SnipeManager {
                     DBProvider.updateRanking(mapID, scores);
                 } catch (IOException | JSONException e) {
                     logger.warn("Data retrieval error for mapID " + mapID);
+                    e.printStackTrace();
                     failedIds.add(Integer.parseInt(mapID));
                 } catch (SQLException | ClassNotFoundException e) {
                     logger.warn("Database error while updating ranking of mapID " + mapID);
+                    e.printStackTrace();
                     failedIds.add(Integer.parseInt(mapID));
                 } finally {
                     updateRankingIdx++;
-                    if (snipeListener != null) snipeListener.onUpdateRankingProgress(updateRankingIdx, rankings.size(), failedIds.size());
+                    if (snipeListener != null)
+                        snipeListener.onUpdateRankingProgress(updateRankingIdx, rankings.size(), failedIds.size());
                 }
             }
             logger.info("Done updating rankings");
@@ -183,5 +201,9 @@ public class SnipeManager {
             scoreList.add(scores.getJSONObject(i).getInt("user_id") + "");
         }
         return scoreList.toArray(new String[0]);
+    }
+
+    public boolean addSnipeChannel(String channelID) {
+        return snipeListener.addChannel(channelID);
     }
 }

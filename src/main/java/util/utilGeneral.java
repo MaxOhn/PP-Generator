@@ -68,7 +68,8 @@ public class utilGeneral {
         FUN("Fun"),
         OSU("osu!"),
         TWITCH("Twitch"),
-        UTILITY("Utility");
+        UTILITY("Utility"),
+        SNIPE("Snipe");
         String name;
         Category(String name) {
             this.name = name;

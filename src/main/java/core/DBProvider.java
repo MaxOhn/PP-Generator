@@ -42,7 +42,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.executeQuery("insert into snipeChannels values (" + channelID + ")");
+        stmnt.execute("insert into snipeChannels values (" + channelID + ")");
         stmnt.close();
         c.close();
     }
