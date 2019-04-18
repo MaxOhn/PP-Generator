@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 import java.util.HashSet;
 
-public class readyListener extends ListenerAdapter {
+public class ReadyListener extends ListenerAdapter {
 
     public void onReady(ReadyEvent event) {
         Logger logger = Logger.getLogger(this.getClass());

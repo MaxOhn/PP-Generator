@@ -25,6 +25,58 @@ public class cmdDevTool implements ICommand {
             return;
         }
         switch (args[0]) {
+            case "update":
+                if (args.length < 3) {
+                    event.getTextChannel().sendMessage(help(0)).queue();
+                    break;
+                }
+                switch (args[1]) {
+                    case "ranking":
+                    case "rankings":
+                    case "rebuild":
+                        switch (args[2]) {
+                            case "start":
+                                if (args.length >= 4) {
+                                    try {
+                                        int id = Integer.parseInt(args[3]);
+                                        Main.snipeManager.updateRankings(id);
+                                    } catch (NumberFormatException e) {
+                                        event.getTextChannel().sendMessage(help(0)).queue();
+                                        break;
+                                    }
+                                } else {
+                                    Main.snipeManager.updateRankings();
+                                }
+                                break;
+                            case "stop":
+                                Main.snipeManager.setInterruptRankingUpdating();
+                                break;
+                            default:
+                                event.getTextChannel().sendMessage(help(0)).queue();
+                                break;
+                        }
+                        break;
+                    case "beatmap":
+                    case "beatmaps":
+                    case "map":
+                    case "maps":
+                        switch (args[2]) {
+                            case "start":
+                                Main.snipeManager.updateMapIds();
+                                break;
+                            case "stop":
+                                Main.snipeManager.setInterruptIdUpdating();
+                                break;
+                            default:
+                                event.getTextChannel().sendMessage(help(0)).queue();
+                                break;
+                        }
+                        break;
+                    default:
+                        event.getTextChannel().sendMessage(help(0)).queue();
+                        break;
+                }
+                break;
             case "ppRating":
             case "ppRatings":
             case "ppSaved":

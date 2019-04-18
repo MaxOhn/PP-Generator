@@ -133,6 +133,7 @@ public class SnipeManager {
             while (it.hasNext()) {
                 if (interruptRankingUpdating) {
                     interruptRankingUpdating = false;
+                    snipeListener.onUpdateRankingStop(updateRankingIdx);
                     return;
                 }
                 String mapID = it.next() + "";
@@ -144,12 +145,18 @@ public class SnipeManager {
                     else
                         logger.info("No one is first place on map id " + mapID);
 
+                    // ----------- Snipe handling -----------
+
                     String[] currScores = rankings.get(Integer.parseInt(mapID));
                     if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
-                        if (snipeListener != null) snipeListener.onSnipe(mapID, scores[0], currScores[0]);
+                        if (snipeListener != null)
+                            snipeListener.onSnipe(mapID, scores[0], currScores[0]);
                     } else if (currScores.length == 0 && scores.length > 0) {
-                        if (snipeListener != null) snipeListener.onClaim(mapID, scores[0]);
+                        if (snipeListener != null)
+                            snipeListener.onClaim(mapID, scores[0]);
                     }
+
+                    // --------------------------------------
 
                     DBProvider.updateRanking(mapID, scores);
                 } catch (IOException | JSONException e) {

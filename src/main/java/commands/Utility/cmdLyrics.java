@@ -1,4 +1,4 @@
-package main.java.commands.Fun;
+package main.java.commands.Utility;
 
 import main.java.commands.PrivilegedCommand;
 import main.java.core.DBProvider;
@@ -81,6 +81,6 @@ public class cmdLyrics extends PrivilegedCommand {
 
     @Override
     public utilGeneral.Category getCategory() {
-        return utilGeneral.Category.FUN;
+        return utilGeneral.Category.UTILITY;
     }
 }

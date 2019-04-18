@@ -33,15 +33,6 @@ public class SnipeListener {
         }
     }
 
-    public void onStartUpdateRanking() {
-        for (String channelID : channels.keySet()) {
-            if (channels.get(channelID) != null) channels.get(channelID).delete().queue();
-            Main.jda.getTextChannelById(channelID)
-                    .sendMessage("Initiate rebuild...")
-                    .queue(message -> channels.put(channelID, message));
-        }
-    }
-
     public void onSnipe(String mapID, String sniperID, String snipeeID) {
         String snipeeName = "User id " + snipeeID;
         String sniperName = "user id " + sniperID;
@@ -67,12 +58,30 @@ public class SnipeListener {
         }
     }
 
+    public void onStartUpdateRanking() {
+        for (String channelID : channels.keySet()) {
+            if (channels.get(channelID) != null) channels.get(channelID).delete().queue();
+            Main.jda.getTextChannelById(channelID)
+                    .sendMessage("Initiate rebuild...")
+                    .queue(message -> channels.put(channelID, message));
+        }
+    }
+
     public void onUpdateRankingProgress(int currentIdx, int totalAmount, int amountFailed) {
         String editedMessage = "Building: " + df.format((double)currentIdx/totalAmount) + "% ("
                 + currentIdx + " of " + totalAmount + ") | " + amountFailed + " failed";
         if (ThreadLocalRandom.current().nextBoolean()) {
             for (Message message : channels.values())
                 message.editMessage(editedMessage).queue();
+        }
+    }
+
+    public void onUpdateRankingStop(int currentIdx) {
+        for (String channelID : channels.keySet()) {
+            if (channels.get(channelID) != null) channels.get(channelID).delete().queue();
+            Main.jda.getTextChannelById(channelID)
+                    .sendMessage("Rebuilding stopped at id " + currentIdx)
+                    .queue(message -> channels.put(channelID, message));
         }
     }
 

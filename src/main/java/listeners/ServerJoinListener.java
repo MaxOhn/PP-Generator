@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
-public class serverJoinListener extends ListenerAdapter {
+public class ServerJoinListener extends ListenerAdapter {
 
     public void onGuildJoin(GuildJoinEvent event) {
         Logger logger = Logger.getLogger(this.getClass());

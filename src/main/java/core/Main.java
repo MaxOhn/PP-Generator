@@ -49,11 +49,11 @@ public class Main {
     }
 
     private static void addListeners() {
-        builder.addEventListener(new readyListener());
-        builder.addEventListener(new reconnectListener());
-        builder.addEventListener(new commandListener());
-        builder.addEventListener(new serverJoinListener());
-        builder.addEventListener(new roleLostListener());
+        builder.addEventListener(new ReadyListener());
+        builder.addEventListener(new ReconnectListener());
+        builder.addEventListener(new CommandListener());
+        builder.addEventListener(new ServerJoinListener());
+        builder.addEventListener(new RoleLostListener());
     }
 
     private static void addCommands() {

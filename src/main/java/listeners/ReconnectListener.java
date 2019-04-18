@@ -5,7 +5,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.apache.log4j.Logger;
 
 
-public class reconnectListener extends ListenerAdapter {
+public class ReconnectListener extends ListenerAdapter {
 
     public void onReconnect(ReconnectedEvent event) {
         Logger logger = Logger.getLogger(this.getClass());
