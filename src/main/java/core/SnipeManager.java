@@ -70,6 +70,7 @@ public class SnipeManager {
     }
 
     public void updateMapIds() {
+        interruptIdUpdating = false;
         isUpdatingIDs = true;
         final Thread t = new Thread(() -> {
             ZonedDateTime sinceDate = ZonedDateTime.of(2007,1,1,0,0,0,0, ZoneId.of("UTC+0"));
@@ -132,6 +133,7 @@ public class SnipeManager {
     }
 
     public void updateRankings(int startingID) {
+        interruptRankingUpdating = false;
         isUpdatingRankings = true;
         updateRankingIdx = 0;
         final Thread t = new Thread(() -> {
@@ -157,50 +159,66 @@ public class SnipeManager {
                     return;
                 }
                 currentMapID = it.next() + "";
-                try {
-                    String[] scores = getScores(currentMapID);
-                    if (!secrets.RELEASE) {
-                        if (scores.length > 0)
-                            logger.info("User " + scores[0] + " is first on map id " + currentMapID);
-                        else
-                            logger.info("No one is first place on map id " + currentMapID);
-                    }
-
-                    // ----------- Snipe handling -----------
-
-                    String[] currScores = rankings.get(Integer.parseInt(currentMapID));
-                    if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
-                        if (snipeListener != null)
-                            snipeListener.onSnipe(currentMapID, scores[0], currScores[0]);
-                    } else if (currScores.length == 0 && scores.length > 0) {
-                        if (snipeListener != null)
-                            snipeListener.onClaim(currentMapID, scores[0]);
-                    }
-
-                    // --------------------------------------
-
-                    DBProvider.updateRanking(currentMapID, scores);
-                } catch (IOException | JSONException e) {
-                    logger.warn("Data retrieval error for mapID " + currentMapID);
-                    e.printStackTrace();
-                    failedIds.add(Integer.parseInt(currentMapID));
-                } catch (SQLException | ClassNotFoundException e) {
-                    logger.warn("Database error while updating ranking of mapID " + currentMapID);
-                    e.printStackTrace();
-                    failedIds.add(Integer.parseInt(currentMapID));
-                } finally {
-                    updateRankingIdx++;
-                    if (snipeListener != null)
-                        snipeListener.onUpdateRankingProgress(updateRankingIdx, rankings.size(), failedIds.size());
-                }
+                retrieveAndHandle();
             }
-            logger.info("Done updating rankings");
+            logger.info("Done updating rankings | " + failedIds.size() + " failed");
+            updateFailedRankings();
+            logger.info("Done updating failed | " + failedIds.size() + " failed");
             snipeListener.onUpdateRankingDone(failedIds.size());
             isUpdatingRankings = false;
             currentMapID = "";
             updateRankingIdx = 0;
         });
         t.start();
+    }
+
+    private void updateFailedRankings() {
+        for (int i = 0; i < 10; i++) {
+            for (Iterator<Integer> it = failedIds.iterator(); it.hasNext();) {
+                currentMapID = it.next() + "";
+                retrieveAndHandle();
+                it.remove();
+            }
+        }
+    }
+
+    private void retrieveAndHandle() {
+        try {
+            String[] scores = getScores(currentMapID);
+            if (!secrets.RELEASE) {
+                if (scores.length > 0)
+                    logger.info("User " + scores[0] + " is first on map id " + currentMapID);
+                else
+                    logger.info("No one is first place on map id " + currentMapID);
+            }
+
+            // ----------- Snipe handling -----------
+
+            String[] currScores = rankings.get(Integer.parseInt(currentMapID));
+            if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
+                if (snipeListener != null)
+                    snipeListener.onSnipe(currentMapID, scores[0], currScores[0]);
+            } else if (currScores.length == 0 && scores.length > 0) {
+                if (snipeListener != null)
+                    snipeListener.onClaim(currentMapID, scores[0]);
+            }
+
+            // --------------------------------------
+
+            DBProvider.updateRanking(currentMapID, scores);
+        } catch (IOException | JSONException e) {
+            logger.warn("Data retrieval error for mapID " + currentMapID);
+            e.printStackTrace();
+            failedIds.add(Integer.parseInt(currentMapID));
+        } catch (SQLException | ClassNotFoundException e) {
+            logger.warn("Database error while updating ranking of mapID " + currentMapID);
+            e.printStackTrace();
+            failedIds.add(Integer.parseInt(currentMapID));
+        } finally {
+            updateRankingIdx++;
+            if (snipeListener != null)
+                snipeListener.onUpdateRankingProgress(updateRankingIdx, rankings.size(), failedIds.size());
+        }
     }
 
     private String[] getScores(String mapID) throws IOException {
