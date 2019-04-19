@@ -130,6 +130,18 @@ public class DBProvider {
         c.close();
     }
 
+    public static void addMapWithRankings(Integer mapID, String[] rankings) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        PreparedStatement stmnt = c.prepareStatement("insert into mapRanking values ('" + mapID + "' , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        for (int i = 0; i < 10; i++) {
+            stmnt.setString(i + 1, i < rankings.length ? rankings[i] : null);
+        }
+        stmnt.execute();
+        stmnt.close();
+        c.close();
+    }
+
     /*
      * ------------------------
      *      beatmap info

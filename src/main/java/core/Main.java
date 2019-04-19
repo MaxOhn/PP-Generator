@@ -92,15 +92,13 @@ public class Main {
         // snipe
         commandHandler.commands.put("snipechannel", new cmdSnipeChannel());
         commandHandler.commands.put("snipeprogress", new cmdSnipeProgress());
-        commandHandler.commands.put("progress", new cmdSnipeProgress());
+        commandHandler.commands.put("checksnipe", new cmdCheckSnipe());
+        commandHandler.commands.put("snipe", new cmdCheckSnipe());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
-        commandHandler.commands.put("adds", new cmdAddStream());
         commandHandler.commands.put("trackedstreams", new cmdTrackedStreams());
-        commandHandler.commands.put("trackeds", new cmdTrackedStreams());
         commandHandler.commands.put("removestream", new cmdRemoveStream());
-        commandHandler.commands.put("removes", new cmdRemoveStream());
 
         // fun
         commandHandler.commands.put("dance", new cmdDance());

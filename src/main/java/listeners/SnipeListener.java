@@ -36,6 +36,10 @@ public class SnipeListener {
         }).start();
     }
 
+    /*
+        -1: currently not rebuilding
+        -2: channel not added
+    */
     public String getMessageId(TextChannel channel) {
         if (channels.keySet().contains(channel)) {
             Message msg = channels.get(channel);

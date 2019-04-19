@@ -101,7 +101,6 @@ public class SnipeManager {
                     }
                     newMapIDs = newMaps.stream()
                             .filter(map -> !rankings.keySet().contains(map.getID()))
-                            .sorted(Comparator.comparingLong(map -> map.getApprovedDate().toEpochSecond()))
                             .map(OsuBeatmap::getID)
                             .collect(Collectors.toList());
                 }
@@ -144,7 +143,7 @@ public class SnipeManager {
             }
             Iterator it = rankings.keySet().iterator();
             int initialID = startingID;
-            for (int largest = rankings.keySet().stream().max(Comparator.naturalOrder()).get(); initialID < largest; initialID++) {
+            for (int largest = rankings.keySet().stream().max(Comparator.naturalOrder()).get(); initialID <= largest; initialID++) {
                 if (rankings.containsKey(initialID)) break;
             }
             while (it.hasNext()) {
@@ -162,8 +161,10 @@ public class SnipeManager {
                 retrieveAndHandle();
             }
             logger.info("Done updating rankings | " + failedIds.size() + " failed");
-            updateFailedRankings();
-            logger.info("Done updating failed | " + failedIds.size() + " failed");
+            if (failedIds.size() > 0) {
+                updateFailedRankings();
+                logger.info("Done updating failed | " + failedIds.size() + " failed");
+            }
             snipeListener.onUpdateRankingDone(failedIds.size());
             isUpdatingRankings = false;
             currentMapID = "";
@@ -228,6 +229,67 @@ public class SnipeManager {
             scoreList.add(scores.getJSONObject(i).getInt("user_id") + "");
         }
         return scoreList.toArray(new String[0]);
+    }
+
+    /*
+        -1: couldnt find map
+        -2: no scores on map
+        -3: error while retrieving scores
+        -4: listener handled message
+        otherwise id of current #1
+    */
+    public String checkScores(int mapID) {
+        String[] currScores = new String[10];
+        if (!rankings.containsKey(mapID)) {
+            try {
+                OsuBeatmap map = osu.beatmaps
+                        .query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(mapID).build())
+                        .get(0);
+            } catch (Exception e) {
+                return "-1";
+            }
+        } else currScores = rankings.get(mapID);
+        try {
+            String[] scores = getScores(mapID + "");
+            if (!secrets.RELEASE) {
+                if (scores.length > 0)
+                    logger.info("User " + scores[0] + " is first on map id " + mapID);
+                else
+                    logger.info("No one is first place on map id " + mapID);
+            }
+
+            if (rankings.containsKey(mapID))
+                DBProvider.updateRanking(mapID + "", scores);
+            else
+                DBProvider.addMapWithRankings(mapID, scores);
+            rankings.put(mapID, scores);
+
+            // ----------- Snipe handling -----------
+
+            if (currScores.length > 0 && scores.length > 0 && !currScores[0].equals(scores[0])) {
+                if (snipeListener != null) {
+                    snipeListener.onSnipe(mapID + "", scores[0], currScores[0]);
+                    return "-4";
+                }
+            } else if (currScores.length == 0 && scores.length > 0) {
+                if (snipeListener != null) {
+                    snipeListener.onClaim(mapID + "", scores[0]);
+                    return "-4";
+                }
+            }
+
+            // --------------------------------------
+
+            return scores.length > 0 ? scores[0] : "-2";
+        } catch (IOException | JSONException e) {
+            logger.warn("Data retrieval error for mapID " + mapID);
+            e.printStackTrace();
+            return "-3";
+        } catch (SQLException | ClassNotFoundException e) {
+            logger.warn("Database error while updating ranking of mapID " + mapID);
+            e.printStackTrace();
+            return "-3";
+        }
     }
 
     public boolean addSnipeChannel(TextChannel channel) {
