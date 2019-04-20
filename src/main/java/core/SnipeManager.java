@@ -138,14 +138,15 @@ public class SnipeManager {
         final Thread t = new Thread(() -> {
             snipeListener.onStartUpdateRanking();
             while (!rankingsReady) {
+                logger.info("Rankings Treemap not yet ready...");
                 try { Thread.sleep(500); }
                 catch (InterruptedException ignored) {}
             }
-            Iterator it = rankings.keySet().iterator();
             int initialID = startingID;
-            for (int largest = rankings.keySet().stream().max(Comparator.naturalOrder()).get(); initialID <= largest; initialID++) {
+            for (; initialID <= 3000000; initialID++) {
                 if (rankings.containsKey(initialID)) break;
             }
+            Iterator it = rankings.keySet().iterator();
             while (it.hasNext()) {
                 if ((Integer)it.next() == initialID)
                     break;

@@ -21,7 +21,7 @@ public class cmdPing implements ICommand {
     }
 
     public String help(int hCode) {
-        return "Enter `" + statics.prefix + "ping` to make me respond";
+        return "Enter `" + statics.prefix + "ping` to make me pong";
     }
 
     @Override
