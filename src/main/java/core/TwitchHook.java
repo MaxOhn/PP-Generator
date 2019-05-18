@@ -1,5 +1,6 @@
 package main.java.core;
 
+import com.google.common.util.concurrent.RateLimiter;
 import com.mb3364.twitch.api.Twitch;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.models.Stream;
@@ -19,6 +20,7 @@ public class TwitchHook {
     private static HashMap<String, ArrayList<String>> streamers;
     private static ArrayList<String> isOnline = new ArrayList<>();
     private static Logger logger = Logger.getLogger("TwitchHook");
+    private RateLimiter limiter = RateLimiter.create(2);
 
     public TwitchHook() {
         twitch = new Twitch();
@@ -55,11 +57,7 @@ public class TwitchHook {
     public void streamerCheckIteration() {
         final Thread t = new Thread(() -> {
             for (String streamer : streamers.keySet()) {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    logger.warn("Thread.sleep in trackStreamers was interrupted: " + e);
-                }
+                limiter.acquire();
                 twitch.streams().get(streamer, new StreamResponseHandler() {
                     @Override
                     public void onSuccess(Stream stream) {
