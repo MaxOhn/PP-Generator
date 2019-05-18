@@ -14,6 +14,8 @@ import main.java.core.Main;
 import main.java.core.Performance;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
@@ -26,7 +28,7 @@ public class cmdNoChoke implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -39,7 +41,7 @@ public class cmdNoChoke implements ICommand {
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                event.getTextChannel().sendMessage(help(1)).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
         } else {
@@ -51,7 +53,7 @@ public class cmdNoChoke implements ICommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -62,10 +64,10 @@ public class cmdNoChoke implements ICommand {
                     new EndpointUsers.ArgumentsBuilder(name).setMode(GameMode.STANDARD).build()
             );
         } catch (Exception e) {
-            event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
-        event.getTextChannel().sendMessage("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done").queue(message -> {
+        new BotMessage(event, BotMessage.MessageType.TEXT).send("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done", message -> {
             try {
                 int currScore = 0;
                 double ppThreshold = 0;
@@ -77,7 +79,7 @@ public class cmdNoChoke implements ICommand {
                 for (OsuScore score : scoresList) {
                     double progress = 100 * (double)currScore / scoresList.size();
                     if (progress > 6 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
-                        message.editMessage("Gathering data for `" + user.getUsername() + "`: "
+                        ((Message)message).editMessage("Gathering data for `" + user.getUsername() + "`: "
                                 + (int)progress + "%").queue();
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
                     OsuBeatmap map;
@@ -122,14 +124,18 @@ public class cmdNoChoke implements ICommand {
                     }
                 }
                 maps = finalMaps;
-                message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%\nBuilding message...").queue();
+                ((Message)message).editMessage("Gathering data for `" + user.getUsername() + "`: 100%\nBuilding message...").queue();
                 new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).osuscores(scores).maps(maps)
-                        .mode(GameMode.STANDARD).buildAndSend(() -> message.delete().queue());
-                logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
-                        "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));
+                        .mode(GameMode.STANDARD).buildAndSend(() -> ((Message)message).delete().queue());
+                if (event.isFromType(ChannelType.TEXT)) {
+                    logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
+                            "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));
+                } else if (event.isFromType(ChannelType.PRIVATE)) {
+                    logger.info(String.format("[Private] %s: %s", event.getAuthor().getName(), event.getMessage().getContentRaw() + " (finished)"));
+                }
             } catch (Exception e0) {
-                event.getTextChannel().sendMessage("There was some problem, you might wanna retry later again and maybe"
-                + " ping bade or smth :p").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("There was some problem, you might wanna retry later again and maybe"
+                        + " ping bade or smth :p");
                 e0.printStackTrace();
             }
         });

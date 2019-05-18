@@ -1,6 +1,7 @@
 package main.java.commands.Utility;
 
 import main.java.commands.ICommand;
+import main.java.core.BotMessage;
 import main.java.core.commandHandler;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -27,7 +28,7 @@ public class cmdHelp implements ICommand {
             eb.addField("__**" + c.getName() + "**__",
                     String.join(", ", commandHandler.getCommands(c)), false);
         }
-        event.getTextChannel().sendMessage(mb.build()).embed(eb.build()).queue();
+        new BotMessage(event, BotMessage.MessageType.TEXT).send(mb.build(), eb.build());
     }
 
     @Override

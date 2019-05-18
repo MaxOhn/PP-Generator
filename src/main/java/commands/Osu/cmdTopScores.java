@@ -24,7 +24,7 @@ public class cmdTopScores implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -40,15 +40,15 @@ public class cmdTopScores implements ICommand {
                         case "s": mode = GameMode.STANDARD; break;
                         case "t": mode = GameMode.TAIKO; break;
                         case "c":
-                            event.getTextChannel().sendMessage(help(2)).queue();
+                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
                             return;
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            event.getTextChannel().sendMessage(help(3)).queue();
+                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
                             return;
                     }
                 } else {
-                    event.getTextChannel().sendMessage(help(3)).queue();
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
                     return;
                 }
             }
@@ -66,7 +66,7 @@ public class cmdTopScores implements ICommand {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                event.getTextChannel().sendMessage(help(1)).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
         } else {
@@ -75,7 +75,7 @@ public class cmdTopScores implements ICommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -83,14 +83,14 @@ public class cmdTopScores implements ICommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
-            event.getTextChannel().sendMessage("`" + name + "` was not found").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
         Collection<OsuScore> scores = null;
         try {
             scores = user.getTopScores(getAmount()).get();
         } catch (OsuAPIException e) {
-            event.getTextChannel().sendMessage("Could not retrieve top scores").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
@@ -124,13 +124,13 @@ public class cmdTopScores implements ICommand {
         }
         if (scores.size() == 0) {
             if (getMessageType() == BotMessage.MessageType.TOPSCORES) {
-                event.getTextChannel().sendMessage("Could not find any scores from user `" + user.getUsername() + "`").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores from user `" + user.getUsername() + "`");
             } else if (getMessageType() == BotMessage.MessageType.TOPSOTARKS) {
-                event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
-                        + " personal top 100 and I could not be any prouder \\:')").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
+                        + " personal top 100 and I could not be any prouder \\:')");
             } else if (getMessageType() == BotMessage.MessageType.SS) {
-                event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any SS scores in the"
-                        + " personal top 100 :/").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + user.getUsername() + "` appears to not have any SS scores in the"
+                        + " personal top 100 :/");
             }
             return;
         }

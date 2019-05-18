@@ -28,7 +28,7 @@ public class cmdScores implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -47,12 +47,13 @@ public class cmdScores implements ICommand {
             if (mapID.equals("-1")) mapID = Integer.parseInt(args[0]) + "";
         } catch (Exception e) {
             if (args[0].contains("/s/") || !args[0].contains("#"))
-                event.getTextChannel().sendMessage("I think you specified a mapset, try a specific beatmap instead").queue();
-            else event.getTextChannel().sendMessage(help(2)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("I think you specified a mapset, try a specific beatmap instead");
+            else
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
             return;
         }
         if (mapID.equals("-1")) {
-            event.getTextChannel().sendMessage("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?");
             return;
         }
         List<String> argList = Arrays.stream(args)
@@ -62,13 +63,13 @@ public class cmdScores implements ICommand {
                 ? String.join(" ", argList.subList(1, argList.size()))
                 : Main.discLink.getOsu(event.getAuthor().getId());
         if (name == null) {
-            event.getTextChannel().sendMessage(help(1)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
         }
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -81,7 +82,7 @@ public class cmdScores implements ICommand {
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                event.getTextChannel().sendMessage("Could not retrieve beatmap").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
                 return;
             }
             try {
@@ -94,7 +95,7 @@ public class cmdScores implements ICommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(map.getMode()).build());
         } catch (Exception e) {
-            event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find osu user `" + name + "`");
             return;
         }
         Collection<OsuScore> scores = null;
@@ -103,12 +104,12 @@ public class cmdScores implements ICommand {
                     new EndpointScores.ArgumentsBuilder(Integer.parseInt(mapID)).setUserName(name).setMode(map.getMode()).build()
             );
         } catch (OsuAPIException e) {
-            event.getTextChannel().sendMessage("Could not retrieve scores").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores");
             return;
         }
         if (scores.size() == 0) {
-            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                    mapID + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
+                    + "` on beatmap id `" + mapID + "`");
             return;
         }
         new BotMessage(event, BotMessage.MessageType.SCORES).user(user).map(map).osuscores(scores).mode(map.getMode()).buildAndSend();

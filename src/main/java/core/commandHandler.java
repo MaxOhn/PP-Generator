@@ -3,6 +3,7 @@ package main.java.core;
 import main.java.commands.ICommand;
 import main.java.commands.INumberedCommand;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
@@ -48,8 +49,12 @@ public class commandHandler {
                     t.start();
                 }
                 // Log the occurrence of the invoke
-                logger.info(String.format("[%s] %s: %s", cmd.event.getGuild().getName() + ":" + cmd.event.getTextChannel().getName(),
-                        cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
+                if (cmd.event.isFromType(ChannelType.TEXT)) {
+                    logger.info(String.format("[%s] %s: %s", cmd.event.getGuild().getName() + ":" + cmd.event.getTextChannel().getName(),
+                            cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
+                } else if (cmd.event.isFromType(ChannelType.PRIVATE)) {
+                    logger.info(String.format("[Private] %s: %s", cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw()));
+                }
             } catch (Exception e) {
                 logger.error(String.format("%s: %s [%s]", cmd.event.getAuthor().getName(), cmd.event.getMessage().getContentRaw(), e.getMessage()));
                 e.printStackTrace();

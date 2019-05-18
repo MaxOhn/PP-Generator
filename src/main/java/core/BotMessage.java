@@ -8,6 +8,8 @@ import main.java.util.secrets;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
@@ -20,6 +22,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static main.java.util.utilGeneral.howLongAgo;
@@ -56,12 +59,73 @@ public class BotMessage {
         this.p = new Performance();
     }
 
+    public void send(String msg) {
+        send(new MessageBuilder(msg).build());
+    }
+
+    public void send(Message msg) {
+        switch (event.getChannelType()) {
+            case PRIVATE:
+                event.getChannel().sendMessage(msg).queue();
+                break;
+            default:
+                event.getTextChannel().sendMessage(msg).queue();
+                break;
+        }
+    }
+
+    public void send(String msg, MessageEmbed embed) {
+        send(new MessageBuilder(msg).build(), embed);
+    }
+
+    public void send(Message msg, MessageEmbed embed) {
+        switch (event.getChannelType()) {
+            case PRIVATE:
+                event.getChannel().sendMessage(msg).embed(embed).queue();
+                break;
+            default:
+                event.getTextChannel().sendMessage(msg).embed(embed).queue();
+                break;
+        }
+    }
+
+    public void send(String msg, Consumer consumer) {
+        send(new MessageBuilder(msg).build(), consumer);
+    }
+
+    public void send(Message msg, Consumer consumer) {
+        switch (event.getChannelType()) {
+            case PRIVATE:
+                event.getChannel().sendMessage(msg).queue(consumer);
+                break;
+            default:
+                event.getTextChannel().sendMessage(msg).queue(consumer);
+                break;
+        }
+    }
+
+    public void send(String msg, MessageEmbed embed, Consumer consumer) {
+        send(new MessageBuilder(msg).build(), embed, consumer);
+    }
+
+    public void send(Message msg, MessageEmbed embed, Consumer consumer) {
+        switch (event.getChannelType()) {
+            case PRIVATE:
+                event.getChannel().sendMessage(msg).embed(embed).queue(consumer);
+                break;
+            default:
+                event.getTextChannel().sendMessage(msg).embed(embed).queue(consumer);
+                break;
+        }
+    }
+
     public void buildAndSend() {
         buildAndSend(null);
     }
 
     public void buildAndSend(Runnable runnable) {
         File thumbFile = null;
+        File flagFile = null;
         int idx;
         String ppString = "**", hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
@@ -233,10 +297,11 @@ public class BotMessage {
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
+                flagFile = new File(secrets.flagPath + "BE.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
-                                + " [" + p.getMap().getVersion() + "]",
-                        "https://osu.ppy.sh/b/" + p.getMap().getID(), null);
+                                + " [" + p.getMap().getVersion() + "] [" + df.format(p.getMap().getDifficulty()) + "★]",
+                        "https://osu.ppy.sh/b/" + p.getMap().getID(), "attachment://flag.png");
                 StringBuilder descr = new StringBuilder();
                 idx = 1;
                 for (OsuScore s : scores) {
@@ -258,7 +323,8 @@ public class BotMessage {
         final String hString = hitString;
         final String timeAgo = howLongAgo(date);
         final String eTitle = extendedTitle;
-        MessageAction ma = this.event.getTextChannel().sendFile(thumbFile, "thumb.jpg", mb.build());
+        MessageAction ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
+                .sendFile(thumbFile, "thumb.jpg", mb.build());
         switch (typeM) {
             case RECENT:
             case COMPARE:
@@ -279,6 +345,7 @@ public class BotMessage {
                 });
                 break;
             case LEADERBOARD:
+                ma = ma.addFile(flagFile, "flag.png");
             case SCORES:
             case TOPSCORES:
             case TOPSOTARKS:
@@ -386,6 +453,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS, LEADERBOARD
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS, LEADERBOARD, TEXT
     }
 }

@@ -1,5 +1,6 @@
 package main.java.commands;
 
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
@@ -13,6 +14,10 @@ public abstract class PrivilegedCommand implements ICommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        if (event.isFromType(ChannelType.PRIVATE)) {
+            event.getChannel().sendMessage("This command is not usable in private chat").queue();
+            return false;
+        }
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;

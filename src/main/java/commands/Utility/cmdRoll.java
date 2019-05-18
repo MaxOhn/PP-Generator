@@ -1,6 +1,7 @@
 package main.java.commands.Utility;
 
 import main.java.commands.ICommand;
+import main.java.core.BotMessage;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -13,7 +14,7 @@ public class cmdRoll implements ICommand {
     public boolean called(String[] args, MessageReceivedEvent event) {
         if(args.length > 0) {
             if(args.length > 1 || args[0].equals("-h")) {
-                event.getTextChannel().sendMessage(help(0)).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
                 return false;
             }
         }
@@ -28,15 +29,14 @@ public class cmdRoll implements ICommand {
                 max = Integer.parseInt(args[0]);
             // Catch non-number
             } catch(NumberFormatException e) {
-                System.out.println("NumberFormatException: " + e.getMessage());
-                event.getTextChannel().sendMessage(help(2)).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
                 return;
             }
         }
         // Give random number
         int rand = ThreadLocalRandom.current().nextInt(1,max+1);
         String out = event.getAuthor().getAsMention() + ", I rolled for you: " + rand;
-        event.getTextChannel().sendMessage(out).queue();
+        new BotMessage(event, BotMessage.MessageType.TEXT).send(out);
     }
 
     @Override

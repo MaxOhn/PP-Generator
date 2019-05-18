@@ -23,7 +23,7 @@ public class cmdMapLeaderboard implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -42,12 +42,13 @@ public class cmdMapLeaderboard implements ICommand {
             if (mapID.equals("-1")) mapID = Integer.parseInt(args[0]) + "";
         } catch (Exception e) {
             if (args[0].contains("/s/") || !args[0].contains("#"))
-                event.getTextChannel().sendMessage("I think you specified a mapset, try a specific beatmap instead").queue();
-            else event.getTextChannel().sendMessage(help(1)).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("I think you specified a mapset, try a specific beatmap instead");
+            else
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
         }
         if (mapID.equals("-1")) {
-            event.getTextChannel().sendMessage("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?");
             return;
         }
         OsuBeatmap map;
@@ -59,7 +60,7 @@ public class cmdMapLeaderboard implements ICommand {
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                event.getTextChannel().sendMessage("Could not retrieve beatmap").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
                 return;
             }
             try {
@@ -72,7 +73,7 @@ public class cmdMapLeaderboard implements ICommand {
         try {
             scores = Main.customOsu.getScores(mapID).stream().limit(10).collect(Collectors.toList());
         } catch (IOException e) {
-            event.getTextChannel().sendMessage("Could not retrieve scores of the beatmap, blame bade").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");
             e.printStackTrace();
             return;
         }

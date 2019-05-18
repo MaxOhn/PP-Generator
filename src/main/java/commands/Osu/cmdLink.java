@@ -1,8 +1,8 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.OsuUser;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
+import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -19,33 +19,33 @@ public class cmdLink implements ICommand {
 
         if (args.length == 0) {
             if (Main.discLink.removeLink(event.getAuthor().getId())) {
-                event.getTextChannel().sendMessage("You are no longer linked").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("You are no longer linked");
                 return;
             } else {
-                event.getTextChannel().sendMessage("I could not remove the link, blame bade").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("I could not remove the link, blame bade");
                 return;
             }
         }
 
         if (args[0].equals("-h") || args[0].equals("-help")) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return;
         }
 
         String name = String.join(" ", args);
 
         try {
-           OsuUser u = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).build());
+           Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).build());
         } catch (Exception e) {
-            event.getTextChannel().sendMessage("Could not find osu user with name `" + name + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find osu user with name `" + name + "`");
             return;
         }
 
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
-            event.getTextChannel().sendMessage("I linked discord's `" + event.getAuthor().getName() +
-                    "` with osu's `" + name + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("I linked discord's `" + event.getAuthor().getName()
+                    + "` with osu's `" + name + "`");
         else
-            event.getTextChannel().sendMessage("I could not link the accounts, blame bade").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("I could not link the accounts, blame bade");
     }
 
     @Override

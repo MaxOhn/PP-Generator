@@ -1,16 +1,20 @@
 package main.java.commands.Fun;
 
 import main.java.commands.ICommand;
+import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
 
 public abstract class cmdSong implements ICommand {
+
+    String busyID;
 
     abstract String[] getLyrics();
 
@@ -22,30 +26,32 @@ public abstract class cmdSong implements ICommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        boolean privateMsg = event.isFromType(ChannelType.PRIVATE);
+        busyID = privateMsg ? event.getChannel().getId() : event.getGuild().getId();
         try {
-            if (!DBProvider.getLyricsState(event.getGuild().getId())) {
+            if (!privateMsg && !DBProvider.getLyricsState(busyID)) {
                 event.getTextChannel().sendMessage("The server's big boys have disabled song commands. " +
                         "Modify the settings via `" + statics.prefix + "lyrics`.").queue();
                 return false;
             }
         } catch (ClassNotFoundException | SQLException e) {
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth xd").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Something went wrong, ping bade or smth xd");
             Logger logger = Logger.getLogger(this.getClass());
             logger.error("Error while interacting with lyrics database: " + e);
             return false;
         }
-        return !Main.runningLyrics.contains(event.getGuild().getId());
+        return !Main.runningLyrics.contains(busyID);
     }
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Main.runningLyrics.add(event.getGuild().getId());
+        Main.runningLyrics.add(busyID);
         String[] lyrics = getLyrics();
         int delay = getDelay();
         final Thread t = new Thread(() -> {
             for (String lyric: lyrics) {
                 try {
-                    event.getTextChannel().sendMessage("♫ " + lyric + " ♫").queue();
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send("♫ " + lyric + " ♫");
                     Thread.sleep(delay);
                 } catch (InterruptedException ignored) {}
             }
@@ -53,7 +59,7 @@ public abstract class cmdSong implements ICommand {
                 Thread.sleep(getCooldown());
             } catch (InterruptedException ignored) {
             } finally {
-                Main.runningLyrics.remove(event.getGuild().getId());
+                Main.runningLyrics.remove(busyID);
             }
         });
         t.start();

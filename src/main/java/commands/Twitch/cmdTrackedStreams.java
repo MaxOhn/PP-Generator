@@ -4,11 +4,16 @@ import main.java.commands.ICommand;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdTrackedStreams implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        if (event.isFromType(ChannelType.PRIVATE)) {
+            event.getChannel().sendMessage("This command is not usable in private chat").queue();
+            return false;
+        }
         return true;
     }
 

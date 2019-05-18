@@ -11,6 +11,7 @@ import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -39,12 +40,12 @@ public class cmdCompare implements INumberedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            event.getTextChannel().sendMessage(help(0)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return;
         }
 
         if (number > 50) {
-            event.getTextChannel().sendMessage("The number must be between 1 and 50").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
             return;
         }
 
@@ -65,20 +66,20 @@ public class cmdCompare implements INumberedCommand {
 
         String name = argList.size() > 0 ? String.join(" ", argList) : Main.discLink.getOsu(event.getAuthor().getId());
         if (name == null) {
-            event.getTextChannel().sendMessage(help(1)).queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
         }
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
         String mapID = "";
 
         int counter = 100;
-        for (Message msg: event.getTextChannel().getIterableHistory()) {
+        for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
             if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                 MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                 List<MessageEmbed.Field> fields = msgEmbed.getFields();
@@ -92,8 +93,8 @@ public class cmdCompare implements INumberedCommand {
                 }
             }
             if (--counter == 0) {
-                event.getTextChannel().sendMessage("Could not find last `" + statics.prefix + "recent" + getName() + "`, must " +
-                        "be too old").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find last `" + statics.prefix
+                        + "recent" + getName() + "`, must " + "be too old");
                 return;
             }
         }
@@ -104,12 +105,12 @@ public class cmdCompare implements INumberedCommand {
                     Integer.parseInt(mapID)).setMode(getMode()).setUserName(name).setLimit(1).build()
             );
         } catch (OsuAPIException e) {
-            event.getTextChannel().sendMessage("Could not retrieve score of `" + name + "` on map id `" + mapID + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve score of `" + name + "` on map id `" + mapID + "`");
             return;
         }
         if (scores.size() == 0) {
-            event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                    mapID + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name + "` on beatmap id `" +
+                    mapID + "`");
             return;
         }
 
@@ -119,8 +120,8 @@ public class cmdCompare implements INumberedCommand {
             while (it.hasNext() && !Arrays.equals((score = it.next()).getEnabledMods(), mods));
             if (!Arrays.equals(score.getEnabledMods(), mods)) {
                 String msgEnd = mods.length == 0 ? " without mods" : " with mods `" + abbrvModSet(mods) + "`";
-                event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                        mapID + "`" + msgEnd).queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
+                        + "` on beatmap id `" + mapID + "`" + msgEnd);
                 score = scores.iterator().next();
             }
         }
@@ -128,7 +129,7 @@ public class cmdCompare implements INumberedCommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(score.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
-            event.getTextChannel().sendMessage("Could not find osu user `" + name + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find osu user `" + name + "`");
             return;
         }
         OsuBeatmap map;
@@ -140,7 +141,7 @@ public class cmdCompare implements INumberedCommand {
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).setMode(getMode()).setLimit(1).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                event.getTextChannel().sendMessage("Could not retrieve beatmap with id `" + mapID + "`").queue();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap with id `" + mapID + "`");
                 return;
             }
             try {
@@ -153,14 +154,14 @@ public class cmdCompare implements INumberedCommand {
         try {
             topPlays = user.getTopScores(50).get();
         } catch (OsuAPIException e) {
-            event.getTextChannel().sendMessage("Could not retrieve top scores of `" + name + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores of `" + name + "`");
             return;
         }
         List<OsuScore> globalPlays;
         try {
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
         } catch (OsuAPIException e) {
-            event.getTextChannel().sendMessage("Could not retrieve global scores of map id `" + map.getID() + "`").queue();
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve global scores of map id `" + map.getID() + "`");
             return;
         }
         new BotMessage(event, BotMessage.MessageType.COMPARE).user(user).map(map).osuscore(score)
