@@ -84,7 +84,6 @@ public class cmdRecent implements INumberedCommand {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(recent.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
             event.getTextChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
-            e.printStackTrace();
             return;
         }
         OsuBeatmap map;

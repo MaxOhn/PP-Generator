@@ -93,7 +93,6 @@ public class utilOsu {
         return mods_str(createSum(mods.toArray(new GameMod[0])));
     }
 
-    // TODO: test
     public static int createSum(GameMod[] mods) {
         int sum = 0;
         for(int i = 0; i < mods.length; sum |= mods[i++].getBit());

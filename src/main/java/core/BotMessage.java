@@ -4,7 +4,6 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
-import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.util.secrets;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
-import static main.java.util.utilOsu.*;
+import static main.java.util.utilOsu.abbrvModSet;
 
 public class BotMessage {
 
@@ -238,18 +237,13 @@ public class BotMessage {
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
                                 + " [" + p.getMap().getVersion() + "]",
                         "https://osu.ppy.sh/b/" + p.getMap().getID(), null);
-                String username;
                 StringBuilder descr = new StringBuilder();
                 idx = 1;
                 for (OsuScore s : scores) {
                     osuscore(s);
                     if (!descr.toString().equals("")) descr.append("\n");
-                    username = "User ID " + s.getUserID();
-                    try {
-                        username = s.getUser().get().getUsername();
-                    } catch (OsuAPIException ignored) {}
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
-                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **").append(username)
+                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **").append(s.getUsername())
                             .append("**: ").append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
                             .append(" [ ").append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ]")
                             .append(modstr).append("\n~  **")
@@ -373,12 +367,10 @@ public class BotMessage {
 
     private String getKeyString() {
         if (p.getMode() != GameMode.MANIA) return "";
-        String keys = key_mods_str(createSum(score.getEnabledMods()));
-        return "[" + (keys.equals("") ? ((int)p.getMap().getSize() + "K") : keys) + "]";
+        return "[" + (int)p.getMap().getSize() + "K" + "]";
     }
 
     private enum Error {
-        USER("Unspecified user"),
         MAP("Unspecified map"),
         HISTORY("Unspecified history"),
         TYPEM("Invalid message type"),

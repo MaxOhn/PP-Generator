@@ -76,6 +76,7 @@ public class CustomRequester {
             s.setCountkatu(stats.getInt("count_katu"));
             s.setPerfect(o.getBoolean("perfect"));
             s.setUserID(o.getInt("user_id"));
+            s.setUsername(o.getJSONObject("user").getString("username"));
             s.setDate(ZonedDateTime.parse(o.getString("created_at")));
             s.setRank(o.getString("rank"));
             s.setPp((float)o.getDouble("pp"));
