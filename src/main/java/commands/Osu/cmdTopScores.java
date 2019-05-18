@@ -32,7 +32,6 @@ public class cmdTopScores implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         GameMode mode = GameMode.STANDARD;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
@@ -70,8 +69,16 @@ public class cmdTopScores implements ICommand {
                 event.getTextChannel().sendMessage(help(1)).queue();
                 return;
             }
-        } else
+        } else {
             name = String.join(" ", argList);
+        }
+        if (name.startsWith("<@") && name.endsWith(">")) {
+            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            if (name == null) {
+                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                return;
+            }
+        }
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());

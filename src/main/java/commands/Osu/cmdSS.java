@@ -17,7 +17,7 @@ public class cmdSS extends cmdTopScores {
         if (s == null) return false;
         boolean result = s.getMisses() == 0 && s.getHit100() == 0;
         if (mode == GameMode.STANDARD) result &= s.getHit50() == 0;
-        else if (mode == GameMode.MANIA) result &= s.getGekis() == 0 && s.getKatus() == 0 && s.getHit50() == 0;
+        else if (mode == GameMode.MANIA) result &= s.getKatus() == 0 && s.getHit50() == 0;
         return result && s.isPerfect();
     }
 

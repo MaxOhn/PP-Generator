@@ -4,6 +4,7 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.util.secrets;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -24,9 +25,7 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
-import static main.java.util.utilOsu.abbrvModSet;
-import static main.java.util.utilOsu.createSum;
-import static main.java.util.utilOsu.key_mods_str;
+import static main.java.util.utilOsu.*;
 
 public class BotMessage {
 
@@ -63,15 +62,7 @@ public class BotMessage {
     }
 
     public void buildAndSend(Runnable runnable) {
-        if (u == null) throw new IllegalStateException(Error.USER.getMsg());
-        eb.setThumbnail("attachment://thumb.jpg");
-        eb.setAuthor(u.getUsername() + ": "
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
-                + u.getCountry()
-                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
-        "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
-        File thumbFile;
+        File thumbFile = null;
         int idx;
         String ppString = "**", hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
@@ -83,6 +74,13 @@ public class BotMessage {
             case COMPARE:
             case RECENTBEST:
             case SINGLETOP:
+                eb.setThumbnail("attachment://thumb.jpg");
+                eb.setAuthor(u.getUsername() + ": "
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + u.getCountry()
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                        "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
@@ -127,6 +125,13 @@ public class BotMessage {
                     .addField("Map Info", mapInfo,true);
                 break;
             case SCORES:
+                eb.setThumbnail("attachment://thumb.jpg");
+                eb.setAuthor(u.getUsername() + ": "
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + u.getCountry()
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                        "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 thumbFile = filesPrepared
@@ -224,6 +229,35 @@ public class BotMessage {
                 }
                 eb.setDescription(description);
                 break;
+            case LEADERBOARD:
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                thumbFile = filesPrepared
+                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(secrets.thumbPath + "bgNotFound.png");
+                eb.setThumbnail("attachment://thumb.jpg");
+                eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
+                                + " [" + p.getMap().getVersion() + "]",
+                        "https://osu.ppy.sh/b/" + p.getMap().getID(), null);
+                String username;
+                StringBuilder descr = new StringBuilder();
+                idx = 1;
+                for (OsuScore s : scores) {
+                    osuscore(s);
+                    if (!descr.toString().equals("")) descr.append("\n");
+                    username = "User ID " + s.getUserID();
+                    try {
+                        username = s.getUser().get().getUsername();
+                    } catch (OsuAPIException ignored) {}
+                    String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
+                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **").append(username)
+                            .append("**: ").append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
+                            .append(" [ ").append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ]")
+                            .append(modstr).append("\n~  **")
+                            .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
+                            .append(" ~ ").append(p.getAcc()).append("% ~ ").append(howLongAgo(s.getDate()));
+                }
+                eb.setDescription(descr);
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
@@ -247,9 +281,10 @@ public class BotMessage {
                                         p.getMaxCombo() + "x ]\t " + hString, false));
                         eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + p.getMap().getID());
                         message.editMessage(eb.build()).queue();
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored) {}
                 });
                 break;
+            case LEADERBOARD:
             case SCORES:
             case TOPSCORES:
             case TOPSOTARKS:
@@ -359,6 +394,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS, LEADERBOARD
     }
 }

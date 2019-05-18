@@ -86,6 +86,13 @@ public class cmdTop implements INumberedCommand {
         } else {
             name = String.join(" ", argList);
         }
+        if (name.startsWith("<@") && name.endsWith(">")) {
+            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            if (name == null) {
+                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                return;
+            }
+        }
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());

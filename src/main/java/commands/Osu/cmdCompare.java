@@ -68,6 +68,13 @@ public class cmdCompare implements INumberedCommand {
             event.getTextChannel().sendMessage(help(1)).queue();
             return;
         }
+        if (name.startsWith("<@") && name.endsWith(">")) {
+            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            if (name == null) {
+                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                return;
+            }
+        }
         String mapID = "";
 
         int counter = 100;

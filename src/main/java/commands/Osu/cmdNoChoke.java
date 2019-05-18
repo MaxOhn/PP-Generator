@@ -48,6 +48,14 @@ public class cmdNoChoke implements ICommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        if (name.startsWith("<@") && name.endsWith(">")) {
+            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            if (name == null) {
+                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                return;
+            }
+        }
+        final String oName = name;
         OsuUser user;
         try {
             user = Main.osu.users.query(
@@ -62,7 +70,7 @@ public class cmdNoChoke implements ICommand {
                 int currScore = 0;
                 double ppThreshold = 0;
                 ArrayList<OsuScore> scoresList = new ArrayList<>(Main.osu.userBests.query(
-                        new EndpointUserBests.ArgumentsBuilder(name).setMode(GameMode.STANDARD).setLimit(100).build()
+                        new EndpointUserBests.ArgumentsBuilder(oName).setMode(GameMode.STANDARD).setLimit(100).build()
                 ));
                 Performance p = new Performance();
                 ArrayList<OsuBeatmap> maps = new ArrayList<>();

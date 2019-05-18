@@ -22,6 +22,7 @@ public class Main {
     private static JDABuilder builder;
     public static JDA jda;
     public static Osu osu;
+    public static CustomRequester customOsu;
     public static TwitchHook twitch;
     public static DiscordLink discLink;
     public static FileInteractor fileInteractor;
@@ -87,6 +88,8 @@ public class Main {
         commandHandler.commands.put("sotarkstop", new cmdTopSotarks());
         commandHandler.commands.put("sotarks", new cmdTopSotarks());
         commandHandler.commands.put("ss", new cmdSS());
+        commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
+        commandHandler.commands.put("lb", new cmdMapLeaderboard());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

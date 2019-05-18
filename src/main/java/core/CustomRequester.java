@@ -1,6 +1,10 @@
 package main.java.core;
 
 import com.google.common.util.concurrent.RateLimiter;
+import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.util.secrets;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.CookieStore;
@@ -15,6 +19,11 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import static main.java.util.utilOsu.mods_flag;
 
 public class CustomRequester {
 
@@ -33,7 +42,7 @@ public class CustomRequester {
                 .build();
     }
 
-    public JSONArray getScores(String mapID) throws IOException {
+    public Collection<OsuScore> getScores(String mapID) throws IOException {
         limiter.acquire();
         HttpGet getRequest = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?type=country");
         HttpResponse response = client.execute(getRequest);
@@ -48,6 +57,36 @@ public class CustomRequester {
             responseStr.append('\r');
         }
         rd.close();
-        return new JSONObject(responseStr.toString()).getJSONArray("scores");
+        Collection<OsuScore> scores = new ArrayList<>();
+        JSONArray rawScores = new JSONObject(responseStr.toString()).getJSONArray("scores");
+        for (int i = 0; i < rawScores.length(); i++) {
+            JSONObject o = (JSONObject)rawScores.get(i);
+            JSONObject m = o.getJSONObject("beatmap");
+            JSONObject stats = o.getJSONObject("statistics");
+            OsuScore s = new OsuScore(Main.osu);
+
+            s.setBeatmapID(m.getInt("id"));
+            s.setScore(o.getInt("score"));
+            s.setMaxcombo(o.getInt("max_combo"));
+            s.setCount300(stats.getInt("count_300"));
+            s.setCount100(stats.getInt("count_100"));
+            s.setCount50(stats.getInt("count_50"));
+            s.setCountmiss(stats.getInt("count_miss"));
+            s.setCountgeki(stats.getInt("count_geki"));
+            s.setCountkatu(stats.getInt("count_katu"));
+            s.setPerfect(o.getBoolean("perfect"));
+            s.setUserID(o.getInt("user_id"));
+            s.setDate(ZonedDateTime.parse(o.getString("created_at")));
+            s.setRank(o.getString("rank"));
+            s.setPp((float)o.getDouble("pp"));
+            s.setEnabledMods(GameMod.get(mods_flag(o.getJSONArray("mods").join("")
+                    .replace("\"", ""))));
+            s.setUser(Main.osu.users.getAsQuery(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).asLazilyLoaded());
+            s.setBeatmap(Main.osu.beatmaps.getAsQuery(new EndpointBeatmaps.ArgumentsBuilder()
+                    .setBeatmapID(s.getBeatmapID()).build()).asLazilyLoaded().map(list -> list.get(0)));
+
+            scores.add(s);
+        }
+        return scores;
     }
 }

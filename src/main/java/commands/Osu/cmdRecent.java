@@ -57,6 +57,13 @@ public class cmdRecent implements INumberedCommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        if (name.startsWith("<@") && name.endsWith(">")) {
+            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            if (name == null) {
+                event.getTextChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
+                return;
+            }
+        }
 
         ArrayList<OsuScore> userRecents;
         OsuScore recent;
