@@ -112,6 +112,7 @@ public class Main {
         commandHandler.commands.put("brainpower", new cmdBrainpower());
         commandHandler.commands.put("bombsaway", new cmdBombsAway());
         commandHandler.commands.put("saygoodbye", new cmdSayGoodbye());
+        commandHandler.commands.put("tijdmachine", new cmdTijdmachine());
 
         // utility
         commandHandler.commands.put("devtool", new cmdDevTool());

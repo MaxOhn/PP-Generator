@@ -12,12 +12,12 @@ public class cmdSayGoodbye extends cmdSong {
                 "I'll rewrite the ending",
                 "So you'll take back the lies",
                 "Before we say our goodbyes",
-                "~~~ say our goodbyyeees ~~~",
+                "\\~\\~\\~ say our goodbyyeees \\~\\~\\~",
         };
     }
 
     @Override
     int getDelay() {
-        return 2000;
+        return 2500;
     }
 }
