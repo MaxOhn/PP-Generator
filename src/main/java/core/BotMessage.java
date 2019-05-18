@@ -170,6 +170,14 @@ public class BotMessage {
                     }
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
+            case SS:
+                if (mb.isEmpty()) {
+                    mb.append("I found ").append(String.valueOf(scores.size())).append(" SS scores in `")
+                            .append(u.getUsername()).append("`'s top 100");
+                    if (scores.size() > 5) mb.append(", here's the top 5 of them:");
+                    else mb.append(":");
+                    scores = scores.stream().limit(5).collect(Collectors.toList());
+                }
             case TOPSCORES:
                 if (scores == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
@@ -245,6 +253,7 @@ public class BotMessage {
             case SCORES:
             case TOPSCORES:
             case TOPSOTARKS:
+            case SS:
             case NOCHOKESCORES: ma.queue(); break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
@@ -350,6 +359,6 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS
+        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS
     }
 }

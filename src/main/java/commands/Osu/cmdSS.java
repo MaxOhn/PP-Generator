@@ -1,12 +1,11 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuScore;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 
-import java.util.regex.Pattern;
-
-public class cmdTopSotarks extends cmdTopScores {
+public class cmdSS extends cmdTopScores {
 
     @Override
     int getAmount() {
@@ -14,25 +13,26 @@ public class cmdTopSotarks extends cmdTopScores {
     }
 
     @Override
-    boolean getMapCondition(OsuBeatmap m) {
-        if (m == null) return false;
-        Pattern p = Pattern.compile("^(?!.*Sotarks).*'s? (Easy|Normal|Hard|Insane|Expert|Extra|Extreme)");
-        return (m.getCreatorName().equals("Sotarks") && !p.matcher(m.getVersion()).matches())
-                    || m.getVersion().contains("Sotarks");
+    boolean getScoreCondition(OsuScore s, GameMode mode) {
+        if (s == null) return false;
+        boolean result = s.getMisses() == 0 && s.getHit100() == 0;
+        if (mode == GameMode.STANDARD) result &= s.getHit50() == 0;
+        else if (mode == GameMode.MANIA) result &= s.getGekis() == 0 && s.getKatus() == 0 && s.getHit50() == 0;
+        return result && s.isPerfect();
     }
 
     @Override
     BotMessage.MessageType getMessageType() {
-        return BotMessage.MessageType.TOPSOTARKS;
+        return BotMessage.MessageType.SS;
     }
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "topsotarks -h` for more help)";
+        String help = " (`" + statics.prefix + "ss -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topsotarks [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 scores"
-                        + " on any Sotarks maps.\nIf no player name specified, your discord must be linked to an osu profile via `"
+                return "Enter `" + statics.prefix + "ss [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 SS scores."
+                        + "\nIf no player name specified, your discord must be linked to an osu profile via `"
                         + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

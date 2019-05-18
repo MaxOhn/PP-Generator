@@ -103,12 +103,14 @@ public class cmdTopScores implements ICommand {
                     e1.printStackTrace();
                 }
             }
-            if (getCondition(map)) {
+            if (getScoreCondition(score, mode) && getMapCondition(map)) {
                 Main.fileInteractor.prepareFiles(map);
                 maps.add(map);
             }
         }
-        if (!getCondition(null)) {
+
+        // Check if filtering is necessary
+        if (!getScoreCondition(null, null) || !getMapCondition(null)) {
             scores = scores.stream()
                     .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                     .collect(Collectors.toList());
@@ -119,6 +121,9 @@ public class cmdTopScores implements ICommand {
             } else if (getMessageType() == BotMessage.MessageType.TOPSOTARKS) {
                 event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
                         + " personal top 100 and I could not be any prouder \\:')").queue();
+            } else if (getMessageType() == BotMessage.MessageType.SS) {
+                event.getTextChannel().sendMessage("`" + user.getUsername() + "` appears to not have any SS scores in the"
+                        + " personal top 100 :/").queue();
             }
             return;
         }
@@ -132,7 +137,11 @@ public class cmdTopScores implements ICommand {
         return 5;
     }
 
-    boolean getCondition(OsuBeatmap m) {
+    boolean getMapCondition(OsuBeatmap m) {
+        return true;
+    }
+
+    boolean getScoreCondition(OsuScore s, GameMode m) {
         return true;
     }
 
