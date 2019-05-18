@@ -185,6 +185,16 @@ public class Performance {
                     " " + secrets.mapPath + map.getID() + ".osu");
             for (GameMod mod: mods)
                 cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
+            if (mode == GameMode.MANIA) {
+                int max = 1000000;
+                if (mods.contains(GameMod.NO_FAIL)) max *= 0.5;
+                if (mods.contains(GameMod.HALF_TIME)) max *= 0.5;
+                if (mods.contains(GameMod.EASY)) max *= 0.5;
+                if (max < 1000000) {
+                    max = Math.max(max, 130000);
+                    cmdLineString.append(" -s ").append(max);
+                }
+            }
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));

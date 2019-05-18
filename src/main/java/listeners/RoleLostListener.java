@@ -12,7 +12,7 @@ public class RoleLostListener extends ListenerAdapter {
         if (event.getRoles().iterator().next().getName().equals("Not Checked")) {
             Logger logger = Logger.getLogger(this.getClass());
             String welcomeMessage = "welcome " + event.getUser().getName() + ", enjoy ur stay o/";
-            Main.sendCustomMessage(welcomeMessage, secrets.welcomeMsgChannelID);
+            Main.jda.getTextChannelById(secrets.welcomeMsgChannelID).sendMessage(welcomeMessage).queue();
             logger.info(event.getUser().getName() + " lost the 'Not Checked'-role");
         }
     }

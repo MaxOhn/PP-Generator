@@ -120,11 +120,4 @@ public class Main {
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
     }
-
-    public static void sendCustomMessage(String text, String id) {
-        if (secrets.RELEASE)
-            jda.getTextChannelById(id).sendMessage(text).queue();
-        else
-            jda.getTextChannelById(secrets.devChannelID).sendMessage(text).queue();
-    }
 }

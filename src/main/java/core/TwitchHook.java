@@ -133,6 +133,6 @@ public class TwitchHook {
         String game = stream.getGame();
         String filler = !game.equals("")? " is playing " + game: " now live";
         String url = stream.getChannel().getUrl();
-        Main.sendCustomMessage("[Now online]: `" + name + "`" + filler + " on " + url, channelID);
+        Main.jda.getTextChannelById(channelID).sendMessage("[Now online]: `" + name + "`" + filler + " on " + url).queue();
     }
 }

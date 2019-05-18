@@ -73,7 +73,7 @@ public class cmdDevTool implements ICommand {
                     List<String> argList = Arrays.asList(args);
                     String channelID = args[1];
                     String msg = String.join(" ", argList.subList(2, args.length));
-                    Main.sendCustomMessage(msg, channelID);
+                    Main.jda.getTextChannelById(channelID).sendMessage(msg).queue();
                     event.getTextChannel().sendMessage("Message was sent").queue();
                 } catch (Exception e) {
                     event.getTextChannel().sendMessage(help(1)).queue();
