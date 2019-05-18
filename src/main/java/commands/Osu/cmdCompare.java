@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.abbrvModSet;
@@ -52,18 +53,14 @@ public class cmdCompare implements INumberedCommand {
                 .collect(Collectors.toCollection(LinkedList::new));
 
         GameMod[] mods = new GameMod[] {};
-        int mIdx = argList.indexOf("-m");
-        if (mIdx == -1) mIdx = argList.indexOf("-mod");
-        if (mIdx == -1) mIdx = argList.indexOf("-mods");
+        Pattern p = Pattern.compile("\\+.*");
+        int mIdx = -1;
+        for (String s : argList)
+            if (p.matcher(s).matches())
+                mIdx = argList.indexOf(s);
         if (mIdx != -1) {
+            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
             argList.remove(mIdx);
-            if (argList.size() > mIdx) {
-                mods = GameMod.get(mods_flag(argList.get(mIdx).toUpperCase()));
-                argList.remove(mIdx);
-            } else {
-                event.getTextChannel().sendMessage(help(2)).queue();
-                return;
-            }
         }
 
         String name = argList.size() > 0 ? String.join(" ", argList) : Main.discLink.getOsu(event.getAuthor().getId());
@@ -114,8 +111,9 @@ public class cmdCompare implements INumberedCommand {
             Iterator<OsuScore> it = scores.iterator();
             while (it.hasNext() && !Arrays.equals((score = it.next()).getEnabledMods(), mods));
             if (!Arrays.equals(score.getEnabledMods(), mods)) {
+                String msgEnd = mods.length == 0 ? " without mods" : " with mods `" + abbrvModSet(mods) + "`";
                 event.getTextChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" +
-                        mapID + "` with mods `" + abbrvModSet(mods) + "`").queue();
+                        mapID + "`" + msgEnd).queue();
                 score = scores.iterator().next();
             }
         }
@@ -167,15 +165,13 @@ public class cmdCompare implements INumberedCommand {
         String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare" + getName() + " [osu name] [-m <nm/hd/nfeznc/...>]` to make "
+                return "Enter `" + statics.prefix + "compare" + getName() + " [osu name] [+<nm/hd/nfeznc/...>]` to make "
                         + "me show your best play on the map of the last `" + statics.prefix + "recent" + getName() + "`.\n"
-                        + "If `-m` is added with a given mod combination, I will only take these mods into account.\n"
+                        + "If `+` is added with a given mod combination, i.e. `<c +dtez`, I will only take these mods into account.\n"
                         + "If no player name is specified, your discord must be linked to an osu profile via `"
                         + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 2:
-                return "Specify a mod combination after `-m` such as `nm`, `hdhr`, ..." + help;
             default:
                 return help(0);
         }

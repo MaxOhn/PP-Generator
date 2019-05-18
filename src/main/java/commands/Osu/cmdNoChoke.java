@@ -68,7 +68,7 @@ public class cmdNoChoke implements ICommand {
                 ArrayList<OsuBeatmap> maps = new ArrayList<>();
                 for (OsuScore score : scoresList) {
                     double progress = 100 * (double)currScore / scoresList.size();
-                    if (progress > 7 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
+                    if (progress > 6 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
                         message.editMessage("Gathering data for `" + user.getUsername() + "`: "
                                 + (int)progress + "%").queue();
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
@@ -114,7 +114,7 @@ public class cmdNoChoke implements ICommand {
                     }
                 }
                 maps = finalMaps;
-                message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%").queue();
+                message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%\nBuilding message...").queue();
                 new BotMessage(event, BotMessage.MessageType.NOCHOKESCORES).user(user).osuscores(scores).maps(maps)
                         .mode(GameMode.STANDARD).buildAndSend(() -> message.delete().queue());
                 logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),

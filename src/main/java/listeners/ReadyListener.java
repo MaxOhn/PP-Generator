@@ -19,6 +19,5 @@ public class ReadyListener extends ListenerAdapter {
         Main.discLink = new DiscordLink();
         Main.fileInteractor = new FileInteractor();
         Main.runningLyrics = new HashSet<>();
-        Main.snipeManager = SnipeManager.getInstance(Main.osu);
     }
 }

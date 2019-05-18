@@ -3,7 +3,6 @@ package main.java.core;
 import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
 import main.java.commands.Osu.*;
-import main.java.commands.Snipe.*;
 import main.java.commands.Twitch.*;
 import main.java.commands.Utility.*;
 import main.java.listeners.*;
@@ -24,7 +23,6 @@ public class Main {
     public static JDA jda;
     public static Osu osu;
     public static TwitchHook twitch;
-    public static SnipeManager snipeManager;
     public static DiscordLink discLink;
     public static FileInteractor fileInteractor;
     public static HashSet<String> runningLyrics;
@@ -88,12 +86,6 @@ public class Main {
         commandHandler.commands.put("nc", new cmdNoChoke());
         commandHandler.commands.put("sotarkstop", new cmdTopSotarks());
         commandHandler.commands.put("sotarks", new cmdTopSotarks());
-
-        // snipe
-        commandHandler.commands.put("snipechannel", new cmdSnipeChannel());
-        commandHandler.commands.put("snipeprogress", new cmdSnipeProgress());
-        commandHandler.commands.put("checksnipe", new cmdCheckSnipe());
-        commandHandler.commands.put("snipe", new cmdCheckSnipe());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
