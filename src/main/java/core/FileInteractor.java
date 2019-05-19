@@ -115,7 +115,7 @@ public class FileInteractor {
                 if (!reachedTP && !reachedHO)
                     writer.write(line + System.getProperty("line.separator"));
                 else if (reachedTP && !line.equals("")) {
-                    if (Integer.parseInt(line.split(",")[0]) <= offsetLimit)
+                    if (Float.parseFloat(line.split(",")[0]) <= offsetLimit)
                         writer.write(line + System.getProperty("line.separator"));
                 } else if (reachedHO)
                     if (Integer.parseInt(line.split(",")[2]) <= offsetLimit)

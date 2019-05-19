@@ -79,7 +79,7 @@ public class CustomRequester {
             s.setUsername(o.getJSONObject("user").getString("username"));
             s.setDate(ZonedDateTime.parse(o.getString("created_at")));
             s.setRank(o.getString("rank"));
-            s.setPp((float)o.getDouble("pp"));
+            s.setPp(o.isNull("pp") ? 0 : (float)o.getDouble("pp"));
             s.setEnabledMods(GameMod.get(mods_flag(o.getJSONArray("mods").join("")
                     .replace("\"", ""))));
             s.setUser(Main.osu.users.getAsQuery(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).asLazilyLoaded());

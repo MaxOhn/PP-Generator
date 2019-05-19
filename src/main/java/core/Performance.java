@@ -45,6 +45,7 @@ public class Performance {
     public Performance map(OsuBeatmap map) {
         this.map = map;
         this.mode = map.getMode();
+        this.mods = new HashSet<>();
         this.ppMax = 0;
         return this;
     }
@@ -349,7 +350,7 @@ public class Performance {
         if (starRating != 0) return starRating;
         HashSet<GameMod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(starModifier);
-        if (modsImportant.isEmpty())
+        if (modsImportant.isEmpty() && map.getDifficulty() != 0)
             return map.getDifficulty();
         try {
             this.starRating = DBProvider.getStarRating(map.getID(), abbrvModSet(modsImportant));

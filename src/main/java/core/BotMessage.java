@@ -300,7 +300,7 @@ public class BotMessage {
                 flagFile = new File(secrets.flagPath + "BE.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
-                                + " [" + p.getMap().getVersion() + "] [" + df.format(p.getMap().getDifficulty()) + "★]",
+                                + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
                         "https://osu.ppy.sh/b/" + p.getMap().getID(), "attachment://flag.png");
                 StringBuilder descr = new StringBuilder();
                 idx = 1;

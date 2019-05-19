@@ -6,7 +6,7 @@
 
     <groupId>ppgen.bot</groupId>
     <artifactId>PP-Generator</artifactId>
-    <version>4.4.1</version>
+    <version>4.4.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -140,6 +140,11 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>27.1-jre</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-youtube</artifactId>
+            <version>v3-rev212-1.25.0</version>
         </dependency>
 
 
