@@ -84,6 +84,7 @@ public class cmdRecent implements INumberedCommand {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(recent.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found or no recent plays");
+            e.printStackTrace();
             return;
         }
         OsuBeatmap map;
@@ -107,7 +108,7 @@ public class cmdRecent implements INumberedCommand {
         Collection<OsuScore> topPlays;
         Collection<OsuScore> globalPlays;
         try {
-            topPlays = user.getTopScores(50).get();
+            topPlays = user.getTopScores(100).get();
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");

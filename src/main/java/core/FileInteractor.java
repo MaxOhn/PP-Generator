@@ -31,7 +31,7 @@ public class FileInteractor {
             return true;
         } catch (IOException e) {
             logger.error("Something went wrong while downloading the thumbnail of a mapset: ");
-            e.printStackTrace();
+            //e.printStackTrace();
             return false;
         }
     }
@@ -76,6 +76,10 @@ public class FileInteractor {
             return Integer.parseInt(splitted[2]);
         } catch (IOException e) {
             logger.error("Something went wrong while calculating the offset of a note: ");
+            e.printStackTrace();
+            return 0;
+        } catch (Exception e) {
+            logger.error("Unexpected error while calculating offset of note");
             e.printStackTrace();
             return 0;
         }

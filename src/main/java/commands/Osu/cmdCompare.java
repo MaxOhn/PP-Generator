@@ -152,7 +152,7 @@ public class cmdCompare implements INumberedCommand {
         }
         List<OsuScore> topPlays;
         try {
-            topPlays = user.getTopScores(50).get();
+            topPlays = user.getTopScores(100).get();
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores of `" + name + "`");
             return;
