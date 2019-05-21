@@ -27,6 +27,12 @@ public class cmdSS extends cmdTopScores {
     }
 
     @Override
+    String noScoreMessage(String username, boolean withMods) {
+        return "`" + username + "` appears to not have any SS scores in the"
+                + " personal top 100" + (withMods ? " with the specified mods" : "") + " :/";
+    }
+
+    @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "ss -h` for more help)";
         switch(hCode) {

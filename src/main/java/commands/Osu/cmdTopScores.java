@@ -1,9 +1,6 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.GameMode;
-import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.ICommand;
@@ -15,10 +12,11 @@ import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static main.java.util.utilOsu.mods_flag;
 
 public class cmdTopScores implements ICommand {
     @Override
@@ -62,6 +60,19 @@ public class cmdTopScores implements ICommand {
             argList.remove(delIndex);
         }
 
+        boolean withMods = false;
+        GameMod[] mods = new GameMod[] {};
+        Pattern p = Pattern.compile("\\+.*");
+        int mIdx = -1;
+        for (String s : argList)
+            if (p.matcher(s).matches())
+                mIdx = argList.indexOf(s);
+        if (mIdx != -1) {
+            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            argList.remove(mIdx);
+            withMods = true;
+        }
+
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -88,13 +99,15 @@ public class cmdTopScores implements ICommand {
         }
         Collection<OsuScore> scores = null;
         try {
-            scores = user.getTopScores(getAmount()).get();
+            scores = user.getTopScores(withMods ? 100 : getAmount()).get();
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
         for (OsuScore score : scores) {
+            if (withMods && !Arrays.equals(score.getEnabledMods(), mods))
+                continue;
             OsuBeatmap map;
             try {
                 map = DBProvider.getBeatmap(score.getBeatmapID());
@@ -113,6 +126,7 @@ public class cmdTopScores implements ICommand {
             if (getScoreCondition(score, mode) && getMapCondition(map)) {
                 Main.fileInteractor.prepareFiles(map);
                 maps.add(map);
+                if (maps.size() >= 5) break;
             }
         }
 
@@ -121,23 +135,24 @@ public class cmdTopScores implements ICommand {
             scores = scores.stream()
                     .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                     .collect(Collectors.toList());
+        } else if (withMods) {
+            GameMod[] finalMods = mods;
+            scores = scores.stream()
+                    .filter(s -> Arrays.equals(s.getEnabledMods(), finalMods))
+                    .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
-            if (getMessageType() == BotMessage.MessageType.TOPSCORES) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores from user `" + user.getUsername() + "`");
-            } else if (getMessageType() == BotMessage.MessageType.TOPSOTARKS) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + user.getUsername() + "` appears to not have any Sotarks scores in the"
-                        + " personal top 100 and I could not be any prouder \\:')");
-            } else if (getMessageType() == BotMessage.MessageType.SS) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + user.getUsername() + "` appears to not have any SS scores in the"
-                        + " personal top 100 :/");
-            }
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), withMods));
             return;
         }
         new BotMessage(event, getMessageType()).user(user).osuscores(scores)
                 .maps(maps.stream().limit(5).collect(Collectors.toCollection(ArrayList::new)))
                 .mode(mode)
                 .buildAndSend();
+    }
+
+    String noScoreMessage(String username, boolean withMods) {
+        return "Could not find any scores from user `" + username + "`" + (withMods ? " with the specified mods" : "");
     }
 
     int getAmount() {

@@ -248,6 +248,13 @@ public class BotMessage {
                 }
             case TOPSCORES:
                 if (scores == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (mb.isEmpty() && scores.size() > 5) {
+                    mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the specified mods in `")
+                            .append(u.getUsername()).append("`'s top 100");
+                    if (scores.size() > 5) mb.append(", here's the top 5 of them:");
+                    else mb.append(":");
+                    scores = scores.stream().limit(5).collect(Collectors.toList());
+                }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
                 eb.setAuthor(u.getUsername() + ": "
                             + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"

@@ -27,6 +27,12 @@ public class cmdTopSotarks extends cmdTopScores {
     }
 
     @Override
+    String noScoreMessage(String username, boolean withMods) {
+        return "`" + username + "` appears to not have any Sotarks scores " + (withMods ? "with the specified mods " : "")
+                + "in the personal top 100 and I could not be any prouder \\:')";
+    }
+
+    @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "topsotarks -h` for more help)";
         switch(hCode) {

@@ -59,6 +59,7 @@ public class Main {
         // osu! standard
         commandHandler.commands.put("recent", new cmdRecent());
         commandHandler.commands.put("r", new cmdRecent());
+        commandHandler.commands.put("rs", new cmdRecent());
         commandHandler.commands.put("compare", new cmdCompare());
         commandHandler.commands.put("c", new cmdCompare());
 
