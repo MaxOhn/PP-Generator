@@ -1,5 +1,6 @@
 package main.java.commands.Osu;
 
+import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
@@ -14,10 +15,15 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static main.java.util.utilOsu.mods_flag;
 
 public class cmdMapLeaderboard implements ICommand {
     @Override
@@ -69,9 +75,30 @@ public class cmdMapLeaderboard implements ICommand {
                 e1.printStackTrace();
             }
         }
+
+        List<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toCollection(LinkedList::new));
+        boolean withMods = false;
+        GameMod[] mods = new GameMod[] {};
+        p = Pattern.compile("\\+.*");
+        int mIdx = -1;
+        for (String s : argList)
+            if (p.matcher(s).matches())
+                mIdx = argList.indexOf(s);
+        if (mIdx != -1) {
+            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            argList.remove(mIdx);
+            withMods = true;
+        }
+
         Collection<OsuScore> scores;
         try {
-            scores = Main.customOsu.getScores(mapID).stream().limit(10).collect(Collectors.toList());
+            boolean finalWithMods = withMods;
+            GameMod[] finalMods = mods;
+            scores = Main.customOsu.getScores(mapID).stream().limit(withMods ? 100 : 10)
+                    .filter(s -> !finalWithMods || Arrays.equals(s.getEnabledMods(), finalMods))
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");
             e.printStackTrace();

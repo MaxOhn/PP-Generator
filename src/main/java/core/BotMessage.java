@@ -250,9 +250,7 @@ public class BotMessage {
                 if (scores == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (mb.isEmpty() && scores.size() > 5) {
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the specified mods in `")
-                            .append(u.getUsername()).append("`'s top 100");
-                    if (scores.size() > 5) mb.append(", here's the top 5 of them:");
-                    else mb.append(":");
+                            .append(u.getUsername()).append("`'s top 100, here's the top 5 of them:");
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
@@ -301,6 +299,15 @@ public class BotMessage {
                 break;
             case LEADERBOARD:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (mb.isEmpty()) {
+                    if (scores.size() > 10) {
+                        mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
+                                "specified mods on the specified map's national leaderboard, here's the top 10 of them:");
+                        scores = scores.stream().limit(10).collect(Collectors.toList());
+                    } else if (scores.size() == 0) {
+                        mb.append("There appear to be no national scores on the specified map");
+                    }
+                }
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
