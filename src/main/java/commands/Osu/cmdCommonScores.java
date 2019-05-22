@@ -89,6 +89,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
 
         // Get the mods by checking for +...
         Pattern p = Pattern.compile("\\+[^!]*!?");
+        setStatusInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -194,12 +195,14 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         String help = " (`" + statics.prefix + "common -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "common <osu name 1> <osu name 2> [-m <s/t/c/m for mode>]` to make "
+                return "Enter `" + statics.prefix + "common <osu name 1> <osu name 2> [-m <s/t/c/m for mode>] [+<nm/hd/nfeznc/...>[!]]` to make "
                         + "me list the maps appearing in both player's top 100 scores.\nIf you're linked via `"
                         + statics.prefix + "link <osu name>" + "`, you can also use the command through "
                         + "`" + statics.prefix + "common <osu name> [-m <s/t/c/m for mode>]` to make me compare your"
                         + " linked account with the specified name.\n**User names that contain spaces must be "
-                        + "encapsulated with \"** e.g. \"nathan on osu\n";
+                        + "encapsulated with \"** e.g. \"nathan on osu\n"
+                        + "\n If `!` is added to the mods, e.g. `+hd!`, I will only choose scores that contain exactly HD as mod, without `!`"
+                        + " I will choose scores that at least contain HD e.g. also HDHR scores.";
             case 1:
                 return "Either specify an second user name or link your discord to an osu profile via `" + statics.prefix
                         + "link <osu name>" + "` so that I compare you account with the specified name" + help;

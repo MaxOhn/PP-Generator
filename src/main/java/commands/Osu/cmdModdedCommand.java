@@ -19,6 +19,10 @@ public abstract class cmdModdedCommand implements ICommand {
         EXACT
     }
 
+    void setStatusInitial() {
+        status = modStatus.WITHOUT;
+    }
+
     boolean includesMods(OsuScore s) {
         return utilGeneral.isSubarray(mods, s.getEnabledMods());
     }

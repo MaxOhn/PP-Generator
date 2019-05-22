@@ -20,7 +20,7 @@ public class TwitchHook {
     private static HashMap<String, ArrayList<String>> streamers;
     private static ArrayList<String> isOnline = new ArrayList<>();
     private static Logger logger = Logger.getLogger("TwitchHook");
-    private RateLimiter limiter = RateLimiter.create(2);
+    private RateLimiter limiter = RateLimiter.create(2.5);
 
     public TwitchHook() {
         twitch = new Twitch();
@@ -48,7 +48,7 @@ public class TwitchHook {
     }
 
     private void trackStreamers() {
-        int trackDelay = 11;
+        int trackDelay = 10;
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable twitchIterator = this::streamerCheckIteration;
         scheduler.scheduleAtFixedRate(twitchIterator, trackDelay, trackDelay, MINUTES);

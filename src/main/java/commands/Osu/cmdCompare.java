@@ -53,6 +53,7 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
                 .collect(Collectors.toCollection(LinkedList::new));
 
         Pattern p = Pattern.compile("\\+[^!]*!?");
+        setStatusInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -185,11 +186,13 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
         String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare" + getName() + "[number] [osu name] [+<nm/hd/nfeznc/...>]` to make "
+                return "Enter `" + statics.prefix + "compare" + getName() + "[number] [osu name] [+<nm/hd/nfeznc/...>[!]]` to make "
                         + "me show your best play on the map of the last `" + statics.prefix + "recent" + getName() + "`."
                         + "\nIf `+` is added with a given mod combination, i.e. `<c +dtez`, I will only take these mods into account."
                         + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "8`, I will skip the most recent 8-1 scores "
                         + "and show the 8-th score, defaults to 1."
+                        + "\n If `!` is added to the mods, e.g. `+hd!`, I will only choose scores that contain exactly HD as mod, without `!`"
+                        + " I will choose scores that at least contain HD e.g. also HDHR scores."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `"
                         + statics.prefix + "link <osu name>" + "`";
             case 1:

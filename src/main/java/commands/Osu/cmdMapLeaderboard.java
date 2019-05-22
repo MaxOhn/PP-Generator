@@ -16,7 +16,6 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdMapLeaderboard implements ICommand {
+public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
@@ -77,26 +76,36 @@ public class cmdMapLeaderboard implements ICommand {
 
         List<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
-                .collect(Collectors.toCollection(LinkedList::new));
-        boolean withMods = false;
-        GameMod[] mods = new GameMod[] {};
-        p = Pattern.compile("\\+.*");
+                .collect(Collectors.toList());
+
+        p = Pattern.compile("\\+[^!]*!?");
+        setStatusInitial();
         int mIdx = -1;
-        for (String s : argList)
-            if (p.matcher(s).matches())
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
                 mIdx = argList.indexOf(s);
+                break;
+            }
+        }
         if (mIdx != -1) {
-            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = cmdModdedCommand.modStatus.EXACT;
+                word = word.substring(1, word.length()-1);
+            } else {
+                status = cmdModdedCommand.modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            mods = GameMod.get(mods_flag(word.toUpperCase()));
             argList.remove(mIdx);
-            withMods = true;
         }
 
         List<OsuScore> scores;
         try {
-            boolean finalWithMods = withMods;
-            GameMod[] finalMods = mods;
-            scores = Main.customOsu.getScores(mapID).stream().limit(withMods ? 100 : 10)
-                    .filter(s -> !finalWithMods || Arrays.equals(s.getEnabledMods(), finalMods))
+            scores = Main.customOsu.getScores(mapID).stream().limit(status != modStatus.WITHOUT ? 100 : 10)
+                    .filter(s -> status == modStatus.WITHOUT
+                            || (status == modStatus.EXACT && hasSameMods(s))
+                            || (status == modStatus.CONTAINS && includesMods(s)))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");

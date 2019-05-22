@@ -68,6 +68,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         }
 
         Pattern p = Pattern.compile("\\+[^!]*!?");
+        setStatusInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -192,7 +193,9 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         String help = " (`" + statics.prefix + "topscores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>]` to make me list the user's top 5 scores."
+                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]]` to make me list the user's top 5 scores."
+                        + "\n If `!` is added to the mods, e.g. `+hd!`, I will only choose scores that contain exactly HD as mod, without `!`"
+                        + " I will choose scores that at least contain HD e.g. also HDHR scores."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
