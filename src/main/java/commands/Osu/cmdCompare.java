@@ -173,10 +173,12 @@ public class cmdCompare implements INumberedCommand {
         String help = " (`" + statics.prefix + "compare" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "compare" + getName() + " [osu name] [+<nm/hd/nfeznc/...>]` to make "
-                        + "me show your best play on the map of the last `" + statics.prefix + "recent" + getName() + "`.\n"
-                        + "If `+` is added with a given mod combination, i.e. `<c +dtez`, I will only take these mods into account.\n"
-                        + "If no player name is specified, your discord must be linked to an osu profile via `"
+                return "Enter `" + statics.prefix + "compare" + getName() + "[number] [osu name] [+<nm/hd/nfeznc/...>]` to make "
+                        + "me show your best play on the map of the last `" + statics.prefix + "recent" + getName() + "`."
+                        + "\nIf `+` is added with a given mod combination, i.e. `<c +dtez`, I will only take these mods into account."
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "8`, I will skip the most recent 8-1 scores "
+                        + "and show the 8-th score, defaults to 1."
+                        + "\nIf no player name is specified, your discord must be linked to an osu profile via `"
                         + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

@@ -41,11 +41,17 @@ public class cmdRecentBest implements INumberedCommand {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
                     switch (args[i+1]) {
+                        case "standard":
+                        case "std":
                         case "s": mode = GameMode.STANDARD; break;
+                        case "tko":
                         case "t": mode = GameMode.TAIKO; break;
+                        case "ctb":
                         case "c":
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
                             return;
+                        case "mania":
+                        case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
@@ -142,7 +148,10 @@ public class cmdRecentBest implements INumberedCommand {
         String help = " (`" + statics.prefix + "recentbest -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "recentbest [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best recent performance."
+                return "Enter `" + statics.prefix + "recentbest[number] [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` "
+                        + "to make me respond with the users selected best recent performance."
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + "rb8`, I will skip the most recent 8-1 top scores "
+                        + "and show the 8-th score, defaults to 1."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

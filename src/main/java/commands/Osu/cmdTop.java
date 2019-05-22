@@ -44,11 +44,17 @@ public class cmdTop implements INumberedCommand {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
                     switch (args[i+1]) {
+                        case "standard":
+                        case "std":
                         case "s": mode = GameMode.STANDARD; break;
+                        case "tko":
                         case "t": mode = GameMode.TAIKO; break;
+                        case "ctb":
                         case "c":
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
                             return;
+                        case "mania":
+                        case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
@@ -143,7 +149,8 @@ public class cmdTop implements INumberedCommand {
         String help = " (`" + statics.prefix + "best -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "top [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."
+                return "Enter `" + statics.prefix + "top[number] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + "top8`, I will give the user's 8th best score, defaults to 1."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify a osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

@@ -35,11 +35,17 @@ public class cmdTopScores implements ICommand {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
                     switch (args[i+1]) {
+                        case "standard":
+                        case "std":
                         case "s": mode = GameMode.STANDARD; break;
+                        case "tko":
                         case "t": mode = GameMode.TAIKO; break;
+                        case "ctb":
                         case "c":
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
                             return;
+                        case "mania":
+                        case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
                             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
