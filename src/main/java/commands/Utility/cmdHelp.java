@@ -19,8 +19,9 @@ public class cmdHelp implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        MessageBuilder mb = new MessageBuilder("Prefix: `" + statics.prefix + "`\n");
-        mb.append("To get help for a specific command, type `" + statics.prefix + "[command] -h`");
+        MessageBuilder mb = new MessageBuilder("Prefix: `" + statics.prefix + "`")
+                .append("\nTo get help for a specific command, type `" + statics.prefix + "[command] -h`")
+                .append("\nCommands can also be used in private messages to me");
         EmbedBuilder eb = new EmbedBuilder()
                 .setColor(Color.green)
                 .setAuthor("Command list", "https://github.com/MaxOhn/PP-Generator");

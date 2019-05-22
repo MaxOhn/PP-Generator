@@ -34,11 +34,10 @@ public class cmdCommonScores implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        ArrayList<String> argList = Arrays.stream(args)
+        List<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
-                .collect(Collectors.toCollection(ArrayList::new));
-        String name1 = "";
-        String name2 = "";
+                .collect(Collectors.toList());
+        List<String> names = new ArrayList<>();
         GameMode mode = GameMode.STANDARD;
 
         // Get the names inbetween quotes
@@ -47,17 +46,12 @@ public class cmdCommonScores implements ICommand {
             Pattern p = Pattern.compile("\"([^\"]*)\"");
             Matcher m = p.matcher(argString);
             while (m.find()) {
-                if (name1.equals("")) name1 = m.group(1);
-                else if (name2.equals("")) name2 = m.group(1);
-                else {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
-                    return;
-                }
+                names.add(m.group(1));
                 argString = argString.replace("\"" + m.group(1) + "\"", "");
             }
             argList = Arrays.stream(argString.split(" "))
                     .filter(arg -> !arg.isEmpty())
-                    .collect(Collectors.toCollection(ArrayList::new));
+                    .collect(Collectors.toList());
         }
 
         // Get the mode by checking for -m or -mode
@@ -87,27 +81,9 @@ public class cmdCommonScores implements ICommand {
             argList.remove(delIndex);
         }
 
-        // If names not yet found, get them as single words now
-        if (name1.equals("") && argList.isEmpty()) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
-            return;
-        } else if (name1.equals("")) {
-            name1 = argList.get(0);
-            argList.remove(0);
-        }
-        if (name2.equals("") && argList.isEmpty()) {
-            name2 = Main.discLink.getOsu(event.getAuthor().getId());
-            if (name2 == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
-                return;
-            }
-        } else if (name2.equals("")) {
-            name2 = argList.get(0);
-        }
-
         // Get the mods by checking for +...
         boolean withMods = false;
-        GameMod[] mods = new GameMod[] {};
+        GameMod[] mods = new GameMod[0];
         Pattern p = Pattern.compile("\\+.*");
         int mIdx = -1;
         for (String s : argList)
@@ -119,53 +95,62 @@ public class cmdCommonScores implements ICommand {
             withMods = true;
         }
 
+        // If names not yet found, get them as single words now
+        while (!argList.isEmpty()) {
+            names.add(argList.get(0));
+            argList.remove(0);
+        }
+        if (names.size() == 0) {
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
+            return;
+        } else if (names.size() == 1) {
+            String n = Main.discLink.getOsu(event.getAuthor().getId());
+            if (n == null) {
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                return;
+            }
+            names.add(n);
+        }
+        int compareAmount = names.size();
+
         // Retrieve users
-        OsuUser user1;
-        OsuUser user2;
+        List<OsuUser> users = new ArrayList<>();
         try {
-            user1 = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name1).setMode(mode).build());
-            user2 = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name2).setMode(mode).build());
+            for (String name : names)
+                users.add(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build()));
         } catch (Exception e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find at least one of the players (`"
-                    + name1 + "` / `" + name2 + "`)");
+                    + String.join("` / `", names) + "`)");
             return;
         }
 
         // Retrieve top scores
-        Collection<OsuScore> scores1;
-        Collection<OsuScore> scores2;
+        List<Collection<OsuScore>> scores = new ArrayList<>();
         try {
-            scores1 = user1.getTopScores(100).get();
-            scores2 = user2.getTopScores(100).get();
+            for (OsuUser user : users)
+                scores.add(user.getTopScores(100).get());
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores of at least "
-                    + "one of the players (`" + name1 + "` / `" + name2 + "`)");
+                    + "one of the players (`" + String.join("` / `", names) + "`)");
             return;
         }
 
         // Combine common scores
         boolean finalWithMods = withMods;
         GameMod[] finalMods = mods;
-        //*
-        List<OsuScore> common = scores1.stream()
-
-                // Keep only those in scores1 for which the same beatmapid appears in scores2
-                .filter(s1 -> (!finalWithMods || Arrays.equals(s1.getEnabledMods(), finalMods)) &&
-                        scores2.stream().anyMatch(s2 -> s1.getBeatmapID() == s2.getBeatmapID() &&
-                                (!finalWithMods || Arrays.equals(s2.getEnabledMods(), finalMods))))
-
-                // Map each score of scores1 to an array containing the scores1 score and the corresponding scores2 score
-                .map(s1 -> new OsuScore[] {s1, scores2.stream().filter(s2 -> s1.getBeatmapID() == s2.getBeatmapID() &&
-                        (!finalWithMods || Arrays.equals(s2.getEnabledMods(), finalMods))).findFirst().get()})
-
-                // Flatten everything into a singly stream again and collect into a list
-                .flatMap(Arrays::stream)
+        List<OsuScore> common = scores.stream().flatMap(Collection::stream)
+                .collect(Collectors.groupingBy(OsuScore::getBeatmapID))
+                .values()
+                .stream()
+                .filter(list -> list.size() >= compareAmount && (!finalWithMods ||
+                        list.stream().allMatch(s -> Arrays.equals(s.getEnabledMods(), finalMods))))
+                .sorted((a, b) -> Math.round(a.get(0).getPp() - b.get(0).getPp()))
+                .flatMap(List::stream)
                 .collect(Collectors.toList());
-        //*/
 
         // Retrieve maps of common scores
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
-        for (int i = 0; i < Math.min(common.size(), 30); i += 2) {
+        for (int i = 0; i < Math.min(common.size(), 15*compareAmount); i += compareAmount) {
             OsuBeatmap map;
             int mapID = common.get(i).getBeatmapID();
             try {
@@ -187,7 +172,7 @@ public class cmdCommonScores implements ICommand {
         }
 
         new BotMessage(event, BotMessage.MessageType.COMMONSCORES).maps(maps).mode(mode).osuscores(common)
-                .users(Arrays.asList(user1, user2)).buildAndSend();
+                .users(users).buildAndSend();
     }
 
     @Override
@@ -198,7 +183,7 @@ public class cmdCommonScores implements ICommand {
                 return "Enter `" + statics.prefix + "common <osu name 1> <osu name 2> [-m <s/t/c/m for mode>]` to make "
                         + "me list the maps appearing in both player's top 100 scores.\nIf you're linked via `"
                         + statics.prefix + "link <osu name>" + "`, you can also use the command through "
-                        + "`" + statics.prefix + "common [-m <s/t/c/m for mode>] <osu name>` to make me compare your"
+                        + "`" + statics.prefix + "common <osu name> [-m <s/t/c/m for mode>]` to make me compare your"
                         + " linked account with the specified name.\n**User names that contain spaces must be "
                         + "encapsulated with \"** e.g. \"nathan on osu\n";
             case 1:

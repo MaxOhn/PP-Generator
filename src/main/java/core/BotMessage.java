@@ -335,36 +335,36 @@ public class BotMessage {
             case COMMONSCORES:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (users == null) throw new IllegalStateException(Error.USER.getMsg());
-                OsuUser u1 = users.get(0);
-                OsuUser u2 = users.get(1);
-
+                if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
+                List<String> names = users.stream().map(OsuUser::getUsername).collect(Collectors.toList());
                 if (scores.size() > 0) {
-                    mb.append("`").append(u1.getUsername()).append("` and `").append(u2.getUsername()).append("` have ")
-                            .append(String.valueOf(scores.size()/2)).append(" common beatmaps in their top 100 scores");
-                    if (scores.size() > 30)
+                    mb.append("`").append(String.join("`, `", names.subList(0, names.size()-1))).append("` and `")
+                            .append(names.get(names.size()-1)).append("` have ").append(String.valueOf(scores.size()/names.size()))
+                            .append(" common beatmaps in their top 100 scores");
+                    if (scores.size() > 15*names.size())
                         mb.append(", here's the top 15 of them:");
                     else
                         mb.append(":");
-                    scores = scores.stream().limit(30).collect(Collectors.toList());
+                    scores = scores.stream().limit(15*names.size()).collect(Collectors.toList());
                 } else {
-                    mb.append("There appear to be no national scores on the specified map");
+                    mb.append("`").append(String.join("`, `", names.subList(0, names.size()-1))).append("` and `")
+                            .append(names.get(names.size()-1)).append("` have no common scores in their top 100");
                 }
-
                 StringBuilder des = new StringBuilder();
                 idx = 1;
-                for (int i = 0; i < Math.min(scores.size(), 30); i += 2) {
+                for (int i = 0; i < Math.min(scores.size(), 15*names.size()); i += names.size()) {
                     p.osuscore(scores.get(i));
-                    p.map(maps.get(i/2));
+                    p.map(maps.get(i/names.size()));
                     if (!des.toString().equals("")) des.append("\n");
                     des.append("**").append(idx++).append(".** [").append(p.getMap().getArtist()).append(" - ")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion())
                             .append("]](https://osu.ppy.sh/b/").append(p.getMap().getID()).append(")");
                 }
 
-                BufferedImage img = utilGeneral
-                        .combineImages("https://a.ppy.sh/" + u1.getID(), "https://a.ppy.sh/" + u2.getID());
-                if (img == null || (thumbFile = Main.fileInteractor.saveImage(img, "avatar" + u1.getID() + u2.getID() + ".png")) == null) {
-                    eb.setThumbnail("https://a.ppy.sh/" + u1);
+                List<String> urls = users.stream().map(u -> "https://a.ppy.sh/" + u.getID()).collect(Collectors.toList());
+                BufferedImage img = utilGeneral.combineImages(urls);
+                if (img == null || (thumbFile = Main.fileInteractor.saveImage(img, "avatar" + users.hashCode() + ".png")) == null) {
+                    eb.setThumbnail("https://a.ppy.sh/" + users.get(0).getID());
                 } else {
                     eb.setThumbnail("attachment://thumb.jpg");
                 }
@@ -411,7 +411,7 @@ public class BotMessage {
             case SS:
             case NOCHOKESCORES: ma.queue(); break;
             case COMMONSCORES:
-                ma.queue(msg -> Main.fileInteractor.deleteImage("avatar" + users.get(0).getID() + users.get(1).getID() + ".png"));
+                ma.queue(msg -> Main.fileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
                 break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }

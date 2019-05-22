@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -83,18 +84,26 @@ public class utilGeneral {
         }
     }
 
-    public static BufferedImage combineImages(String url1, String url2) {
-
+    public static BufferedImage combineImages(List<String> urls) {
         try {
-            BufferedImage img1, img2;
-            URL u1 = new URL(url1), u2 = new URL(url2);
-            img1 = ImageIO.read(u1);
-            img2 = ImageIO.read(u2);
-            int w = Math.min(img1.getWidth(), img2.getWidth()), h = Math.min(img1.getHeight(), img2.getHeight());
+            int w = 400, h = 400;
+            List<BufferedImage> imgs = new ArrayList<>();
+            for (String url : urls) {
+                BufferedImage img = ImageIO.read(new URL(url));
+                imgs.add(img);
+                w = Math.min(w, img.getWidth());
+                h = Math.min(h, img.getHeight());
+            }
             BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
             Graphics2D g2 = combined.createGraphics();
-            g2.drawImage(img1.getSubimage(0, 0, img1.getWidth()/2, img1.getHeight()), 0, 0, w/2, h, null);
-            g2.drawImage(img2.getSubimage(img2.getWidth()/2, 0, img2.getWidth()/2, img2.getHeight()), w/2, 0, w/2, h, null);
+            for (BufferedImage img : imgs) {
+                g2.drawImage(img.getSubimage(
+                        imgs.indexOf(img)*img.getWidth()/imgs.size(),
+                        0,
+                        img.getWidth()/imgs.size(),
+                        img.getHeight()
+                        ), imgs.indexOf(img)*w/imgs.size(), 0, w/imgs.size(), h, null);
+            }
             g2.dispose();
             return combined;
         } catch (IOException e) {
