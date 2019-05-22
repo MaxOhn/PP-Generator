@@ -90,6 +90,7 @@ public class Main {
         commandHandler.commands.put("ss", new cmdSS());
         commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
         commandHandler.commands.put("lb", new cmdMapLeaderboard());
+        commandHandler.commands.put("common", new cmdCommonScores());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

@@ -6,6 +6,11 @@ import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.entities.User;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -75,6 +80,26 @@ public class utilGeneral {
         }
         public String getName() {
             return name;
+        }
+    }
+
+    public static BufferedImage combineImages(String url1, String url2) {
+
+        try {
+            BufferedImage img1, img2;
+            URL u1 = new URL(url1), u2 = new URL(url2);
+            img1 = ImageIO.read(u1);
+            img2 = ImageIO.read(u2);
+            int w = Math.min(img1.getWidth(), img2.getWidth()), h = Math.min(img1.getHeight(), img2.getHeight());
+            BufferedImage combined = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = combined.createGraphics();
+            g2.drawImage(img1.getSubimage(0, 0, img1.getWidth()/2, img1.getHeight()), 0, 0, w/2, h, null);
+            g2.drawImage(img2.getSubimage(img2.getWidth()/2, 0, img2.getWidth()/2, img2.getHeight()), w/2, 0, w/2, h, null);
+            g2.dispose();
+            return combined;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

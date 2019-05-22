@@ -5,6 +5,7 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
 import main.java.util.secrets;
+import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
@@ -15,6 +16,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -38,8 +40,9 @@ public class BotMessage {
     private Performance p;
 
     private OsuUser u;
+    private List<OsuUser> users;
     private OsuScore score;
-    private Collection<OsuScore> scores;
+    private List<OsuScore> scores;
     private ArrayList<OsuBeatmap> maps;
 
     private String topplays;
@@ -299,14 +302,12 @@ public class BotMessage {
                 break;
             case LEADERBOARD:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
-                if (mb.isEmpty()) {
-                    if (scores.size() > 10) {
-                        mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
-                                "specified mods on the specified map's national leaderboard, here's the top 10 of them:");
-                        scores = scores.stream().limit(10).collect(Collectors.toList());
-                    } else if (scores.size() == 0) {
-                        mb.append("There appear to be no national scores on the specified map");
-                    }
+                if (scores.size() > 10) {
+                    mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
+                            "specified mods on the specified map's national leaderboard, here's the top 10 of them:");
+                    scores = scores.stream().limit(10).collect(Collectors.toList());
+                } else if (scores.size() == 0) {
+                    mb.append("There appear to be no national scores on the specified map");
                 }
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
@@ -331,14 +332,58 @@ public class BotMessage {
                 }
                 eb.setDescription(descr);
                 break;
+            case COMMONSCORES:
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (users == null) throw new IllegalStateException(Error.USER.getMsg());
+                OsuUser u1 = users.get(0);
+                OsuUser u2 = users.get(1);
+
+                if (scores.size() > 0) {
+                    mb.append("`").append(u1.getUsername()).append("` and `").append(u2.getUsername()).append("` have ")
+                            .append(String.valueOf(scores.size()/2)).append(" common beatmaps in their top 100 scores");
+                    if (scores.size() > 30)
+                        mb.append(", here's the top 15 of them:");
+                    else
+                        mb.append(":");
+                    scores = scores.stream().limit(30).collect(Collectors.toList());
+                } else {
+                    mb.append("There appear to be no national scores on the specified map");
+                }
+
+                StringBuilder des = new StringBuilder();
+                idx = 1;
+                for (int i = 0; i < Math.min(scores.size(), 30); i += 2) {
+                    p.osuscore(scores.get(i));
+                    p.map(maps.get(i/2));
+                    if (!des.toString().equals("")) des.append("\n");
+                    des.append("**").append(idx++).append(".** [").append(p.getMap().getArtist()).append(" - ")
+                            .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion())
+                            .append("]](https://osu.ppy.sh/b/").append(p.getMap().getID()).append(")");
+                }
+
+                BufferedImage img = utilGeneral
+                        .combineImages("https://a.ppy.sh/" + u1.getID(), "https://a.ppy.sh/" + u2.getID());
+                if (img == null || (thumbFile = Main.fileInteractor.saveImage(img, "avatar" + u1.getID() + u2.getID() + ".png")) == null) {
+                    eb.setThumbnail("https://a.ppy.sh/" + u1);
+                } else {
+                    eb.setThumbnail("attachment://thumb.jpg");
+                }
+                eb.setDescription(des);
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
         final String hString = hitString;
         final String timeAgo = howLongAgo(date);
         final String eTitle = extendedTitle;
-        MessageAction ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
-                .sendFile(thumbFile, "thumb.jpg", mb.build());
+        MessageAction ma;
+        if (thumbFile != null) {
+            ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
+                    .sendFile(thumbFile, "thumb.jpg", mb.build());
+        } else {
+            ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
+                    .sendMessage(mb.build());
+        }
         switch (typeM) {
             case RECENT:
             case COMPARE:
@@ -365,6 +410,9 @@ public class BotMessage {
             case TOPSOTARKS:
             case SS:
             case NOCHOKESCORES: ma.queue(); break;
+            case COMMONSCORES:
+                ma.queue(msg -> Main.fileInteractor.deleteImage("avatar" + users.get(0).getID() + users.get(1).getID() + ".png"));
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         if (runnable != null) runnable.run();
@@ -372,6 +420,11 @@ public class BotMessage {
 
     public BotMessage user(OsuUser user) {
         this.u = user;
+        return this;
+    }
+
+    public BotMessage users(List<OsuUser> users) {
+        this.users = users;
         return this;
     }
 
@@ -393,7 +446,7 @@ public class BotMessage {
         return this;
     }
 
-    public BotMessage osuscores(Collection<OsuScore> scores) {
+    public BotMessage osuscores(List<OsuScore> scores) {
         this.scores = scores;
         return this;
     }
@@ -456,7 +509,8 @@ public class BotMessage {
         HISTORY("Unspecified history"),
         TYPEM("Invalid message type"),
         MODE("Unsupported game mode"),
-        COLLECTION("Collection is undefined");
+        COLLECTION("Collection is undefined"),
+        USER("User is undefined");
         String msg;
         Error(String msg) {
             this.msg = msg;
@@ -467,6 +521,17 @@ public class BotMessage {
     }
 
     public enum MessageType {
-        RECENT, COMPARE, RECENTBEST, SCORES, SINGLETOP, TOPSCORES, NOCHOKESCORES, TOPSOTARKS, SS, LEADERBOARD, TEXT
+        RECENT,
+        COMPARE,
+        RECENTBEST,
+        SCORES,
+        SINGLETOP,
+        TOPSCORES,
+        NOCHOKESCORES,
+        TOPSOTARKS,
+        SS,
+        LEADERBOARD,
+        TEXT,
+        COMMONSCORES
     }
 }

@@ -97,7 +97,7 @@ public class cmdTopScores implements ICommand {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
-        Collection<OsuScore> scores = null;
+        List<OsuScore> scores;
         try {
             scores = user.getTopScores(withMods ? 100 : getAmount()).get();
         } catch (OsuAPIException e) {
@@ -152,7 +152,7 @@ public class cmdTopScores implements ICommand {
     }
 
     String noScoreMessage(String username, boolean withMods) {
-        return "Could not find any scores from user `" + username + "`" + (withMods ? " with the specified mods" : "");
+        return "Could not find any top scores from user `" + username + "`" + (withMods ? " with the specified mods" : "");
     }
 
     int getAmount() {
@@ -176,7 +176,7 @@ public class cmdTopScores implements ICommand {
         String help = " (`" + statics.prefix + "topscores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 scores."
+                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>]` to make me list the user's top 5 scores."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

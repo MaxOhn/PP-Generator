@@ -4,6 +4,8 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.util.secrets;
 import org.apache.log4j.Logger;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
@@ -34,6 +36,22 @@ public class FileInteractor {
             //e.printStackTrace();
             return false;
         }
+    }
+
+    public File saveImage(BufferedImage img, String name) {
+        try {
+            File imgFile = new File(secrets.thumbPath + name);
+            ImageIO.write(img, "png", imgFile);
+            return imgFile;
+        } catch (IOException e) {
+            logger.error("Something went wrong while saving an image:");
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void deleteImage(String name) {
+        deleteFile(secrets.thumbPath + name);
     }
 
     public boolean downloadMap(int mapID) {

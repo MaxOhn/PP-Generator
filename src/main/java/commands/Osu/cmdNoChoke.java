@@ -113,7 +113,7 @@ public class cmdNoChoke implements ICommand {
                     score.setRank(p.getRank());
                 }
                 scoresList.sort(Comparator.comparing(OsuScore::getPp).reversed());
-                Collection<OsuScore> scores = scoresList.subList(0, 5);
+                List<OsuScore> scores = scoresList.subList(0, 5);
                 ArrayList<OsuBeatmap> finalMaps = new ArrayList<>();
                 for (OsuScore s : scores) {
                     for (OsuBeatmap m : maps) {

@@ -17,7 +17,6 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -98,7 +97,7 @@ public class cmdScores implements ICommand {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find osu user `" + name + "`");
             return;
         }
-        Collection<OsuScore> scores = null;
+        List<OsuScore> scores;
         try {
             scores = Main.osu.scores.query(
                     new EndpointScores.ArgumentsBuilder(Integer.parseInt(mapID)).setUserName(name).setMode(map.getMode()).build()

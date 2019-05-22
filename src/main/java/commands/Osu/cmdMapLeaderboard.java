@@ -16,7 +16,6 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -92,7 +91,7 @@ public class cmdMapLeaderboard implements ICommand {
             withMods = true;
         }
 
-        Collection<OsuScore> scores;
+        List<OsuScore> scores;
         try {
             boolean finalWithMods = withMods;
             GameMod[] finalMods = mods;
@@ -112,7 +111,7 @@ public class cmdMapLeaderboard implements ICommand {
         String help = " (`" + statics.prefix + "leaderboard -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "leaderboard <beatmap url or beatmap id>` to make me show the beatmap's "
+                return "Enter `" + statics.prefix + "leaderboard <beatmap url or beatmap id> [+<nm/hd/nfeznc/...>]` to make me show the beatmap's "
                         + " national top 5 scores.\nBeatmap urls from both the new " +
                         "and old website are supported.";
             case 1:
