@@ -104,13 +104,16 @@ public class cmdNoChoke implements ICommand {
                     if (ppThreshold > 0 && score.getPp() < ppThreshold && comboRatio > 0.97) continue;
                     Main.fileInteractor.prepareFiles(map);
                     maps.add(map);
-                    p.map(map).osuscore(score).noChoke();
-                    score.setCount300(p.getN300());
-                    score.setCount100(p.getN100());
-                    score.setCountmiss(p.getNMisses());
-                    score.setMaxcombo(p.getCombo());
-                    score.setPp((float)p.getPpDouble());
-                    score.setRank(p.getRank());
+                    p.map(map).osuscore(score);
+                    if (p.getCombo() < p.getMaxCombo()) {
+                        p.noChoke();
+                        score.setCount300(p.getN300());
+                        score.setCount100(p.getN100());
+                        score.setCountmiss(p.getNMisses());
+                        score.setMaxcombo(p.getCombo());
+                        score.setPp((float) p.getPpDouble());
+                        score.setRank(p.getRank());
+                    }
                 }
                 scoresList.sort(Comparator.comparing(OsuScore::getPp).reversed());
                 List<OsuScore> scores = scoresList.subList(0, 5);

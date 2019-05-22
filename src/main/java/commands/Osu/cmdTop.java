@@ -69,12 +69,7 @@ public class cmdTop implements INumberedCommand {
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
-        int delIndex = Math.max(argList.indexOf("-n"), argList.indexOf("-number"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
-        }
-        delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
+        int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
         if (delIndex > -1) {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);

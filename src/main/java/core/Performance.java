@@ -72,6 +72,7 @@ public class Performance {
 
     public void noChoke() {
         if (mode != GameMode.STANDARD) return;
+        if (getCombo() == getMaxCombo()) return;
         score.setMaxcombo(map.getMaxCombo());
         double ratio = (double)score.getHit300()/(score.getHit300() + score.getHit100() + score.getHit50());
         for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {

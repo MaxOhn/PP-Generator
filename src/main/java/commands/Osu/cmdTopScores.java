@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdTopScores implements ICommand {
+public class cmdTopScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
@@ -66,17 +66,25 @@ public class cmdTopScores implements ICommand {
             argList.remove(delIndex);
         }
 
-        boolean withMods = false;
-        GameMod[] mods = new GameMod[] {};
-        Pattern p = Pattern.compile("\\+.*");
+        Pattern p = Pattern.compile("\\+[^!]*!?");
         int mIdx = -1;
-        for (String s : argList)
-            if (p.matcher(s).matches())
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
                 mIdx = argList.indexOf(s);
+                break;
+            }
+        }
         if (mIdx != -1) {
-            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = cmdModdedCommand.modStatus.EXACT;
+                word = word.substring(1, word.length()-1);
+            } else {
+                status = cmdModdedCommand.modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            mods = GameMod.get(mods_flag(word.toUpperCase()));
             argList.remove(mIdx);
-            withMods = true;
         }
 
         String name;
@@ -105,14 +113,15 @@ public class cmdTopScores implements ICommand {
         }
         List<OsuScore> scores;
         try {
-            scores = user.getTopScores(withMods ? 100 : getAmount()).get();
+            scores = user.getTopScores(status != modStatus.WITHOUT ? 100 : getAmount()).get();
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
         for (OsuScore score : scores) {
-            if (withMods && !Arrays.equals(score.getEnabledMods(), mods))
+            if ((status == modStatus.EXACT && !hasSameMods(score))
+                    || (status == modStatus.CONTAINS && !includesMods(score)))
                 continue;
             OsuBeatmap map;
             try {
@@ -141,14 +150,14 @@ public class cmdTopScores implements ICommand {
             scores = scores.stream()
                     .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                     .collect(Collectors.toList());
-        } else if (withMods) {
-            GameMod[] finalMods = mods;
+        } else if (status != modStatus.WITHOUT) {
             scores = scores.stream()
-                    .filter(s -> Arrays.equals(s.getEnabledMods(), finalMods))
+                    .filter(s -> (status == modStatus.EXACT && hasSameMods(s))
+                            || (status == modStatus.CONTAINS && includesMods(s)))
                     .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), withMods));
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT));
             return;
         }
         new BotMessage(event, getMessageType()).user(user).osuscores(scores)

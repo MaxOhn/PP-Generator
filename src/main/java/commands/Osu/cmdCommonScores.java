@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdCommonScores implements ICommand {
+public class cmdCommonScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
@@ -88,17 +88,25 @@ public class cmdCommonScores implements ICommand {
         }
 
         // Get the mods by checking for +...
-        boolean withMods = false;
-        GameMod[] mods = new GameMod[0];
-        Pattern p = Pattern.compile("\\+.*");
+        Pattern p = Pattern.compile("\\+[^!]*!?");
         int mIdx = -1;
-        for (String s : argList)
-            if (p.matcher(s).matches())
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
                 mIdx = argList.indexOf(s);
+                break;
+            }
+        }
         if (mIdx != -1) {
-            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = modStatus.EXACT;
+                word = word.substring(1, word.length()-1);
+            } else {
+                status = modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            mods = GameMod.get(mods_flag(word.toUpperCase()));
             argList.remove(mIdx);
-            withMods = true;
         }
 
         // If names not yet found, get them as single words now
@@ -142,14 +150,14 @@ public class cmdCommonScores implements ICommand {
         }
 
         // Combine common scores
-        boolean finalWithMods = withMods;
-        GameMod[] finalMods = mods;
         List<OsuScore> common = scores.stream().flatMap(Collection::stream)
                 .collect(Collectors.groupingBy(OsuScore::getBeatmapID))
                 .values()
                 .stream()
-                .filter(list -> list.size() >= compareAmount && (!finalWithMods ||
-                        list.stream().allMatch(s -> Arrays.equals(s.getEnabledMods(), finalMods))))
+                .filter(list -> list.size() >= compareAmount && (
+                        status == modStatus.WITHOUT ||
+                        (status == modStatus.EXACT && list.stream().allMatch(this::hasSameMods)) ||
+                        (status == modStatus.CONTAINS && list.stream().allMatch(this::includesMods))))
                 .sorted((a, b) -> Math.round(a.get(0).getPp() - b.get(0).getPp()))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

@@ -112,6 +112,19 @@ public class utilGeneral {
         }
     }
 
+    public  static boolean isSubarray(Object[] smaller, Object[] larger) {
+        int i = 0, j = 0;
+        while (i < smaller.length && j < larger.length) {
+            if (smaller[i] == larger[j]) {
+                i++; j++;
+                if (i == smaller.length) return true;
+            } else {
+                i = 0; j++;
+            }
+        }
+        return false;
+    }
+
     public static boolean isDev(User author) {
         return author.getId().equals(secrets.badewanne3ID);
     }

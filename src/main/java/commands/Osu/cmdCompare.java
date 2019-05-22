@@ -1,7 +1,6 @@
 package main.java.commands.Osu;
 
 import com.oopsjpeg.osu4j.*;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
@@ -27,7 +26,7 @@ import java.util.stream.Collectors;
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdCompare implements INumberedCommand {
+public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
 
     private int number = 1;
 
@@ -53,14 +52,24 @@ public class cmdCompare implements INumberedCommand {
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
-        GameMod[] mods = new GameMod[] {};
-        Pattern p = Pattern.compile("\\+.*");
+        Pattern p = Pattern.compile("\\+[^!]*!?");
         int mIdx = -1;
-        for (String s : argList)
-            if (p.matcher(s).matches())
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
                 mIdx = argList.indexOf(s);
+                break;
+            }
+        }
         if (mIdx != -1) {
-            mods = GameMod.get(mods_flag(argList.get(mIdx).substring(1).toUpperCase()));
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = modStatus.EXACT;
+                word = word.substring(1, word.length()-1);
+            } else {
+                status = modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            mods = GameMod.get(mods_flag(word.toUpperCase()));
             argList.remove(mIdx);
         }
 
@@ -115,10 +124,15 @@ public class cmdCompare implements INumberedCommand {
         }
 
         OsuScore score = scores.get(0);
-        if (mIdx > -1) {
+        if (status != modStatus.WITHOUT) {
             Iterator<OsuScore> it = scores.iterator();
-            while (it.hasNext() && !Arrays.equals((score = it.next()).getEnabledMods(), mods));
-            if (!Arrays.equals(score.getEnabledMods(), mods)) {
+            while (it.hasNext() && (
+                    (status == modStatus.EXACT && !hasSameMods(score)) ||
+                    (status == modStatus.CONTAINS && !includesMods(score)))) {
+                score = it.next();
+            }
+            if ((status == modStatus.EXACT && !hasSameMods(score)) ||
+                    (status == modStatus.CONTAINS && !includesMods(score))) {
                 String msgEnd = mods.length == 0 ? " without mods" : " with mods `" + abbrvModSet(mods) + "`";
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
                         + "` on beatmap id `" + mapID + "`" + msgEnd);
@@ -137,9 +151,7 @@ public class cmdCompare implements INumberedCommand {
             map = DBProvider.getBeatmap(Integer.parseInt(mapID));
         } catch (SQLException | ClassNotFoundException e) {
             try {
-                map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).setMode(getMode()).setLimit(1).build()
-                ).get(0);
+                map = score.getBeatmap().get();
             } catch (OsuAPIException e1) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap with id `" + mapID + "`");
                 return;
