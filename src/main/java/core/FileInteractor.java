@@ -15,46 +15,42 @@ import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class FileInteractor {
 
-    private Logger logger = Logger.getLogger(this.getClass());
-
-    public FileInteractor() {}
-
-    public void deleteFile(String filePath) {
+    public static void deleteFile(String filePath) {
         File f = new File(filePath);
         if (!f.delete())
-            logger.error("Something went wrong while deleting a file: " + f.getName());
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while deleting a file: " + f.getName());
     }
 
-    public boolean downloadMapThumb(int mapID) {
+    public static boolean downloadMapThumb(int mapID) {
         try {
             InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + "l.jpg").openStream();
             Files.copy(in, Paths.get(secrets.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
-            logger.info("Downloaded thumbnail of mapset " + mapID + " successfully");
+            Logger.getLogger(FileInteractor.class).info("Downloaded thumbnail of mapset " + mapID + " successfully");
             return true;
         } catch (IOException e) {
-            logger.error("Something went wrong while downloading the thumbnail of a mapset: ");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while downloading the thumbnail of a mapset: ");
             //e.printStackTrace();
             return false;
         }
     }
 
-    public File saveImage(BufferedImage img, String name) {
+    public static File saveImage(BufferedImage img, String name) {
         try {
             File imgFile = new File(secrets.thumbPath + name);
             ImageIO.write(img, "png", imgFile);
             return imgFile;
         } catch (IOException e) {
-            logger.error("Something went wrong while saving an image:");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while saving an image:");
             e.printStackTrace();
             return null;
         }
     }
 
-    public void deleteImage(String name) {
+    public static void deleteImage(String name) {
         deleteFile(secrets.thumbPath + name);
     }
 
-    public boolean downloadMap(int mapID) {
+    public static boolean downloadMap(int mapID) {
         String urlStr = "https://osu.ppy.sh/web/maps/" + mapID;
         String file_name = secrets.mapPath + mapID + ".osu";
         int lines = 0;
@@ -66,9 +62,9 @@ public class FileInteractor {
             BufferedReader bReader = new BufferedReader(new FileReader(map));
             while (bReader.readLine() != null) lines++;
             bReader.close();
-            logger.info("Downloaded map " + mapID + " successfully");
+            Logger.getLogger(FileInteractor.class).info("Downloaded map " + mapID + " successfully");
         } catch (IOException e) {
-            logger.error("Something went wrong while downloading a map: ");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while downloading a map: ");
             e.printStackTrace();
             deleteFile(file_name);
             return false;
@@ -79,7 +75,7 @@ public class FileInteractor {
         return true;
     }
 
-    public int offsetOfNote(int noteIndex, int mapID) {
+    public static int offsetOfNote(int noteIndex, int mapID) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
             int lineNum = 0;
@@ -93,17 +89,17 @@ public class FileInteractor {
             String[] splitted = line.split(",");
             return Integer.parseInt(splitted[2]);
         } catch (IOException e) {
-            logger.error("Something went wrong while calculating the offset of a note: ");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while calculating the offset of a note: ");
             e.printStackTrace();
             return 0;
         } catch (Exception e) {
-            logger.error("Unexpected error while calculating offset of note");
+            Logger.getLogger(FileInteractor.class).error("Unexpected error while calculating offset of note");
             e.printStackTrace();
             return 0;
         }
     }
 
-    public int countTotalObjects(int mapID) {
+    public static int countTotalObjects(int mapID) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
             int nobjects = 0;
@@ -115,13 +111,13 @@ public class FileInteractor {
             }
             return nobjects;
         } catch (IOException e) {
-            logger.error("Something went wrong while counting the objects of a map: ");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while counting the objects of a map: ");
             e.printStackTrace();
             return 0;
         }
     }
 
-    public void copyMapUntilOffset(String name, int mapID, int offsetLimit) {
+    public static void copyMapUntilOffset(String name, int mapID, int offsetLimit) {
         File submap = new File(name);
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(submap));
@@ -144,12 +140,12 @@ public class FileInteractor {
             writer.close();
             reader.close();
         } catch (IOException e) {
-            logger.error("Something went wrong while creating a sub-map: ");
+            Logger.getLogger(FileInteractor.class).error("Something went wrong while creating a sub-map: ");
             e.printStackTrace();
         }
     }
 
-    public boolean prepareFiles(OsuBeatmap map) {
+    public static boolean prepareFiles(OsuBeatmap map) {
         boolean success = true;
         if (!new File(secrets.thumbPath + map.getBeatmapSetID() + "l.jpg").isFile())
             success = downloadMapThumb(map.getBeatmapSetID());

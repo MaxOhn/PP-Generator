@@ -114,7 +114,7 @@ public class Performance {
 
     public int getNObjects() {
         return nObjects == 0
-                ? (nObjects = Main.fileInteractor.countTotalObjects(map.getID()))
+                ? (nObjects = FileInteractor.countTotalObjects(map.getID()))
                 : nObjects;
     }
 
@@ -240,8 +240,8 @@ public class Performance {
                 secrets.mapPath + map.getID() + ".osu";
         try {
             if (failedPlay) {
-                int lastNoteTiming = Main.fileInteractor.offsetOfNote(getNPassedObjects(), map.getID());
-                Main.fileInteractor.copyMapUntilOffset(mapPath, map.getID(), lastNoteTiming);
+                int lastNoteTiming = FileInteractor.offsetOfNote(getNPassedObjects(), map.getID());
+                FileInteractor.copyMapUntilOffset(mapPath, map.getID(), lastNoteTiming);
             }
             String modeStr;
             switch (mode) {
@@ -280,7 +280,7 @@ public class Performance {
             //errors.close();
             pr.waitFor();
             if (failedPlay)
-                Main.fileInteractor.deleteFile(mapPath);
+                FileInteractor.deleteFile(mapPath);
         } catch(Exception e) {
             logger.error("Something went wrong while calculating the pp of a play: ");
             e.printStackTrace();

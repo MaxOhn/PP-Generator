@@ -6,6 +6,7 @@ import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
+import main.java.core.FileInteractor;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -139,7 +140,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                 }
             }
             if (getScoreCondition(score, mode) && getMapCondition(map)) {
-                Main.fileInteractor.prepareFiles(map);
+                FileInteractor.prepareFiles(map);
                 maps.add(map);
                 if (maps.size() >= 5) break;
             }

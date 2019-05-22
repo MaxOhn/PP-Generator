@@ -363,7 +363,7 @@ public class BotMessage {
 
                 List<String> urls = users.stream().map(u -> "https://a.ppy.sh/" + u.getID()).collect(Collectors.toList());
                 BufferedImage img = utilGeneral.combineImages(urls);
-                if (img == null || (thumbFile = Main.fileInteractor.saveImage(img, "avatar" + users.hashCode() + ".png")) == null) {
+                if (img == null || (thumbFile = FileInteractor.saveImage(img, "avatar" + users.hashCode() + ".png")) == null) {
                     eb.setThumbnail("https://a.ppy.sh/" + users.get(0).getID());
                 } else {
                     eb.setThumbnail("attachment://thumb.jpg");
@@ -411,7 +411,7 @@ public class BotMessage {
             case SS:
             case NOCHOKESCORES: ma.queue(); break;
             case COMMONSCORES:
-                ma.queue(msg -> Main.fileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
+                ma.queue(msg -> FileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
                 break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
@@ -430,7 +430,7 @@ public class BotMessage {
 
     public BotMessage map(OsuBeatmap map) {
         this.p.map(map);
-        this.filesPrepared = Main.fileInteractor.prepareFiles(map);
+        this.filesPrepared = FileInteractor.prepareFiles(map);
         return this;
     }
 

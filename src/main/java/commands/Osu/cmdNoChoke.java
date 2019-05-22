@@ -8,10 +8,7 @@ import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointUserBests;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
-import main.java.core.DBProvider;
-import main.java.core.Main;
-import main.java.core.Performance;
+import main.java.core.*;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
@@ -102,7 +99,7 @@ public class cmdNoChoke implements ICommand {
                     }
                     double comboRatio = (double)score.getMaxCombo()/map.getMaxCombo();
                     if (ppThreshold > 0 && score.getPp() < ppThreshold && comboRatio > 0.97) continue;
-                    Main.fileInteractor.prepareFiles(map);
+                    FileInteractor.prepareFiles(map);
                     maps.add(map);
                     p.map(map).osuscore(score);
                     if (p.getCombo() < p.getMaxCombo()) {

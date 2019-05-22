@@ -18,7 +18,6 @@ public class ReadyListener extends ListenerAdapter {
         Main.customOsu = new CustomRequester();
         if (secrets.RELEASE) Main.twitch = new TwitchHook();
         Main.discLink = new DiscordLink();
-        Main.fileInteractor = new FileInteractor();
         Main.runningLyrics = new HashSet<>();
     }
 }

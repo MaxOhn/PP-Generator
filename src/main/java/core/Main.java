@@ -25,7 +25,6 @@ public class Main {
     public static CustomRequester customOsu;
     public static TwitchHook twitch;
     public static DiscordLink discLink;
-    public static FileInteractor fileInteractor;
     public static HashSet<String> runningLyrics;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
