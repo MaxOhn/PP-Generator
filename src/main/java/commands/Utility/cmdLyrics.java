@@ -64,12 +64,18 @@ public class cmdLyrics extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "lyrics -h` for more help)";
+        String roles = "smth went wrong, ping bade or smth";
+        try {
+            roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
+        } catch (SQLException | ClassNotFoundException e) {
+            logger.error("Error while retrieving authorityRoles: " + e);
+        }
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "lyrics [-t / -s <on/off> / -c]` to either (`-t`) toggle or (`-s <on/off>`)" +
                         " set the permission to use lyrics commands on or off, or (`-c`) check the current state of the" +
-                        " permission.\nUsing this command requires either the admin " + "" +
-                        "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
+                        " permission.\nUsing this command requires either the admin permission or one of the current "
+                        + "authority roles: `[" + roles + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
             case 2:

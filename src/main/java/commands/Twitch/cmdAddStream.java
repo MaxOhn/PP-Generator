@@ -1,12 +1,15 @@
 package main.java.commands.Twitch;
 
 import main.java.commands.PrivilegedCommand;
+import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+
+import java.sql.SQLException;
 
 public class cmdAddStream extends PrivilegedCommand {
 
@@ -49,11 +52,17 @@ public class cmdAddStream extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "addstream -h` for more help)";
+        String roles = "smth went wrong, ping bade or smth";
+        try {
+            roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
+        } catch (SQLException | ClassNotFoundException e) {
+            logger.error("Error while retrieving authorityRoles: " + e);
+        }
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream -link <link to twitch stream>`" +
                         "to make me respond whenever the stream comes online\nUsing this command requires either the admin " + "" +
-                        "permission or one of these roles: `[" + String.join(", ", statics.authorities) + "]`";
+                        "permission or one of these roles: `[" + roles + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
             case 2:

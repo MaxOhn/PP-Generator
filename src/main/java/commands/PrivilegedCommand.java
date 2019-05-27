@@ -11,6 +11,7 @@ import static main.java.util.utilGeneral.isAuthority;
 public abstract class PrivilegedCommand implements ICommand {
 
     protected Logger logger = Logger.getLogger(this.getClass());
+    protected String serverID;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -36,6 +37,7 @@ public abstract class PrivilegedCommand implements ICommand {
     }
 
     public boolean customCalled(String[] args, MessageReceivedEvent event) {
+        serverID = event.getGuild().getId();
         return true;
     }
 }

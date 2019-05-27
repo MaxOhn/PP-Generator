@@ -4,6 +4,6 @@ public class statics {
 
     public static final String prefix = "<";
 
-    public static  final String[] authorities = {"admin","mod","moderator","botcommander", "bot commander"};
+    public static final String[] authorities = {"admin", "mod", "moderator", "botcommander", "bot commander"};
 
 }

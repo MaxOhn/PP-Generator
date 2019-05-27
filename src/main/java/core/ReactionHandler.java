@@ -48,7 +48,7 @@ public class ReactionHandler {
             event.getGuild().getController()
                     .addSingleRoleToMember(event.getMember(), role)
                     .queue();
-            logger.info("Assigned role " + role.getName() + " to member " + event.getMember().getNickname());
+            logger.info("Assigned role '" + role.getName() + "' to member " + event.getMember().getEffectiveName());
         }
     }
 
@@ -57,6 +57,6 @@ public class ReactionHandler {
             event.getGuild().getController()
                     .removeSingleRoleFromMember(event.getMember(), role)
                     .queue();
-            logger.info("Removed role " + role.getName() + " from member " + event.getMember().getNickname());
+            logger.info("Removed role '" + role.getName() + "' from member " + event.getMember().getEffectiveName());
     }
 }

@@ -14,14 +14,6 @@ import java.util.List;
 
 public class cmdSetAuthorityRoles extends PrivilegedCommand {
 
-    private String serverID;
-
-    @Override
-    public boolean customCalled(String[] args, MessageReceivedEvent event) {
-        serverID = event.getGuild().getId();
-        return true;
-    }
-
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-d") ||args[0].equals("-default"))) {
@@ -86,7 +78,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "setauthorityroles -h` for more help)";
-        String roles = "~~ smth went wrong, ping bade or smth :p ~~";
+        String roles = "smth went wrong, ping bade or smth";
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {

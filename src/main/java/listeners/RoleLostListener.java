@@ -9,7 +9,8 @@ import org.apache.log4j.Logger;
 public class RoleLostListener extends ListenerAdapter {
 
     public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
-        if (event.getRoles().iterator().next().getName().equals("Not Checked")) {
+        if (event.getRoles().iterator().next().getName().equals("Not Checked")
+                && event.getGuild().getId().equals(secrets.mainGuildID)) {
             Main.memberHandler.checkedUser(event.getUser().getId());
             Logger logger = Logger.getLogger(this.getClass());
             String welcomeMessage = "welcome " + event.getUser().getName() + ", enjoy ur stay o/";

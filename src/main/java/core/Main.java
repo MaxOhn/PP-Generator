@@ -128,5 +128,6 @@ public class Main {
         commandHandler.commands.put("setauthorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
+        commandHandler.commands.put("roleassign", new cmdRoleAssign());
     }
 }
