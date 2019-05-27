@@ -476,11 +476,11 @@ public class BotMessage {
     public BotMessage history(Collection<OsuScore> history) {
         int mapID = score.getBeatmapID();
         for (OsuScore game : history) {
-            if (game.getBeatmapID() == mapID)
+            if (game.getBeatmapID() == mapID) {
                 if (game.getScore() > 10000)
                     retries++;
-                else
-                    break;
+            } else
+                break;
         }
         return this;
     }
