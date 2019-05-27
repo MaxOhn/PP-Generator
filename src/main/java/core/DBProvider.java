@@ -22,6 +22,46 @@ public class DBProvider {
 
     /*
      * ------------------------
+     *     role assigns
+     * ------------------------
+     */
+
+    public static HashMap<Integer, String> getRoleAssigns() throws ClassNotFoundException, SQLException {
+        HashMap<Integer, String> roleAssigns = new HashMap<>();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from roleAssigns");
+        while(rs.next()) {
+            roleAssigns.put(rs.getInt("hash"), rs.getString("roleID"));
+        }
+        stmnt.close();
+        c.close();
+        return roleAssigns;
+    }
+
+    public static void addRoleAssign(int hash, String roleID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into roleAssigns(hash, roleID) values (" + hash
+                + ", '" + roleID + "')"
+                + " on duplicate key update roleID='" + roleID + "'");
+        stmnt.close();
+        c.close();
+    }
+
+    public static void removeRoleAssign(int hash) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("delete from roleAssigns where hash=" + hash);
+        stmnt.close();
+        c.close();
+    }
+
+    /*
+     * ------------------------
      *     unchecked users
      * ------------------------
      */

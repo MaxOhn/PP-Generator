@@ -29,6 +29,7 @@ public class Main {
     public static DiscordLink discLink;
     public static HashSet<String> runningLyrics;
     public static MemberHandler memberHandler;
+    public static ReactionHandler reactionHandler;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
         String log4jConfPath = secrets.log4jPath;

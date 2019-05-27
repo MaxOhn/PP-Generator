@@ -29,6 +29,12 @@ public class MemberHandler {
 
     public void addUncheckedUser(String discord, ZonedDateTime date) {
         uncheckedUsers.put(discord, date);
+        try {
+            DBProvider.addUncheckedUser(discord, date);
+        } catch (ClassNotFoundException | SQLException e) {
+            logger.error("Could not add unchecked user to DB:");
+            e.printStackTrace();
+        }
     }
 
     public void checkedUser(String discord) {

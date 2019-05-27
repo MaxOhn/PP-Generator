@@ -21,5 +21,6 @@ public class ReadyListener extends ListenerAdapter {
         Main.discLink = new DiscordLink();
         Main.runningLyrics = new HashSet<>();
         Main.memberHandler = new MemberHandler();
+        Main.reactionHandler = new ReactionHandler();
     }
 }
