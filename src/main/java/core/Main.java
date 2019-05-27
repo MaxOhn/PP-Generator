@@ -3,7 +3,9 @@ package main.java.core;
 import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
 import main.java.commands.Osu.*;
-import main.java.commands.Twitch.*;
+import main.java.commands.Twitch.cmdAddStream;
+import main.java.commands.Twitch.cmdRemoveStream;
+import main.java.commands.Twitch.cmdTrackedStreams;
 import main.java.commands.Utility.*;
 import main.java.listeners.*;
 import main.java.util.secrets;
@@ -26,9 +28,9 @@ public class Main {
     public static TwitchHook twitch;
     public static DiscordLink discLink;
     public static HashSet<String> runningLyrics;
+    public static MemberHandler memberHandler;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
-
         String log4jConfPath = secrets.log4jPath;
         PropertyConfigurator.configure(log4jConfPath);
         builder = new JDABuilder((AccountType.BOT));
@@ -52,6 +54,7 @@ public class Main {
         builder.addEventListener(new ServerJoinListener());
         builder.addEventListener(new RoleLostListener());
         builder.addEventListener(new MemberJoinListener());
+        builder.addEventListener(new ReactionListener());
     }
 
     private static void addCommands() {

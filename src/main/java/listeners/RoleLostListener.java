@@ -10,6 +10,7 @@ public class RoleLostListener extends ListenerAdapter {
 
     public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
         if (event.getRoles().iterator().next().getName().equals("Not Checked")) {
+            Main.memberHandler.checkedUser(event.getUser().getId());
             Logger logger = Logger.getLogger(this.getClass());
             String welcomeMessage = "welcome " + event.getUser().getName() + ", enjoy ur stay o/";
             Main.jda.getTextChannelById(secrets.welcomeMsgChannelID).sendMessage(welcomeMessage).queue();

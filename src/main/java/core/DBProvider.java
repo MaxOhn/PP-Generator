@@ -45,8 +45,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         stmnt.execute("insert into uncheckedUsers(discord, date) values ('" + discordID
-                + "', '" + addReplacer(Utility.toMySqlString(date)) + "')"
-                + " on duplicate key update date='" + addReplacer(Utility.toMySqlString(date)) + "'");
+                + "', '" + Utility.toMySqlString(date) + "')"
+                + " on duplicate key update date='" + Utility.toMySqlString(date) + "'");
         stmnt.close();
         c.close();
     }
@@ -212,8 +212,8 @@ public class DBProvider {
                     + map.getMaxCombo() + ",'"
                     + addReplacer(map.getCreatorName()) + "','"
                     + addReplacer(map.getSource()) + "','"
-                    + addReplacer(Utility.toMySqlString(map.getApprovedDate())) + "','"
-                    + addReplacer(Utility.toMySqlString(map.getLastUpdate())) + "')" );
+                    + Utility.toMySqlString(map.getApprovedDate()) + "','"
+                    + Utility.toMySqlString(map.getLastUpdate()) + "')" );
         } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();

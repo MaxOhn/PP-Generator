@@ -1,6 +1,7 @@
 package main.java.listeners;
 
 import main.java.core.DBProvider;
+import main.java.core.Main;
 import main.java.util.secrets;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
@@ -16,7 +17,9 @@ public class MemberJoinListener extends ListenerAdapter {
         logger.info("User " + event.getUser().getName() + " joined server " + event.getGuild().getName());
         if (!secrets.RELEASE || event.getGuild().getId().equals(secrets.mainGuildID)) {
             try {
-                DBProvider.addUncheckedUser(event.getUser().getId() + "", ZonedDateTime.now());
+                ZonedDateTime now = ZonedDateTime.now();
+                Main.memberHandler.addUncheckedUser(event.getUser().getId() + "", now);
+                DBProvider.addUncheckedUser(event.getUser().getId() + "", now);
             } catch (ClassNotFoundException | SQLException e) {
                 logger.error("Error while adding unchecked user to DB:");
                 e.printStackTrace();
