@@ -11,13 +11,13 @@ import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -35,24 +35,9 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Pattern p = Pattern.compile("((https:\\/\\/osu\\.ppy\\.sh\\/b\\/)([0-9]{1,8})(.*))|((https:\\/\\/osu\\.ppy\\.sh\\/beatmapsets\\/[0-9]*\\#[a-z]*\\/)([0-9]{1,8})(.*))");
-        String mapID = "-1";
-        try {
-            Matcher m = p.matcher(args[0]);
-            if (m.find()) {
-                mapID = m.group(3);
-                if (mapID == null) mapID = m.group(7);
-            }
-            if (mapID.equals("-1")) mapID = Integer.parseInt(args[0]) + "";
-        } catch (Exception e) {
-            if (args[0].contains("/s/") || !args[0].contains("#"))
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("I think you specified a mapset, try a specific beatmap instead");
-            else
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
-            return;
-        }
+        String mapID = utilOsu.getIdFromString(args[0]);
         if (mapID.equals("-1")) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve map id from the command. Have you specified the map id and not only the map set id?");
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
         }
         OsuBeatmap map;
@@ -78,7 +63,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toList());
 
-        p = Pattern.compile("\\+[^!]*!?");
+        Pattern p = Pattern.compile("\\+[^!]*!?");
         setStatusInitial();
         int mIdx = -1;
         for (String s : argList) {

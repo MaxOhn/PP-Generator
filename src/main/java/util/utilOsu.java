@@ -5,6 +5,8 @@ import com.oopsjpeg.osu4j.OsuScore;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class utilOsu {
 
@@ -154,5 +156,17 @@ public class utilOsu {
             index++;
         }
         return -1;
+    }
+
+    public static String getIdFromString(String idString) {
+        Pattern p = Pattern.compile("((.*)\\/([0-9]{1,8})($|(&|\\?)m=[0-3]))|([0-9]{1,8})");
+
+        String id = "-1";
+        Matcher m = p.matcher(idString);
+        if (m.find())
+            id = m.group(3);
+        if (id == null)
+            id = m.group(6);
+        return id;
     }
 }
