@@ -29,17 +29,19 @@ public class cmdRoleAssign extends PrivilegedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
         String guild = event.getGuild().getId();
         String channel = null;
-        Pattern p = Pattern.compile("([0-9]*)|(<#([0-9]*)>)");
+        Pattern p = Pattern.compile("^(([0-9]*)|(<#([0-9]*)>))$");
         Matcher m = p.matcher(args[0]);
+        System.out.println(args[0]);
         if (m.find())
             channel = m.group(1);
-        if (channel == null)
-            channel = m.group(3);
+        if (channel == null || channel.startsWith("<#"))
+            channel = m.group(4);
         if (channel == null) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
             return;
         }
         String message;
+        System.out.println(args[1]);
         try {
             message = Long.parseLong(args[1]) + "";
         } catch (NumberFormatException e) {
@@ -47,12 +49,13 @@ public class cmdRoleAssign extends PrivilegedCommand {
             return;
         }
         String role = null;
-        p = Pattern.compile("([0-9]*)|(<@&([0-9]*)>)");
+        p = Pattern.compile("^(([0-9]*)|(<@&([0-9]*)>))$");
         m = p.matcher(args[2]);
+        System.out.println(args[2]);
         if (m.find())
             role = m.group(1);
-        if (role == null)
-            role = m.group(3);
+        if (role == null || role.startsWith("<@&"))
+            role = m.group(4);
         if (role == null) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
             return;
@@ -79,13 +82,14 @@ public class cmdRoleAssign extends PrivilegedCommand {
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Error while retrieving authorityRoles: " + e);
+            logger.error("Error while retrieving authorityRoles:");
+            e.printStackTrace();
         }
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "roleassign <channel-mention or channel id> <message id> <role-mention or role id>`"
                         + " to make me assign the given role to anyone who reacts on that message. If a user removes all their"
-                        + " reaction on the message again, they will lose the role."
+                        + " reactions on the message again, they will lose the role."
                         + "\nUsing this command requires either the admin permission or one of the current "
                         + "authority roles: `[" + roles + "]`";
             case 1:

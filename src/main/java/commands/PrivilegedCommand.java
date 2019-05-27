@@ -19,6 +19,7 @@ public abstract class PrivilegedCommand implements ICommand {
             event.getChannel().sendMessage("This command is not usable in private chat").queue();
             return false;
         }
+        serverID = event.getGuild().getId();
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
@@ -37,7 +38,6 @@ public abstract class PrivilegedCommand implements ICommand {
     }
 
     public boolean customCalled(String[] args, MessageReceivedEvent event) {
-        serverID = event.getGuild().getId();
         return true;
     }
 }
