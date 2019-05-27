@@ -7,6 +7,7 @@ import com.oopsjpeg.osu4j.util.Utility;
 import main.java.util.secrets;
 
 import java.sql.*;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 public class DBProvider {
@@ -17,6 +18,46 @@ public class DBProvider {
 
     private static String removeReplacer(String str) {
         return str.replaceAll("ö", "'");
+    }
+
+    /*
+     * ------------------------
+     *     unchecked users
+     * ------------------------
+     */
+
+    public static HashMap<String, ZonedDateTime> getUncheckedUsers() throws ClassNotFoundException, SQLException {
+        HashMap<String, ZonedDateTime> users = new HashMap<>();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from uncheckedUsers");
+        while(rs.next()) {
+            users.put(rs.getString("discord"), Utility.parseDate(rs.getString("date")));
+        }
+        stmnt.close();
+        c.close();
+        return users;
+    }
+
+    public static void addUncheckedUser(String discordID, ZonedDateTime date) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into uncheckedUsers(discord, date) values ('" + discordID
+                + "', '" + addReplacer(Utility.toMySqlString(date)) + "')"
+                + " on duplicate key update date='" + addReplacer(Utility.toMySqlString(date)) + "'");
+        stmnt.close();
+        c.close();
+    }
+
+    public static void removeUncheckedUser(String discordID) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("delete from uncheckedUsers where discord='" + discordID + "'");
+        stmnt.close();
+        c.close();
     }
 
     /*
@@ -409,21 +450,12 @@ public class DBProvider {
      * ------------------------
      */
 
-    public static String getOsuLink(String discordID) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select osu from discosu where discord='" + discordID + "'");
-        rs.next();
-        return rs.getString("osu");
-    }
-
     static void addLink(String discordID, String osuname) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("delete from discosu where discord='" + discordID + "'");
-        stmnt.execute("insert into discosu(discord, osu) values ('" + discordID + "', '" + osuname + "')");
+        stmnt.execute("insert into discosu(discord, osu) values ('" + discordID + "', '" + osuname + "')"
+                + " on duplicate key update osu='" + osuname + "'");
         stmnt.close();
         c.close();
     }
@@ -456,32 +488,6 @@ public class DBProvider {
      *         twitch
      * ------------------------
      */
-
-    public static ArrayList<String> streamersForChannel(String channelID) throws ClassNotFoundException, SQLException {
-        ArrayList<String> streamers = new ArrayList<>();
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select name from twitch where channel='" + channelID + "'");
-        while (rs.next())
-            streamers.add(rs.getString("name"));
-        stmnt.close();
-        c.close();
-        return streamers;
-    }
-
-    public static ArrayList<String> channelsForStreamer(String streamer) throws ClassNotFoundException, SQLException {
-        ArrayList<String> channels = new ArrayList<>();
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select channel from twitch where name='" + streamer + "'");
-        while (rs.next())
-            channels.add(rs.getString("channel"));
-        stmnt.close();
-        c.close();
-        return channels;
-    }
 
     static void removeStreamer(String streamer, String channelID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");

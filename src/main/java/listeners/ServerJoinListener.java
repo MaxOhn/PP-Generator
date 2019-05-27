@@ -17,7 +17,8 @@ public class ServerJoinListener extends ListenerAdapter {
             DBProvider.setLyricsState(event.getGuild().getId(), true);
             DBProvider.setAuthorityRoles(event.getGuild().getId(), statics.authorities);
         } catch (ClassNotFoundException | SQLException e) {
-            logger.error("Error while setting serverProperties entry: " + e);
+            logger.error("Error while setting serverProperties entry:");
+            e.printStackTrace();
         }
     }
 }
