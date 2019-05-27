@@ -56,9 +56,10 @@ public class utilGeneral {
         if (temp > 1 || temp == 1 && now.getSecond() > date.getSecond())
             return temp + " minute" + (temp == 1 ? "" : "s") + " ago";
         temp = now.getSecond() - date.getSecond();
-        if (temp > 0)
+        if (temp < 0) {
+            temp += 60;
             return temp + " second" + (temp == 1 ? "" : "s") + " ago";
-        System.out.println("Error in howLongAgo:\nGiven: " + date + "\nNow: " + now);
+        }
         return "";
     }
 
