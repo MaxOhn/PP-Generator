@@ -73,6 +73,9 @@ public class cmdScores implements ICommand {
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }
+        } catch (IndexOutOfBoundsException e1) {
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
+            return;
         }
         OsuUser user;
         try {

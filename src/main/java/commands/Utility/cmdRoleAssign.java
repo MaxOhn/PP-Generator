@@ -31,7 +31,6 @@ public class cmdRoleAssign extends PrivilegedCommand {
         String channel = null;
         Pattern p = Pattern.compile("^(([0-9]*)|(<#([0-9]*)>))$");
         Matcher m = p.matcher(args[0]);
-        System.out.println(args[0]);
         if (m.find())
             channel = m.group(1);
         if (channel == null || channel.startsWith("<#"))
@@ -41,7 +40,6 @@ public class cmdRoleAssign extends PrivilegedCommand {
             return;
         }
         String message;
-        System.out.println(args[1]);
         try {
             message = Long.parseLong(args[1]) + "";
         } catch (NumberFormatException e) {
@@ -51,11 +49,11 @@ public class cmdRoleAssign extends PrivilegedCommand {
         String role = null;
         p = Pattern.compile("^(([0-9]*)|(<@&([0-9]*)>))$");
         m = p.matcher(args[2]);
-        System.out.println(args[2]);
-        if (m.find())
+        if (m.find()) {
             role = m.group(1);
-        if (role == null || role.startsWith("<@&"))
-            role = m.group(4);
+            if (role == null || role.startsWith("<@&"))
+                role = m.group(4);
+        }
         if (role == null) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
             return;

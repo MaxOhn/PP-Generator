@@ -53,10 +53,12 @@ public class ReactionHandler {
     }
 
     public void removedReaction(GuildMessageReactionRemoveEvent event, int hash) {
+        if (roleAssigns.containsKey(hash)) {
             Role role = event.getGuild().getRoleById(roleAssigns.get(hash));
             event.getGuild().getController()
                     .removeSingleRoleFromMember(event.getMember(), role)
                     .queue();
             logger.info("Removed role '" + role.getName() + "' from member " + event.getMember().getEffectiveName());
+        }
     }
 }

@@ -51,6 +51,9 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
             } catch (OsuAPIException e1) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
                 return;
+            } catch (IndexOutOfBoundsException e1) {
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
+                return;
             }
             try {
                 DBProvider.addBeatmap(map);
