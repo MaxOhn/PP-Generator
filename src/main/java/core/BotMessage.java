@@ -319,16 +319,25 @@ public class BotMessage {
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
                                 + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
                         "https://osu.ppy.sh/b/" + p.getMap().getID(), "attachment://flag.png");
+                String comboDisplay;
                 StringBuilder descr = new StringBuilder();
                 idx = 1;
                 for (OsuScore s : scores) {
                     osuscore(s);
+                    comboDisplay = " [ " + p.getCombo() + "x/";
+                    switch (p.getMode()) {
+                        case MANIA:
+                            comboDisplay += " " + p.getNMisses() + " miss" + (p.getNMisses() != 1 ? "es" : "") + " ]";
+                            break;
+                        default:
+                            comboDisplay += p.getMaxCombo() + "x ]";
+                            break;
+                    }
                     if (!descr.toString().equals("")) descr.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
                     descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **").append(s.getUsername())
                             .append("**: ").append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
-                            .append(" [ ").append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ]")
-                            .append(modstr).append("\n~  **")
+                            .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
                             .append(" ~ ").append(p.getAcc()).append("% ~ ").append(howLongAgo(s.getDate()));
                 }
