@@ -5,13 +5,16 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
-import main.java.commands.ICommand;
+import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
+import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
@@ -23,10 +26,13 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
+public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedCommand {
+
+    private int number = 1;
+
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
+        if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
@@ -35,7 +41,35 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        String mapID = utilOsu.getIdFromString(args[0]);
+
+        if (number > 50) {
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
+            return;
+        }
+
+        String mapID = "-1";
+        if (args.length > 0)
+            mapID = utilOsu.getIdFromString(args[0]);
+        else {
+            int counter = 100;
+            for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
+                if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
+                    MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
+                    List<MessageEmbed.Field> fields = msgEmbed.getFields();
+                    if (fields.size() > 0) {
+                        if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*")
+                                || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*"))) {
+                            mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                            if (--number <= 0) break;
+                        }
+                    }
+                }
+                if (--counter == 0) {
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
+                    return;
+                }
+            }
+        }
         if (mapID.equals("-1")) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
@@ -121,5 +155,11 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements ICommand {
     @Override
     public utilGeneral.Category getCategory() {
         return utilGeneral.Category.OSU;
+    }
+
+    @Override
+    public INumberedCommand setNumber(int number) {
+        this.number = number;
+        return this;
     }
 }

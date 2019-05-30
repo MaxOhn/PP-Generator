@@ -10,11 +10,6 @@ public class cmdCompareMania extends cmdCompare {
     }
 
     @Override
-    String  getRegex() {
-        return ".*\\{( ?\\d+ ?\\/){5} ?\\d+ ?\\}.*";
-    }
-
-    @Override
     String getName() {
         return "mania";
     }

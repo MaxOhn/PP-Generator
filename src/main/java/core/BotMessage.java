@@ -191,6 +191,8 @@ public class BotMessage {
                     .addField("Map Info", mapInfo,true);
                 break;
             case SCORES:
+                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(u.getUsername() + ": "
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
@@ -198,8 +200,6 @@ public class BotMessage {
                                 + u.getCountry()
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
-                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
-                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
@@ -250,7 +250,8 @@ public class BotMessage {
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
             case TOPSCORES:
-                if (scores == null || maps == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (mb.isEmpty() && scores.size() > 5) {
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the specified mods in `")
                             .append(u.getUsername()).append("`'s top 100, here's the top 5 of them:");
@@ -302,6 +303,7 @@ public class BotMessage {
                 break;
             case LEADERBOARD:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (scores.size() > 10) {
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
                             "specified mods on the specified map's national leaderboard, here's the top 10 of them:");

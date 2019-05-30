@@ -10,11 +10,6 @@ public class cmdCompareTaiko extends cmdCompare {
     }
 
     @Override
-    String  getRegex() {
-        return ".*\\{( ?\\d+ ?\\/){2} ?\\d+ ?\\}.*";
-    }
-
-    @Override
     String getName() {
         return "taiko";
     }
