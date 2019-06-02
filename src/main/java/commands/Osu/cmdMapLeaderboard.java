@@ -47,9 +47,34 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             return;
         }
 
+        List<String> argList = Arrays.stream(args)
+                .filter(arg -> !arg.isEmpty())
+                .collect(Collectors.toList());
+
+        Pattern p = Pattern.compile("\\+[^!]*!?");
+        setStatusInitial();
+        int mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = cmdModdedCommand.modStatus.EXACT;
+                word = word.substring(1, word.length()-1);
+            } else {
+                status = cmdModdedCommand.modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            mods = GameMod.get(mods_flag(word.toUpperCase()));
+            argList.remove(mIdx);
+        }
         String mapID = "-1";
-        if (args.length > 0)
-            mapID = utilOsu.getIdFromString(args[0]);
+        if (argList.size() > 0)
+            mapID = utilOsu.getIdFromString(argList.get(0));
         else {
             int counter = 100;
             for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
@@ -94,32 +119,6 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }
-        }
-
-        List<String> argList = Arrays.stream(args)
-                .filter(arg -> !arg.isEmpty())
-                .collect(Collectors.toList());
-
-        Pattern p = Pattern.compile("\\+[^!]*!?");
-        setStatusInitial();
-        int mIdx = -1;
-        for (String s : argList) {
-            if (p.matcher(s).matches()) {
-                mIdx = argList.indexOf(s);
-                break;
-            }
-        }
-        if (mIdx != -1) {
-            String word = argList.get(mIdx);
-            if (word.contains("!")) {
-                status = cmdModdedCommand.modStatus.EXACT;
-                word = word.substring(1, word.length()-1);
-            } else {
-                status = cmdModdedCommand.modStatus.CONTAINS;
-                word = word.substring(1);
-            }
-            mods = GameMod.get(mods_flag(word.toUpperCase()));
-            argList.remove(mIdx);
         }
 
         List<OsuScore> scores;
