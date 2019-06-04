@@ -1,6 +1,7 @@
 package main.java.util;
 
 import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 
 import java.util.Collection;
@@ -168,5 +169,35 @@ public class utilOsu {
         if (id == null)
             id = m.group(6);
         return id;
+    }
+
+    public static double getAcc(OsuScore score, GameMode mode) {
+        int nTotal = score.getHit300() + score.getHit100() + score.getMisses();
+        switch (mode) {
+            case STANDARD:
+                nTotal += score.getHit50();
+                break;
+            case MANIA:
+                nTotal += score.getGekis() + score.getKatus() + score.getHit50();
+                break;
+            default: break;
+        }
+        return getAcc(score, mode, nTotal);
+    }
+
+    public static double getAcc(OsuScore score, GameMode mode, int nTotal) {
+        double numerator = (double)score.getHit50() * 50.0D + (double)score.getHit100() * 100.0D + (double)score.getHit300() * 300.0D;
+        if (mode == GameMode.MANIA)
+            numerator += (double)score.getKatus() * 200.0D + (double)score.getGekis() * 300.0D;
+        else if (mode == GameMode.TAIKO)
+            numerator = 0.5 * score.getHit100() + score.getHit300();
+        double denominator;
+        if (mode == GameMode.STANDARD)
+            denominator = (double)(nTotal) * 300.0D;
+        else // taiko, mania
+            denominator = nTotal;
+        if (mode == GameMode.MANIA) denominator *= 300;
+        double res = numerator / denominator;
+        return 100*Math.max(0.0D, Math.min(res, 1.0D));
     }
 }

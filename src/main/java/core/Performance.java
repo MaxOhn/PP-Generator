@@ -2,6 +2,7 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.*;
 import main.java.util.secrets;
+import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -124,19 +125,7 @@ public class Performance {
 
     public double getAccDouble() {
         if (acc != 0) return acc;
-        double numerator = (double)score.getHit50() * 50.0D + (double)score.getHit100() * 100.0D + (double)score.getHit300() * 300.0D;
-        if (mode == GameMode.MANIA)
-            numerator += (double)score.getKatus() * 200.0D + (double)score.getGekis() * 300.0D;
-        else if (mode == GameMode.TAIKO)
-            numerator = 0.5 * score.getHit100() + score.getHit300();
-        double denominator;
-        if (mode == GameMode.STANDARD)
-            denominator = (double)(getNPassedObjects()) * 300.0D;
-        else // taiko, mania
-            denominator = getNPassedObjects();
-        if (mode == GameMode.MANIA) denominator *= 300;
-        double res = numerator / denominator;
-        return (acc = 100*Math.max(0.0D, Math.min(res, 1.0D)));
+        return (acc = utilOsu.getAcc(score, mode, getNPassedObjects()));
     }
 
     public String getAcc() {

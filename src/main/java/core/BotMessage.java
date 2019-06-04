@@ -24,6 +24,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -52,7 +53,6 @@ public class BotMessage {
 
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int shortFormatDelay = 45000;
-
 
     public BotMessage(MessageReceivedEvent event, MessageType typeM) {
         this.event = event;
@@ -381,6 +381,45 @@ public class BotMessage {
                 }
                 eb.setDescription(des);
                 break;
+            case RATIO:
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (u == null) throw new IllegalStateException(Error.USER.getMsg());
+                mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
+                        .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
+                int[] accs = new int[] {0, 90, 95, 97, 99};
+                AtomicInteger atomicIdx = new AtomicInteger(-1);
+                int[] nGekis = new int[accs.length];
+                int[] n300 = new int[accs.length];
+                double[] nGekisW = new double[accs.length];
+                double[] n300W = new double[accs.length];
+                for (OsuScore s : scores) {
+                    atomicIdx.incrementAndGet();
+                    double acc = utilOsu.getAcc(s, p.getMode());
+                    for (int i = 0; i < accs.length; i++) {
+                        if (acc > accs[i]) {
+                            nGekis[i] += s.getGekis();
+                            n300[i] += s.getHit300();
+                            nGekisW[i] += Math.pow(0.95, atomicIdx.get()) * s.getGekis();
+                            n300W[i] += Math.pow(0.95, atomicIdx.get()) * s.getHit300();
+                        }
+                    }
+                }
+                eb.setThumbnail("https://a.ppy.sh/" + u.getID());
+                eb.setAuthor(u.getUsername() + ": "
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + u.getCountry()
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                        "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
+                thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
+                StringBuilder desc = new StringBuilder("__**Min acc: Avg ratio | Weighted avg ratio:**__");
+                for (int i = 0; i < accs.length; i++) {
+                    desc.append("\n**>").append(accs[i]).append("% :** ")
+                            .append((double)(Math.round(100 * ((double)nGekis[i]/n300[i]))) / 100).append(" | ")
+                            .append((double)(Math.round(100 * (nGekisW[i]/n300W[i]))) / 100);
+                }
+                eb.setDescription(desc.toString());
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
@@ -420,6 +459,7 @@ public class BotMessage {
             case TOPSCORES:
             case TOPSOTARKS:
             case SS:
+            case RATIO:
             case NOCHOKESCORES: ma.queue(); break;
             case COMMONSCORES:
                 ma.queue(msg -> FileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
@@ -543,6 +583,7 @@ public class BotMessage {
         SS,
         LEADERBOARD,
         TEXT,
-        COMMONSCORES
+        COMMONSCORES,
+        RATIO
     }
 }

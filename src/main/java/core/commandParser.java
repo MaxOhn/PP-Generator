@@ -37,7 +37,7 @@ public class commandParser {
         String beheaded = raw.replaceFirst(statics.prefix,"");
         String[] splitbeheaded = beheaded.split(" ");
         String invoke = splitbeheaded[0];
-        int number = 1;
+        int number = -1;
         if (invoke.matches(".*[1-9][0-9]*")) {
             Pattern p = Pattern.compile("(\\D*)([1-9][0-9]*)");
             Matcher m = p.matcher(invoke);

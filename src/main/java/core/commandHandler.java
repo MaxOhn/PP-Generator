@@ -41,7 +41,7 @@ public class commandHandler {
                 // If so, perform the action in new thread
                 if (safe) {
                     final Thread t = new Thread(() -> {
-                        if (commands.get(invoke) instanceof INumberedCommand)
+                        if (commands.get(invoke) instanceof INumberedCommand && cmd.number != -1)
                             ((INumberedCommand) commands.get(invoke)).setNumber(cmd.number).action(cmd.args, cmd.event);
                         else
                             commands.get(invoke).action(cmd.args, cmd.event);
