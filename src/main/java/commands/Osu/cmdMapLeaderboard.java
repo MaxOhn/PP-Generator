@@ -141,9 +141,10 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         String help = " (`" + statics.prefix + "leaderboard -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "leaderboard <beatmap url or beatmap id> [+<nm/hd/nfeznc/...>]` to make me show the beatmap's "
-                        + " national top 5 scores.\nBeatmap urls from both the new " +
-                        "and old website are supported.";
+                return "Enter `" + statics.prefix + "leaderboard[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>]` to make me show the beatmap's "
+                        + " national top 10 scores."
+                        + "\nBeatmap urls from both the new and old website are supported."
+                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
             case 1:
                 return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
             default:

@@ -335,8 +335,9 @@ public class BotMessage {
                     }
                     if (!descr.toString().equals("")) descr.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
-                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **").append(s.getUsername())
-                            .append("**: ").append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
+                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **[").append(s.getUsername())
+                            .append("](https://osu.ppy.sh/u/").append(s.getUsername()).append(")**: ")
+                            .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
                             .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
                             .append(" ~ ").append(p.getAcc()).append("% ~ ").append(howLongAgo(s.getDate()));
@@ -388,19 +389,33 @@ public class BotMessage {
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
                 int[] accs = new int[] {0, 90, 95, 97, 99};
                 AtomicInteger atomicIdx = new AtomicInteger(-1);
+                int[] nScores = new int[accs.length];
+                //*
                 int[] nGekis = new int[accs.length];
                 int[] n300 = new int[accs.length];
                 double[] nGekisW = new double[accs.length];
                 double[] n300W = new double[accs.length];
+                //*/
+                /*
+                double[] ratios = new double[accs.length];
+                double[] ratiosW = new double[accs.length];
+                //*/
                 for (OsuScore s : scores) {
                     atomicIdx.incrementAndGet();
                     double acc = utilOsu.getAcc(s, p.getMode());
                     for (int i = 0; i < accs.length; i++) {
                         if (acc > accs[i]) {
+                            //*
                             nGekis[i] += s.getGekis();
                             n300[i] += s.getHit300();
                             nGekisW[i] += Math.pow(0.95, atomicIdx.get()) * s.getGekis();
                             n300W[i] += Math.pow(0.95, atomicIdx.get()) * s.getHit300();
+                            //*/
+                            /*
+                            ratios[i] += (double)s.getGekis() / s.getHit300();
+                            ratiosW[i] += Math.pow(0.95, atomicIdx.get()) * ((double)s.getGekis() / s.getHit300());
+                            //*/
+                            nScores[i]++;
                         }
                     }
                 }
@@ -412,11 +427,11 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
-                StringBuilder desc = new StringBuilder("__**Min acc: Avg ratio | Weighted avg ratio:**__");
+                StringBuilder desc = new StringBuilder("__**Mi acc: #Scores | Avg | Weighted avg:**__");
                 for (int i = 0; i < accs.length; i++) {
-                    desc.append("\n**>").append(accs[i]).append("% :** ")
-                            .append((double)(Math.round(100 * ((double)nGekis[i]/n300[i]))) / 100).append(" | ")
-                            .append((double)(Math.round(100 * (nGekisW[i]/n300W[i]))) / 100);
+                    desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
+                            .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
+                            .append((double)(Math.round(100 * nGekisW[i]/n300W[i])) / 100);
                 }
                 eb.setDescription(desc.toString());
                 break;

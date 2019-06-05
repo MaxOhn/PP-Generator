@@ -100,22 +100,24 @@ public class Main {
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
-        commandHandler.commands.put("trackedstreams", new cmdTrackedStreams());
         commandHandler.commands.put("removestream", new cmdRemoveStream());
+        commandHandler.commands.put("trackedstreams", new cmdTrackedStreams());
 
         // fun
+        commandHandler.commands.put("ding", new cmdDing());
         commandHandler.commands.put("dance", new cmdDance());
         commandHandler.commands.put("lyrics", new cmdLyrics());
+        commandHandler.commands.put("catchit", new cmdCatchit());
+        commandHandler.commands.put("1273", new cmdRockerfeller());
+        commandHandler.commands.put("flamingo", new cmdFlamingo());
+        commandHandler.commands.put("bombsaway", new cmdBombsAway());
         commandHandler.commands.put("fireflies", new cmdFireflies());
         commandHandler.commands.put("pretender", new cmdPretender());
-        commandHandler.commands.put("fireandflames", new cmdFireAndFlames());
-        commandHandler.commands.put("catchit", new cmdCatchit());
-        commandHandler.commands.put("flamingo", new cmdFlamingo());
-        commandHandler.commands.put("ding", new cmdDing());
         commandHandler.commands.put("brainpower", new cmdBrainpower());
-        commandHandler.commands.put("bombsaway", new cmdBombsAway());
         commandHandler.commands.put("saygoodbye", new cmdSayGoodbye());
         commandHandler.commands.put("tijdmachine", new cmdTijdmachine());
+        commandHandler.commands.put("rockerfeller", new cmdRockerfeller());
+        commandHandler.commands.put("fireandflames", new cmdFireAndFlames());
 
         // utility
         commandHandler.commands.put("devtool", new cmdDevTool());

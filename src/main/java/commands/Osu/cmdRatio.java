@@ -42,13 +42,6 @@ public class cmdRatio implements INumberedCommand {
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
 
-        /*
-        boolean weighted = argList.stream().anyMatch(arg -> arg.equals("-w") || arg.equals("-weighted"));
-        int delIndex = Math.max(argList.indexOf("-w"), argList.indexOf("-weighted"));
-        if (delIndex > -1)
-            argList.remove(delIndex);
-        //*/
-
         GameMode mode = GameMode.MANIA;
 
         String name;
@@ -89,6 +82,7 @@ public class cmdRatio implements INumberedCommand {
             return;
         }
         new BotMessage(event, BotMessage.MessageType.RATIO).user(user).mode(mode).osuscores(scores).buildAndSend();
+        number = 100;
     }
 
     @Override
