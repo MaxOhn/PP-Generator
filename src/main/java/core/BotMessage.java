@@ -14,6 +14,7 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
+import org.apache.log4j.Logger;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -24,7 +25,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -336,7 +336,7 @@ public class BotMessage {
                     if (!descr.toString().equals("")) descr.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
                     descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **[").append(s.getUsername())
-                            .append("](https://osu.ppy.sh/u/").append(s.getUsername()).append(")**: ")
+                            .append("](https://osu.ppy.sh/u/").append(s.getUsername().replaceAll(" ", "%20")).append(")**: ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
                             .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
@@ -388,7 +388,7 @@ public class BotMessage {
                 mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
                 int[] accs = new int[] {0, 90, 95, 97, 99};
-                AtomicInteger atomicIdx = new AtomicInteger(-1);
+                double factor = 1;
                 int[] nScores = new int[accs.length];
                 //*
                 int[] nGekis = new int[accs.length];
@@ -401,22 +401,22 @@ public class BotMessage {
                 double[] ratiosW = new double[accs.length];
                 //*/
                 for (OsuScore s : scores) {
-                    atomicIdx.incrementAndGet();
                     double acc = utilOsu.getAcc(s, p.getMode());
                     for (int i = 0; i < accs.length; i++) {
                         if (acc > accs[i]) {
                             //*
                             nGekis[i] += s.getGekis();
                             n300[i] += s.getHit300();
-                            nGekisW[i] += Math.pow(0.95, atomicIdx.get()) * s.getGekis();
-                            n300W[i] += Math.pow(0.95, atomicIdx.get()) * s.getHit300();
+                            nGekisW[i] += factor * s.getGekis();
+                            n300W[i] += factor * s.getHit300();
                             //*/
                             /*
                             ratios[i] += (double)s.getGekis() / s.getHit300();
-                            ratiosW[i] += Math.pow(0.95, atomicIdx.get()) * ((double)s.getGekis() / s.getHit300());
+                            ratiosW[i] += factor * ratios[i];
                             //*/
                             nScores[i]++;
                         }
+                        factor *= 0.95;
                     }
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
@@ -427,11 +427,14 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
-                StringBuilder desc = new StringBuilder("__**Mi acc: #Scores | Avg | Weighted avg:**__");
+                StringBuilder desc = new StringBuilder("__**Min acc: #Scores | Avg | Weighted avg:**__");
                 for (int i = 0; i < accs.length; i++) {
                     desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
                             .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
-                            .append((double)(Math.round(100 * nGekisW[i]/n300W[i])) / 100);
+                            .append((double)(Math.round(100 * nGekisW[i]/n300W[i])) / 100)
+                            //.append((double)(Math.round(100 * ratios[i]/scores.size())) / 100).append(" | ")
+                            //.append((double)(Math.round(100 * ratiosW[i]/scores.size())) / 100)
+                    ;
                 }
                 eb.setDescription(desc.toString());
                 break;
@@ -449,37 +452,48 @@ public class BotMessage {
             ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
                     .sendMessage(mb.build());
         }
-        switch (typeM) {
-            case RECENT:
-            case COMPARE:
-            case RECENTBEST:
-            case SINGLETOP:
-                ma.queue(message -> {
-                    try {
-                        Thread.sleep(shortFormatDelay);
-                        eb.clearFields().setTimestamp(null)
-                                .addField(new MessageEmbed.Field(getRank() + getModString() + "\t" +
-                                        NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
-                                        p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
-                                        "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
-                                        p.getMaxCombo() + "x ]\t " + hString, false));
-                        eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + p.getMap().getID());
-                        message.editMessage(eb.build()).queue();
-                    } catch (InterruptedException ignored) {}
-                });
-                break;
-            case LEADERBOARD:
-                ma = ma.addFile(flagFile, "flag.png");
-            case SCORES:
-            case TOPSCORES:
-            case TOPSOTARKS:
-            case SS:
-            case RATIO:
-            case NOCHOKESCORES: ma.queue(); break;
-            case COMMONSCORES:
-                ma.queue(msg -> FileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
-                break;
-            default: throw new IllegalStateException(Error.TYPEM.getMsg());
+        try {
+            switch (typeM) {
+                case RECENT:
+                case COMPARE:
+                case RECENTBEST:
+                case SINGLETOP:
+                    ma.queue(message -> {
+                        try {
+                            Thread.sleep(shortFormatDelay);
+                            eb.clearFields().setTimestamp(null)
+                                    .addField(new MessageEmbed.Field(getRank() + getModString() + "\t" +
+                                            NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
+                                            p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
+                                            "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
+                                            p.getMaxCombo() + "x ]\t " + hString, false));
+                            eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + p.getMap().getID());
+                            message.editMessage(eb.build()).queue();
+                        } catch (InterruptedException ignored) {
+                        }
+                    });
+                    break;
+                case LEADERBOARD:
+                    ma = ma.addFile(flagFile, "flag.png");
+                case SCORES:
+                case TOPSCORES:
+                case TOPSOTARKS:
+                case SS:
+                case RATIO:
+                case NOCHOKESCORES:
+                    ma.queue();
+                    break;
+                case COMMONSCORES:
+                    ma.queue(msg -> FileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
+                    break;
+                default:
+                    throw new IllegalStateException(Error.TYPEM.getMsg());
+            }
+        } catch (Exception e) {
+            Logger.getLogger(this.getClass()).error("Caught error while sending message:");
+            e.printStackTrace();
+            System.out.println(thumbFile);
+            System.out.println(flagFile);
         }
         if (runnable != null) runnable.run();
     }

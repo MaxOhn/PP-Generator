@@ -52,7 +52,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                 .collect(Collectors.toList());
 
         Pattern p = Pattern.compile("\\+[^!]*!?");
-        setStatusInitial();
+        setInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -69,9 +69,26 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                 status = cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            mods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
             argList.remove(mIdx);
         }
+        p = Pattern.compile("-[^!]*!");
+        mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            word = word.substring(1, word.length()-1);
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_flag(word.toUpperCase()))));
+            if (word.contains("nm"))
+                excludeNM = true;
+            argList.remove(mIdx);
+        }
+
         String mapID = "-1";
         if (argList.size() > 0)
             mapID = utilOsu.getIdFromString(argList.get(0));
@@ -124,9 +141,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         List<OsuScore> scores;
         try {
             scores = Main.customOsu.getScores(mapID).stream().limit(status != modStatus.WITHOUT ? 100 : 10)
-                    .filter(s -> status == modStatus.WITHOUT
-                            || (status == modStatus.EXACT && hasSameMods(s))
-                            || (status == modStatus.CONTAINS && includesMods(s)))
+                    .filter(this::isValidScore)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");

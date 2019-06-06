@@ -89,7 +89,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
 
         // Get the mods by checking for +...
         Pattern p = Pattern.compile("\\+[^!]*!?");
-        setStatusInitial();
+        setInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -106,7 +106,23 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 status = modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            mods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
+            argList.remove(mIdx);
+        }
+        p = Pattern.compile("-[^!]*!");
+        mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            word = word.substring(1, word.length()-1);
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_flag(word.toUpperCase()))));
+            if (word.contains("nm"))
+                excludeNM = true;
             argList.remove(mIdx);
         }
 
@@ -155,10 +171,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 .collect(Collectors.groupingBy(OsuScore::getBeatmapID))
                 .values()
                 .stream()
-                .filter(list -> list.size() >= compareAmount && (
-                        status == modStatus.WITHOUT ||
-                        (status == modStatus.EXACT && list.stream().allMatch(this::hasSameMods)) ||
-                        (status == modStatus.CONTAINS && list.stream().allMatch(this::includesMods))))
+                .filter(list -> list.size() >= compareAmount && list.stream().allMatch(this::isValidScore))
                 .sorted((a, b) -> Math.round(a.get(0).getPp() - b.get(0).getPp()))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

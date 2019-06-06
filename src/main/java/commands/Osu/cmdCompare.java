@@ -16,10 +16,7 @@ import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -52,8 +49,8 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
 
+        setInitial();
         Pattern p = Pattern.compile("\\+[^!]*!?");
-        setStatusInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -62,6 +59,7 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
             }
         }
         if (mIdx != -1) {
+            Collections.replaceAll(argList, "+nm", "+nm!");
             String word = argList.get(mIdx);
             if (word.contains("!")) {
                 status = modStatus.EXACT;
@@ -70,7 +68,23 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
                 status = modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            mods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
+            argList.remove(mIdx);
+        }
+        p = Pattern.compile("-[^!]*!");
+        mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            word = word.substring(1, word.length()-1);
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_flag(word.toUpperCase()))));
+            if (word.contains("nm"))
+                excludeNM = true;
             argList.remove(mIdx);
         }
 
@@ -113,30 +127,36 @@ public class cmdCompare extends cmdModdedCommand implements INumberedCommand {
                     Integer.parseInt(mapID)).setMode(getMode()).setUserName(name).setLimit(1).build()
             );
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve score of `" + name + "` on map id `" + mapID + "`");
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve score of `" + name
+                    + "` on map id `" + mapID + "`");
             return;
         }
         if (scores.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name + "` on beatmap id `" +
-                    mapID + "`");
+            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name +
+                    "` on beatmap id `" + mapID + "`");
             return;
         }
 
         OsuScore score = scores.get(0);
-        if (status != modStatus.WITHOUT) {
-            Iterator<OsuScore> it = scores.iterator();
-            while (it.hasNext() && (
-                    (status == modStatus.EXACT && !hasSameMods(score)) ||
-                    (status == modStatus.CONTAINS && !includesMods(score)))) {
-                score = it.next();
+        Iterator<OsuScore> it = scores.iterator();
+        while (it.hasNext() && !isValidScore(score))
+            score = it.next();
+        if (!isValidScore(score)) {
+            StringBuilder msg = new StringBuilder("Could not find any scores of `")
+                    .append(name).append("` on beatmap id `").append(mapID).append("`");
+            if (includedMods.length > 0 || excludedMods.size() > 0 || excludeNM) {
+                msg.append(" considering the given mods");
+                if (includedMods.length > 0)
+                    msg.append(" (+").append(abbrvModSet(includedMods)).append(")");
+                if (excludedMods.size() > 0 || excludeNM) {
+                    msg.append(" (-").append(abbrvModSet(excludedMods));
+                    if (excludeNM)
+                        msg.append("NM");
+                    msg.append(")");
+                }
             }
-            if ((status == modStatus.EXACT && !hasSameMods(score)) ||
-                    (status == modStatus.CONTAINS && !includesMods(score))) {
-                String msgEnd = mods.length == 0 ? " without mods" : " with mods `" + abbrvModSet(mods) + "`";
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
-                        + "` on beatmap id `" + mapID + "`" + msgEnd);
-                score = scores.iterator().next();
-            }
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(msg.toString());
+            score = scores.iterator().next();
         }
         OsuUser user;
         try {

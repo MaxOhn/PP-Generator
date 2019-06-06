@@ -68,7 +68,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         }
 
         Pattern p = Pattern.compile("\\+[^!]*!?");
-        setStatusInitial();
+        setInitial();
         int mIdx = -1;
         for (String s : argList) {
             if (p.matcher(s).matches()) {
@@ -85,7 +85,23 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                 status = cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            mods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
+            argList.remove(mIdx);
+        }
+        p = Pattern.compile("-[^!]*!");
+        mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            word = word.substring(1, word.length()-1);
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_flag(word.toUpperCase()))));
+            if (word.contains("nm"))
+                excludeNM = true;
             argList.remove(mIdx);
         }
 
@@ -115,15 +131,14 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         }
         List<OsuScore> scores;
         try {
-            scores = user.getTopScores(status != modStatus.WITHOUT ? 100 : getAmount()).get();
+            scores = user.getTopScores(status != modStatus.WITHOUT || excludeNM || excludedMods.size() > 0 ? 100 : getAmount()).get();
         } catch (OsuAPIException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
         for (OsuScore score : scores) {
-            if ((status == modStatus.EXACT && !hasSameMods(score))
-                    || (status == modStatus.CONTAINS && !includesMods(score)))
+            if (!isValidScore(score))
                 continue;
             OsuBeatmap map;
             try {
@@ -152,14 +167,13 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             scores = scores.stream()
                     .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                     .collect(Collectors.toList());
-        } else if (status != modStatus.WITHOUT) {
+        } else if (status != modStatus.WITHOUT || excludeNM || excludedMods.size() > 0) {
             scores = scores.stream()
-                    .filter(s -> (status == modStatus.EXACT && hasSameMods(s))
-                            || (status == modStatus.CONTAINS && includesMods(s)))
+                    .filter(this::isValidScore)
                     .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT));
+            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM));
             return;
         }
         new BotMessage(event, getMessageType()).user(user).osuscores(scores)

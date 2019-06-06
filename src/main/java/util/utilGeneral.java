@@ -115,6 +115,7 @@ public class utilGeneral {
     }
 
     public  static boolean isSubarray(Object[] smaller, Object[] larger) {
+        if (smaller.length == 0) return true;
         int i = 0, j = 0;
         while (i < smaller.length && j < larger.length) {
             if (smaller[i] == larger[j]) {
