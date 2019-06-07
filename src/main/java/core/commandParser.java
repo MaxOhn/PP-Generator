@@ -34,7 +34,9 @@ public class commandParser {
 
     // This function processes the command and returns commandContainer
     public static commandContainer parser(String raw, MessageReceivedEvent event) {
-        String beheaded = raw.replaceFirst(statics.prefix,"");
+        String beheaded = raw.startsWith(statics.prefix)
+                ? raw.replaceFirst(statics.prefix,"")
+                : raw.replaceFirst(statics.prefixAlt, "");
         String[] splitbeheaded = beheaded.split(" ");
         String invoke = splitbeheaded[0];
         int number = -1;

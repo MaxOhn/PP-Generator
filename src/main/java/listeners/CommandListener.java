@@ -9,7 +9,7 @@ import main.java.util.statics;
 public class CommandListener extends ListenerAdapter {
 
     public void onMessageReceived(MessageReceivedEvent event) {
-        if(event.getMessage().getContentRaw().startsWith(statics.prefix)
+        if((event.getMessage().getContentRaw().startsWith(statics.prefix) || event.getMessage().getContentRaw().startsWith(statics.prefixAlt))
                 && !event.getMessage().getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) {
             commandHandler.handleCommand(commandParser.parser(event.getMessage().getContentRaw(), event));
         }

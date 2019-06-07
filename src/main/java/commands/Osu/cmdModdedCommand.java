@@ -49,6 +49,11 @@ public abstract class cmdModdedCommand implements ICommand {
         return Arrays.equals(s.getEnabledMods(), includedMods);
     }
     boolean excludesMods(OsuScore s) {
-        return Arrays.stream(s.getEnabledMods()).noneMatch(m -> excludedMods.contains(m));
+        return !excludedMods.stream().allMatch(m -> {
+            for (GameMod mod : s.getEnabledMods())
+                if (m == mod)
+                    return true;
+            return false;
+        });
     }
 }
