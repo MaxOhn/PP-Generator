@@ -265,7 +265,7 @@ public class BotMessage {
                             + u.getCountry()
                             + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                     "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
-                thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
+                thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 String mods;
                 StringBuilder description = new StringBuilder();
                 idx = 1;
@@ -315,7 +315,7 @@ public class BotMessage {
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
-                flagFile = new File(secrets.flagPath + "BE.png");
+                flagFile = new File(statics.flagPath + "BE.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
                                 + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
@@ -427,7 +427,7 @@ public class BotMessage {
                                 + u.getCountry()
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
-                thumbFile = new File(secrets.flagPath + u.getCountry() + ".png");
+                thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 StringBuilder desc = new StringBuilder("__**Min acc: #Scores | Avg | Weighted avg:**__");
                 for (int i = 0; i < accs.length; i++) {
                     desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")

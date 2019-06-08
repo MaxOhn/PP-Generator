@@ -27,4 +27,8 @@ public class statics {
             : "./src/main/resources/PerformanceCalculator/PerformanceCalculator.dll";
 
     public static final String execPrefix = secrets.RELEASE ? "" : "cmd /c ";
+
+    public static final String flagPath = secrets.RELEASE
+            ? statics.raspResources + "flags/"
+            : "./src/main/resources/flags/";
 }

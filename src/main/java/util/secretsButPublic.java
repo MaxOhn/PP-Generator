@@ -2,16 +2,18 @@ package main.java.util;
 
 /*
  *  !!!
- *  Rename this class and file to "secrets" instead of "secretsButPublic"
+ *  Copy this file, then rename it and the class to "secrets" instead of "secretsButPublic"
+ *  Then fill in the variables
  *  !!!
  */
 public class secretsButPublic {
 
     // Whether the compiled program runs on my pc or my raspberry (false -> 'debug mode')
-    public static final boolean RELEASE = true;
+    public static final boolean RELEASE = false;
 
-    // I have my database, you should probably turn it to false
-    public static final boolean WITH_DB = true;
+    // Unless you've set up your own database to store various data like discord-osu links, beatmap info,
+    // tracked twitch streamers, ... this should stay false
+    public static final boolean WITH_DB = false;
 
     // Provided by discord
     public static final String discordToken = "";
@@ -42,11 +44,9 @@ public class secretsButPublic {
     public static final String mainGuildID = "";
 
     // Path to the directory that contains all the .osu beatmap files
+    // Can be an empty folder in which all requested maps will be saved
     public static final String mapPath = "";
 
     // Only required if WITH_DB is true, path to the database
     public static final String dbPath = "";
-
-    // Path to the directory containing all flag images
-    public static final String flagPath = "";
 }

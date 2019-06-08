@@ -22,15 +22,18 @@ I might create a spreadsheet that contains all the commands in the future, I'll 
 
 
 
-Simply clone this repository via `>git clone --recursive-submodules https://github.com/MaxOhn/PP-Generator.git` and start working on it yourself.
+Simply clone this repository via `>git clone --recurse-submodules https://github.com/MaxOhn/PP-Generator.git` and start working on it yourself.
 
 Here are some other things to consider:
 
-- To access the osu! API I'm using a modified version of the [osu4j](https://github.com/oopsjpeg/osu4j) wrapper, which is included as submodule in here so if you clone this, dont forget the `--recursive-submodules` argument.
+- The file `/util/secrets.java` which contains variables such as discord token, osu api key, twitch client id, file paths, ... is naturally ommitted for this repository. Instead, there is a file `/util/secretsButPublic.java` that demonstrates which variables are required so you have to add them yourself.
+
+- The variable `WITH_DB` in `secrets.java` should stay false until you've setup your own database containing discord-osu links, beatmap info, tracked twitch streams, ...
+
+- To access the osu! API I'm using a modified version of the [osu4j](https://github.com/oopsjpeg/osu4j) wrapper, which is included as submodule in here so if you clone this, dont forget the `--recurse-submodules` argument.
 
 - Calculating the [performance points](https://osu.ppy.sh/help/wiki/Performance_Points) of a map/play is done via slight modification (to get outputs that are easier to parse) of [osu-tools](https://github.com/ppy/osu-tools)' command line function which is included in the resources directory. Unfortunately, this tool currently does not provide CtB pp calculation, and also its mania calculation is slightly off.
 
-- The file `/util/secrets.java` which contains variables such as discord token, osu api key, twitch client id, file paths, ... is naturally ommitted for this repository. Instead, there is a file `/util/secretsButPublic.java` that demonstrates which variables are required so you have to add them yourself.
 
 
 
