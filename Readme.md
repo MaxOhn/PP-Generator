@@ -26,6 +26,10 @@ Simply clone this repository via `>git clone --recurse-submodules https://github
 
 Here are some other things to consider:
 
+- .NET must be installed to access the `dotnet` command which is required for pp calculation
+
+- Your IDE might complain because of your JDK. I wrote everything on version 8 (1.8)
+
 - The file `/util/secrets.java` which contains variables such as discord token, osu api key, twitch client id, file paths, ... is naturally ommitted for this repository. Instead, there is a file `/util/secretsButPublic.java` that demonstrates which variables are required so you have to add them yourself.
 
 - The variable `WITH_DB` in `secrets.java` should stay false until you've setup your own database containing discord-osu links, beatmap info, tracked twitch streams, ...

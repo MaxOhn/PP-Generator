@@ -1041,14 +1041,6 @@
           }
         }
       },
-      "ppy.osu.Game.Resources/2019.128.0": {
-        "runtime": {
-          "lib/netstandard2.0/osu.Game.Resources.dll": {
-            "assemblyVersion": "2019.128.0.0",
-            "fileVersion": "2019.128.0.0"
-          }
-        }
-      },
       "ppy.osuTK.NS20/1.0.63": {
         "runtime": {
           "lib/netstandard2.0/osuTK.dll": {
@@ -1446,17 +1438,6 @@
           "System.Runtime": "4.3.0",
           "System.Runtime.Extensions": "4.3.0",
           "System.Threading": "4.3.0"
-        }
-      },
-      "System.Configuration.ConfigurationManager/4.4.0": {
-        "dependencies": {
-          "System.Security.Cryptography.ProtectedData": "4.4.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/System.Configuration.ConfigurationManager.dll": {
-            "assemblyVersion": "4.0.0.0",
-            "fileVersion": "4.6.25519.3"
-          }
         }
       },
       "System.Console/4.3.0": {
@@ -2044,22 +2025,6 @@
           "System.Threading.Tasks": "4.3.0"
         }
       },
-      "System.Security.Cryptography.ProtectedData/4.4.0": {
-        "runtime": {
-          "lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
-            "assemblyVersion": "4.0.2.0",
-            "fileVersion": "4.6.25519.3"
-          }
-        },
-        "runtimeTargets": {
-          "runtimes/win/lib/netstandard2.0/System.Security.Cryptography.ProtectedData.dll": {
-            "rid": "win",
-            "assetType": "runtime",
-            "assemblyVersion": "4.0.2.0",
-            "fileVersion": "4.6.25519.3"
-          }
-        }
-      },
       "System.Security.Cryptography.X509Certificates/4.3.0": {
         "dependencies": {
           "System.Collections": "4.3.0",
@@ -2263,8 +2228,7 @@
           "SharpCompress": "0.22.0",
           "SharpRaven": "2.4.0",
           "System.ComponentModel.Annotations": "4.5.0",
-          "ppy.osu.Framework": "2019.215.0",
-          "ppy.osu.Game.Resources": "2019.128.0"
+          "ppy.osu.Framework": "2019.215.0"
         },
         "runtime": {
           "osu.Game.dll": {}
@@ -2891,13 +2855,6 @@
       "path": "ppy.osu.framework.nativelibs/2019.208.0",
       "hashPath": "ppy.osu.framework.nativelibs.2019.208.0.nupkg.sha512"
     },
-    "ppy.osu.Game.Resources/2019.128.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-+e2D1DYkQ8YIrco/x2TWuEh3nhwARVsHGMDw0mup7dTBAMYxf4YP30otVQ5gDvud6/yL63OxxFYF/w07v6qT+Q==",
-      "path": "ppy.osu.game.resources/2019.128.0",
-      "hashPath": "ppy.osu.game.resources.2019.128.0.nupkg.sha512"
-    },
     "ppy.osuTK.NS20/1.0.63": {
       "type": "package",
       "serviceable": true,
@@ -3513,13 +3470,6 @@
       "sha512": "sha512-wCI1f+SJM2HVwHtVOt9aEOBSiYie7z/ipmU0/m9IV4VrKpS+bJP7dkCEMn8+/rl7V+eB/tKMSMEgxIGuYzT72g==",
       "path": "system.security.cryptography.primitives/4.3.0",
       "hashPath": "system.security.cryptography.primitives.4.3.0.nupkg.sha512"
-    },
-    "System.Security.Cryptography.ProtectedData/4.4.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-cJV7ScGW7EhatRsjehfvvYVBvtiSMKgN8bOVI0bQhnF5bU7vnHVIsH49Kva7i7GWaWYvmEzkYVk1TC+gZYBEog==",
-      "path": "system.security.cryptography.protecteddata/4.4.0",
-      "hashPath": "system.security.cryptography.protecteddata.4.4.0.nupkg.sha512"
     },
     "System.Security.Cryptography.X509Certificates/4.3.0": {
       "type": "package",
