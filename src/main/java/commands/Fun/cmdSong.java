@@ -4,6 +4,7 @@ import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
@@ -29,7 +30,7 @@ public abstract class cmdSong implements ICommand {
         boolean privateMsg = event.isFromType(ChannelType.PRIVATE);
         busyID = privateMsg ? event.getChannel().getId() : event.getGuild().getId();
         try {
-            if (!privateMsg && !DBProvider.getLyricsState(busyID)) {
+            if (!privateMsg && secrets.WITH_DB && !DBProvider.getLyricsState(busyID)) {
                 event.getTextChannel().sendMessage("The server's big boys have disabled song commands. " +
                         "Modify the settings via `" + statics.prefix + "lyrics`.").queue();
                 return false;

@@ -11,6 +11,7 @@ import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
@@ -58,6 +59,8 @@ public class cmdScores implements ICommand {
         }
         OsuBeatmap map;
         try {
+            if (!secrets.WITH_DB)
+                throw new SQLException();
             map = DBProvider.getBeatmap(Integer.parseInt(mapID));
         } catch (SQLException | ClassNotFoundException e) {
             try {
@@ -69,7 +72,8 @@ public class cmdScores implements ICommand {
                 return;
             }
             try {
-                DBProvider.addBeatmap(map);
+                if (secrets.WITH_DB)
+                    DBProvider.addBeatmap(map);
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }

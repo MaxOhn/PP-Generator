@@ -19,7 +19,8 @@ public class MemberJoinListener extends ListenerAdapter {
             try {
                 ZonedDateTime now = ZonedDateTime.now();
                 Main.memberHandler.addUncheckedUser(event.getUser().getId() + "", now);
-                DBProvider.addUncheckedUser(event.getUser().getId() + "", now);
+                if (secrets.WITH_DB)
+                    DBProvider.addUncheckedUser(event.getUser().getId() + "", now);
             } catch (ClassNotFoundException | SQLException e) {
                 logger.error("Error while adding unchecked user to DB:");
                 e.printStackTrace();

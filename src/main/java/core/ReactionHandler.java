@@ -1,5 +1,6 @@
 package main.java.core;
 
+import main.java.util.secrets;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionRemoveEvent;
@@ -15,7 +16,8 @@ public class ReactionHandler {
 
     public ReactionHandler() {
         try {
-            roleAssigns = DBProvider.getRoleAssigns();
+            if (secrets.WITH_DB)
+                roleAssigns = DBProvider.getRoleAssigns();
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not retrieve role assigns from DB:");
             e.printStackTrace();
@@ -25,7 +27,8 @@ public class ReactionHandler {
     public void addRoleAssign(int hash, String roleID) {
         roleAssigns.put(hash, roleID);
         try {
-            DBProvider.addRoleAssign(hash, roleID);
+            if (secrets.WITH_DB)
+                DBProvider.addRoleAssign(hash, roleID);
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not add role assign to DB:");
             e.printStackTrace();
@@ -35,7 +38,8 @@ public class ReactionHandler {
     public void removeRoleAssign(int hash) {
         roleAssigns.remove(hash);
         try {
-            DBProvider.removeRoleAssign(hash);
+            if (secrets.WITH_DB)
+                DBProvider.removeRoleAssign(hash);
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not remove role assign from DB:");
             e.printStackTrace();

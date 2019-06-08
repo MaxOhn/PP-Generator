@@ -2,6 +2,7 @@ package main.java.commands.Utility;
 
 import main.java.commands.PrivilegedCommand;
 import main.java.core.DBProvider;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.Permission;
@@ -16,6 +17,10 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        if (!secrets.WITH_DB) {
+            event.getTextChannel().sendMessage("This command has no use without database").queue();
+            return;
+        }
         if (args.length > 0 && (args[0].equals("-d") ||args[0].equals("-default"))) {
             try {
                 DBProvider.setAuthorityRoles(serverID, statics.authorities);
@@ -26,8 +31,8 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
             }
         } else if (args.length > 0 && (args[0].equals("-c") ||args[0].equals("-current"))) {
             try {
-                event.getTextChannel().sendMessage("Current authority roles: `[" +
-                        String.join(", ", DBProvider.getAuthorityRoles(serverID)) + "]`").queue();
+                event.getTextChannel().sendMessage("Current authority roles: `[" + String.join(", ",
+                        secrets.WITH_DB ? DBProvider.getAuthorityRoles(serverID) : statics.authorities) + "]`").queue();
             } catch (SQLException | ClassNotFoundException e) {
                 logger.error("Error while retrieving authorityRoles: " + e);
                 event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
@@ -78,7 +83,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "setauthorityroles -h` for more help)";
-        String roles = "smth went wrong, ping bade or smth";
+        String roles = secrets.WITH_DB ? "smth went wrong, ping bade or smth" : String.join(", ", statics.authorities);
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {

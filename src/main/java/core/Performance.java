@@ -137,20 +137,25 @@ public class Performance {
     public double getPpMaxDouble() {
         if (ppMax != 0) return ppMax;
         try {
+            if (!secrets.WITH_DB)
+                throw new IllegalArgumentException();
             this.ppMax = DBProvider.getPpRating(map.getID(), abbrvModSet(mods));
         } catch (IllegalAccessException e) {    // pp rating not yet calculated
             calculateMaxPp();
             try {
-                DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
+                if (secrets.WITH_DB)
+                    DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
                 e1.printStackTrace();
             }
         } catch (SQLException e) {              // map not in database
             try {
-                DBProvider.addMapPp(map.getID());
                 calculateMaxPp();
-                DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
+                if (secrets.WITH_DB) {
+                    DBProvider.addMapPp(map.getID());
+                    DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
+                }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
                 e1.printStackTrace();
@@ -345,20 +350,25 @@ public class Performance {
         if (modsImportant.isEmpty() && map.getDifficulty() != 0)
             return map.getDifficulty();
         try {
+            if (!secrets.WITH_DB)
+                throw new IllegalArgumentException();
             this.starRating = DBProvider.getStarRating(map.getID(), abbrvModSet(modsImportant));
         } catch (IllegalAccessException e) {    // star rating not yet calculated
             calculateStarRating(modsImportant);
             try {
-                DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
+                if (secrets.WITH_DB)
+                    DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();
             }
         } catch (SQLException e) {              // map not in database
             try {
-                DBProvider.addMapStars(map.getID());
                 calculateStarRating(modsImportant);
-                DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
+                if (secrets.WITH_DB) {
+                    DBProvider.addMapStars(map.getID());
+                    DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
+                }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();

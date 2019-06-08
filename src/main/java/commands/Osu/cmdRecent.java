@@ -13,6 +13,7 @@ import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -88,6 +89,8 @@ public class cmdRecent implements INumberedCommand {
         }
         OsuBeatmap map;
         try {
+            if (!secrets.WITH_DB)
+                throw new SQLException();
             map = DBProvider.getBeatmap(recent.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
             try {
@@ -99,7 +102,8 @@ public class cmdRecent implements INumberedCommand {
                 return;
             }
             try {
-                DBProvider.addBeatmap(map);
+                if (secrets.WITH_DB)
+                    DBProvider.addBeatmap(map);
             } catch (ClassNotFoundException | SQLException e1) {
                 e1.printStackTrace();
             }

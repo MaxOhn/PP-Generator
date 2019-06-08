@@ -9,6 +9,7 @@ import com.oopsjpeg.osu4j.backend.EndpointUserBests;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
 import main.java.core.*;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
@@ -84,6 +85,8 @@ public class cmdNoChoke implements ICommand {
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
                     OsuBeatmap map;
                     try {
+                        if (!secrets.WITH_DB)
+                            throw new SQLException();
                         map = DBProvider.getBeatmap(score.getBeatmapID());
                     } catch (SQLException | ClassNotFoundException e) {
                         try {
@@ -91,7 +94,8 @@ public class cmdNoChoke implements ICommand {
                                     new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(score.getBeatmapID()).setLimit(1).setMode(GameMode.STANDARD).build()
                             ).get(0);
                             try {
-                                DBProvider.addBeatmap(map);
+                                if (secrets.WITH_DB)
+                                    DBProvider.addBeatmap(map);
                             } catch (ClassNotFoundException | SQLException e2) {
                                 e2.printStackTrace();
                             }

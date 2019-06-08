@@ -52,7 +52,7 @@ public class cmdAddStream extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "addstream -h` for more help)";
-        String roles = "smth went wrong, ping bade or smth";
+        String roles = secrets.WITH_DB ? "smth went wrong, ping bade or smth" : String.join(", ", statics.authorities);
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {

@@ -41,7 +41,7 @@ public class TwitchHook {
 
     private void loadStreamers() {
         try {
-            streamers = DBProvider.getTwitch();
+                streamers = secrets.WITH_DB ? DBProvider.getTwitch() : new HashMap<>();
         } catch (SQLException | ClassNotFoundException e) {
             logger.error("Could not load streamers:");
             e.printStackTrace();
@@ -87,7 +87,8 @@ public class TwitchHook {
 
     public boolean addStreamer(String streamer, String channelID) {
         try {
-            DBProvider.addStreamer(streamer, channelID);
+            if (secrets.WITH_DB)
+                DBProvider.addStreamer(streamer, channelID);
             if (streamers.containsKey(streamer))
                 streamers.get(streamer).add(channelID);
             else
@@ -102,7 +103,8 @@ public class TwitchHook {
     public boolean removeStreamer(String streamer, String channelID) {
         boolean removedFromHashMap = false;
         try {
-            DBProvider.removeStreamer(streamer, channelID);
+            if (secrets.WITH_DB)
+                DBProvider.removeStreamer(streamer, channelID);
             if (streamers.keySet().contains(streamer) && streamers.get(streamer).contains(channelID)) {
                 if (streamers.get(streamer).size() == 1)
                     removedFromHashMap = streamers.remove(streamer, streamers.get(streamer));

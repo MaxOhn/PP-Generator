@@ -19,7 +19,8 @@ public class MemberHandler {
 
     public MemberHandler() {
         try {
-            uncheckedUsers = DBProvider.getUncheckedUsers();
+            if (secrets.WITH_DB)
+                uncheckedUsers = DBProvider.getUncheckedUsers();
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not retrieve unchecked users:");
             e.printStackTrace();
@@ -30,7 +31,8 @@ public class MemberHandler {
     public void addUncheckedUser(String discord, ZonedDateTime date) {
         uncheckedUsers.put(discord, date);
         try {
-            DBProvider.addUncheckedUser(discord, date);
+            if (secrets.WITH_DB)
+                DBProvider.addUncheckedUser(discord, date);
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not add unchecked user to DB:");
             e.printStackTrace();
@@ -40,7 +42,8 @@ public class MemberHandler {
     public void checkedUser(String discord) {
         uncheckedUsers.remove(discord);
         try {
-            DBProvider.removeUncheckedUser(discord);
+            if (secrets.WITH_DB)
+                DBProvider.removeUncheckedUser(discord);
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Could not remove unchecked user from DB:");
             e.printStackTrace();
@@ -56,7 +59,8 @@ public class MemberHandler {
                         .queue();
                 uncheckedUsers.remove(userID);
                 try {
-                    DBProvider.removeUncheckedUser(userID);
+                    if (secrets.WITH_DB)
+                        DBProvider.removeUncheckedUser(userID);
                 } catch (ClassNotFoundException | SQLException e1) {
                     logger.error("Could not remove kicked user from DB:");
                     e1.printStackTrace();

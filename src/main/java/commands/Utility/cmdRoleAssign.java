@@ -4,6 +4,7 @@ import main.java.commands.PrivilegedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.Role;
@@ -76,7 +77,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
     @Override
     public String help(int hCode) {
         String help = " (`" + statics.prefix + "roleassign -h` for more help)";
-        String roles = "smth went wrong, ping bade or smth";
+        String roles = secrets.WITH_DB ? "smth went wrong, ping bade or smth" : String.join(", ", statics.authorities);
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {

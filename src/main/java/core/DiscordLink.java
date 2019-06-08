@@ -1,5 +1,6 @@
 package main.java.core;
 
+import main.java.util.secrets;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
@@ -12,11 +13,11 @@ public class DiscordLink {
 
     public DiscordLink() {
         try {
-            this.link = DBProvider.getDiscosu();
+            link = secrets.WITH_DB ? DBProvider.getDiscosu() : new HashMap<>();
         } catch (SQLException | ClassNotFoundException e) {
             logger.error("Could not load links:");
             e.printStackTrace();
-            this.link = new HashMap<>();
+            link = new HashMap<>();
         }
     }
 
@@ -26,7 +27,8 @@ public class DiscordLink {
 
     public boolean addLink(String discordID, String osuname) {
         try {
-            DBProvider.addLink(discordID, osuname);
+            if (secrets.WITH_DB)
+                DBProvider.addLink(discordID, osuname);
             link.put(discordID, osuname);
             return true;
         } catch (ClassNotFoundException | SQLException e) {
@@ -38,7 +40,8 @@ public class DiscordLink {
 
     public boolean removeLink(String discordID) {
         try {
-            DBProvider.removeLink(discordID);
+            if (secrets.WITH_DB)
+                DBProvider.removeLink(discordID);
             link.remove(discordID);
             return true;
         } catch (SQLException | ClassNotFoundException e) {

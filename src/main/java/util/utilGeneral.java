@@ -64,7 +64,9 @@ public class utilGeneral {
     }
 
     public static boolean isAuthority(Member author, String serverID) throws SQLException, ClassNotFoundException {
-        List<String> authorityRoles = Arrays.asList(DBProvider.getAuthorityRoles(serverID));
+        List<String> authorityRoles = secrets.WITH_DB
+                ? Arrays.asList(DBProvider.getAuthorityRoles(serverID))
+                : Arrays.asList(statics.authorities);
         for(Role r : author.getRoles())
             if(r.hasPermission(Permission.ADMINISTRATOR) ||
                     (authorityRoles.contains(r.getName().toLowerCase())))

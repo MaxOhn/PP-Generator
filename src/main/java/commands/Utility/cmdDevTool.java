@@ -3,6 +3,7 @@ package main.java.commands.Utility;
 import main.java.commands.ICommand;
 import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.secrets;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -32,6 +33,10 @@ public class cmdDevTool implements ICommand {
                     event.getTextChannel().sendMessage("Second argument must be `count` or `avg`").queue();
                     break;
                 } else if (args[1].equals("count")) {
+                    if (!secrets.WITH_DB) {
+                        event.getTextChannel().sendMessage("Won't work without database").queue();
+                        break;
+                    }
                     try {
                         if (args.length == 2 || args[2].equals("all")) {
                             StringBuilder msg = new StringBuilder("Amount of saved pp values for all mods:\n");
@@ -47,6 +52,10 @@ public class cmdDevTool implements ICommand {
                         break;
                     }
                 } else if (args[1].equals("avg")) {
+                    if (!secrets.WITH_DB) {
+                        event.getTextChannel().sendMessage("Won't work without database").queue();
+                        break;
+                    }
                     try {
                         if (args.length == 2 || args[2].equals("all")) {
                             StringBuilder msg = new StringBuilder("Averages of saved pp values for all mods:\n");

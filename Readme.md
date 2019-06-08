@@ -24,8 +24,6 @@ I might create a spreadsheet that contains all the commands in the future, I'll 
 
 Simply clone this repository via `>git clone --recursive-submodules https://github.com/MaxOhn/PP-Generator.git` and start working on it yourself.
 
-One major part to consider is that the bot currently requires access to my local database so you might need to rewrite those parts. However, I'm planning on rewriting it myself soon^(TM) to make it easier for you.
-
 Here are some other things to consider:
 
 - To access the osu! API I'm using a modified version of the [osu4j](https://github.com/oopsjpeg/osu4j) wrapper, which is included as submodule in here so if you clone this, dont forget the `--recursive-submodules` argument.
