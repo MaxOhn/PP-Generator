@@ -2,6 +2,7 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.*;
 import main.java.util.secrets;
+import main.java.util.statics;
 import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
 
@@ -85,15 +86,16 @@ public class Performance {
         score.setCountmiss(0);
         this.acc = 0;
         score.setPp(0);
+        double ratio300 = (double)score.getHit300()/getNObjects();
         if (score.getHit300() == getNObjects())
             score.setRank(mods.contains(GameMod.HIDDEN) ? "XH" : "X");
-        else if ((double)score.getHit300()/getNObjects() > 0.9 && (double)score.getHit50()/getNObjects() < 0.01 && score.getMisses() == 0)
+        else if (ratio300 > 0.9 && (double)score.getHit50()/getNObjects() < 0.01 && score.getMisses() == 0)
             score.setRank(mods.contains(GameMod.HIDDEN) ? "SH" : "S");
-        else if (((double)score.getHit300()/getNObjects() > 0.8 && score.getMisses() == 0) || (double)score.getHit300()/getNObjects() > 0.9)
+        else if ((ratio300 > 0.8 && score.getMisses() == 0) || ratio300 > 0.9)
             score.setRank("A");
-        else if (((double)score.getHit300()/getNObjects() > 0.7 && score.getMisses() == 0) || (double)score.getHit300()/getNObjects() > 0.8)
+        else if ((ratio300 > 0.7 && score.getMisses() == 0) || ratio300 > 0.8)
             score.setRank("B");
-        else if ((double)score.getHit300()/getNObjects() > 0.6)
+        else if (ratio300 > 0.6)
             score.setRank("C");
         else
             score.setRank("D");
@@ -172,7 +174,7 @@ public class Performance {
                 default: modeStr = ""; break;
             }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
-            StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " simulate " + modeStr +
+            StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " simulate " + modeStr +
                     " " + secrets.mapPath + map.getID() + ".osu");
             for (GameMod mod: mods)
                 cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
@@ -238,7 +240,7 @@ public class Performance {
                 case MANIA: modeStr = "mania"; break;
                 default: modeStr = "osu"; break;
             }
-            StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath
+            StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath
                     + " simulate " + modeStr + " " + secrets.mapPath + map.getID() + ".osu");
             if (mode.getID() < 3) {
                 cmdLineString.append(" -a ").append(getAccDouble())
@@ -375,7 +377,7 @@ public class Performance {
     }
 
     private void calculateStarRating(Set<GameMod> m) {
-        StringBuilder cmdLineString = new StringBuilder(secrets.execPrefix + "dotnet " + secrets.perfCalcPath + " difficulty "
+        StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " difficulty "
                 + secrets.mapPath + map.getID() + ".osu");
         for (GameMod mod: m)
             cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));

@@ -9,6 +9,7 @@ import main.java.commands.Twitch.cmdTrackedStreams;
 import main.java.commands.Utility.*;
 import main.java.listeners.*;
 import main.java.util.secrets;
+import main.java.util.statics;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
@@ -32,7 +33,7 @@ public class Main {
     public static ReactionHandler reactionHandler;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
-        String log4jConfPath = secrets.log4jPath;
+        String log4jConfPath = statics.log4jPath;
         PropertyConfigurator.configure(log4jConfPath);
         builder = new JDABuilder((AccountType.BOT));
         login();
@@ -45,7 +46,7 @@ public class Main {
         builder.setToken(secrets.discordToken);
         builder.setAutoReconnect(true);
         builder.setStatus(OnlineStatus.ONLINE);
-        builder.setGame(Game.playing(secrets.gameName));
+        builder.setGame(Game.playing(statics.gameName));
     }
 
     private static void addListeners() {

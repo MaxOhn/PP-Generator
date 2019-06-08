@@ -5,6 +5,7 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
 import main.java.util.secrets;
+import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
@@ -149,8 +150,8 @@ public class BotMessage {
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
-                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(secrets.thumbPath + "bgNotFound.png");
+                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(statics.thumbPath + "bgNotFound.png");
                 date = score.getDate();
                 timestamp = date.toInstant();
                 switch (p.getMode()) {
@@ -201,8 +202,8 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 thumbFile = filesPrepared
-                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(secrets.thumbPath + "bgNotFound.png");
+                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(statics.thumbPath + "bgNotFound.png");
                 eb.setTitle(p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                                 + "]","https://osu.ppy.sh/b/" + p.getMap().getID());
                 List<OsuScore> orderedScores = new ArrayList<>(scores);
@@ -312,8 +313,8 @@ public class BotMessage {
                     mb.append("There appear to be no national scores on the specified map");
                 }
                 thumbFile = filesPrepared
-                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(secrets.thumbPath + "bgNotFound.png");
+                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(statics.thumbPath + "bgNotFound.png");
                 flagFile = new File(secrets.flagPath + "BE.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()

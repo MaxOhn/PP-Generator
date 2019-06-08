@@ -1,0 +1,3 @@
+[submodule "osu4j"]
+	path = osu4j
+	url = https://github.com/MaxOhn/osu4j.git
