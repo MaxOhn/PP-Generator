@@ -65,20 +65,18 @@ public class Main {
         commandHandler.commands.put("recent", new cmdRecent());
         commandHandler.commands.put("r", new cmdRecent());
         commandHandler.commands.put("rs", new cmdRecent());
-        commandHandler.commands.put("compare", new cmdCompare());
-        commandHandler.commands.put("c", new cmdCompare());
+        commandHandler.commands.put("compare", new cmdScores());
+        commandHandler.commands.put("c", new cmdScores());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
-        commandHandler.commands.put("comparetaiko", new cmdCompareTaiko());
-        commandHandler.commands.put("ct", new cmdCompareTaiko());
+        commandHandler.commands.put("ct", new cmdScores());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
-        commandHandler.commands.put("comparemania", new cmdCompareMania());
-        commandHandler.commands.put("cm", new cmdCompareMania());
+        commandHandler.commands.put("cm", new cmdScores());
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());

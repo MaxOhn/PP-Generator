@@ -54,9 +54,6 @@ public class MemberHandler {
         while (Main.jda == null);
         if (secrets.RELEASE) {
             try {
-                Main.jda.getGuildById(guildID).getController()
-                        .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
-                        .queue();
                 uncheckedUsers.remove(userID);
                 try {
                     if (secrets.WITH_DB)
@@ -65,6 +62,12 @@ public class MemberHandler {
                     logger.error("Could not remove kicked user from DB:");
                     e1.printStackTrace();
                 }
+                Main.jda.getGuildById(guildID).getController()
+                        .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
+                        .queue();
+                logger.info("Kicked unchecked user " + userID);
+            } catch (IllegalArgumentException e) {
+                logger.warn("User " + userID + " was no longer on the server " + guildID + ", could not be kicked");
             } catch (Exception e) {
                 logger.error("Could not kick user " + userID + " from server " + guildID + ":");
                 e.printStackTrace();
@@ -84,7 +87,6 @@ public class MemberHandler {
             for (String discord : uncheckedUsers.keySet()) {
                 if (now.isAfter(uncheckedUsers.get(discord).plusDays(uncheckedKickDelay))) {
                     kickUser(discord, secrets.mainGuildID);
-                    logger.info("Kicked unchecked user " + discord);
                 }
             }
         });
