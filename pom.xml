@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
     <groupId>com.bade</groupId>
     <artifactId>ppgenerator</artifactId>
     <version>4.7.4</version>
@@ -23,7 +22,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.6</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -36,7 +35,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.1.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -47,7 +46,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -84,12 +83,6 @@
         </repository>
     </repositories>
 
-    <modules>
-        <module>
-            osu4j
-        </module>
-    </modules>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -99,8 +92,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>3.8.1_441</version>
-            <scope>compile</scope>
+            <version>3.8.3_463</version>
         </dependency>
         <dependency>
             <groupId>com.mb3364</groupId>
@@ -138,14 +130,14 @@
             <version>27.1-jre</version>
         </dependency>
         <dependency>
-            <groupId>com.google.apis</groupId>
-            <artifactId>google-api-services-youtube</artifactId>
-            <version>v3-rev212-1.25.0</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.8</version>
         </dependency>
         <dependency>
             <groupId>com.oopsjpeg</groupId>
             <artifactId>osu4j</artifactId>
-            <version>2.0.1</version>
+            <version>2.1</version>
         </dependency>
     </dependencies>
 </project>
