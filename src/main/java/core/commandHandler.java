@@ -7,8 +7,7 @@ import net.dv8tion.jda.core.entities.ChannelType;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class commandHandler {
@@ -16,16 +15,15 @@ public class commandHandler {
     // commands contains all invoke words with their corresponding action
     static HashMap<String, ICommand> commands = new HashMap<>();
 
-    public static Set<String> getCommands() {
-        return commands.keySet();
+    public static Map<String, ICommand> getCommands() {
+        return commands;
     }
 
-    public static List<String> getCommands(utilGeneral.Category c) {
+    public static Map<String, ICommand> getCommands(utilGeneral.Category c) {
         return commands.keySet()
                 .stream()
                 .filter(invoke -> commands.get(invoke).getCategory() == c)
-                .sorted()
-                .collect(Collectors.toList());
+                .collect(Collectors.toMap(invoke -> invoke, invoke -> commands.get(invoke)));
     }
 
     public static void handleCommand(commandParser.commandContainer cmd) {

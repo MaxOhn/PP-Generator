@@ -10,6 +10,8 @@ import net.dv8tion.jda.core.MessageBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.awt.*;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class cmdHelp implements ICommand {
     @Override
@@ -26,8 +28,15 @@ public class cmdHelp implements ICommand {
                 .setColor(Color.green)
                 .setAuthor("Command list", "https://github.com/MaxOhn/PP-Generator");
         for (utilGeneral.Category c : utilGeneral.Category.values()) {
-            eb.addField("__**" + c.getName() + "**__",
-                    String.join(", ", commandHandler.getCommands(c)), false);
+            Map<String, ICommand> cmds = commandHandler.getCommands(c);
+            String fieldString = String.join(", ",
+                    cmds.keySet().stream()
+                            .collect(Collectors.groupingBy(invoke -> cmds.get(invoke).getClass()))
+                            .values().stream()
+                            .map(list -> list.size() == 1 ? list.get(0) : "[" + String.join(", ", list) + "]")
+                            .collect(Collectors.toList())
+            );
+            eb.addField("__**" + c.getName() + "**__", fieldString, false);
         }
         new BotMessage(event, BotMessage.MessageType.TEXT).send(mb.build(), eb.build());
     }

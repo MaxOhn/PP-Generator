@@ -1,6 +1,6 @@
 package main.java.commands.Fun;
 
-public class cmdRockerfeller extends cmdSong {
+public class cmdRockefeller extends cmdSong {
     @Override
     String[] getLyrics() {
         return new String[] {

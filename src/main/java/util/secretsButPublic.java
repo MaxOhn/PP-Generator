@@ -8,7 +8,8 @@ package main.java.util;
  */
 public class secretsButPublic {
 
-    // Whether the compiled program runs on my pc or my raspberry (false -> 'debug mode')
+    // false -> 'debug mode', paths like those in statics.java probably require you to keep this false for the start
+    // Feel free to check all usages of this variable to customize its use yourself
     public static final boolean RELEASE = false;
 
     // Unless you've set up your own database to store various data like discord-osu links, beatmap info,
@@ -30,6 +31,7 @@ public class secretsButPublic {
     // Only important if WITH_DB is true
     public static final String dbUser = "";
     public static final String dbPw = "";
+    public static final String dbPath = "";
 
     // Can be replaced for any other dev's discord id
     public static final String badewanne3ID = "";
@@ -46,7 +48,4 @@ public class secretsButPublic {
     // Path to the directory that contains all the .osu beatmap files
     // Can be an empty folder in which all requested maps will be saved
     public static final String mapPath = "";
-
-    // Only required if WITH_DB is true, path to the database
-    public static final String dbPath = "";
 }
