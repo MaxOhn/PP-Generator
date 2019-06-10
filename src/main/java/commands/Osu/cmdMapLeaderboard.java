@@ -66,9 +66,9 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             String word = argList.get(mIdx);
             if (word.contains("!")) {
                 status = cmdModdedCommand.modStatus.EXACT;
-                word = word.substring(1, word.length()-1);
+                word = word.substring(1, word.length() - 1);
             } else {
-                status = cmdModdedCommand.modStatus.CONTAINS;
+                status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
             includedMods = GameMod.get(mods_flag(word.toUpperCase()));
@@ -145,7 +145,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
 
         List<OsuScore> scores;
         try {
-            int limit = status != modStatus.WITHOUT ? 100 : 10;
+            int limit = status != modStatus.WITHOUT ? 50 : 10;
             switch (getType()) {
                 case NATIONAL:
                     scores = Main.customOsu.getScores(mapID).stream().limit(limit)

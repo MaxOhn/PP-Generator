@@ -86,13 +86,14 @@ public class TwitchHook {
     }
 
     public boolean addStreamer(String streamer, String channelID) {
+        String streamerLower = streamer.toLowerCase();
         try {
             if (secrets.WITH_DB)
-                DBProvider.addStreamer(streamer, channelID);
-            if (streamers.containsKey(streamer))
-                streamers.get(streamer).add(channelID);
+                DBProvider.addStreamer(streamerLower, channelID);
+            if (streamers.containsKey(streamerLower))
+                streamers.get(streamerLower).add(channelID);
             else
-                streamers.put(streamer, new ArrayList<>(Collections.singletonList(channelID)));
+                streamers.put(streamerLower, new ArrayList<>(Collections.singletonList(channelID)));
             return true;
         } catch (SQLException | ClassNotFoundException e) {
             logger.error("Could not add streamer \"" + streamer + "\": " + e);
@@ -101,15 +102,16 @@ public class TwitchHook {
     }
 
     public boolean removeStreamer(String streamer, String channelID) {
+        String streamerLower = streamer.toLowerCase();
         boolean removedFromHashMap = false;
         try {
             if (secrets.WITH_DB)
-                DBProvider.removeStreamer(streamer, channelID);
-            if (streamers.keySet().contains(streamer) && streamers.get(streamer).contains(channelID)) {
-                if (streamers.get(streamer).size() == 1)
-                    removedFromHashMap = streamers.remove(streamer, streamers.get(streamer));
+                DBProvider.removeStreamer(streamerLower, channelID);
+            if (streamers.keySet().contains(streamerLower) && streamers.get(streamerLower).contains(channelID)) {
+                if (streamers.get(streamerLower).size() == 1)
+                    removedFromHashMap = streamers.remove(streamerLower, streamers.get(streamerLower));
                 else
-                    removedFromHashMap = streamers.get(streamer).remove(channelID);
+                    removedFromHashMap = streamers.get(streamerLower).remove(channelID);
             }
             return removedFromHashMap;
         } catch (SQLException | ClassNotFoundException e) {

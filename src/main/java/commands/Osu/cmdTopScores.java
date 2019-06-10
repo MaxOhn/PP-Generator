@@ -83,9 +83,9 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             String word = argList.get(mIdx);
             if (word.contains("!")) {
                 status = cmdModdedCommand.modStatus.EXACT;
-                word = word.substring(1, word.length()-1);
+                word = word.substring(1, word.length() - 1);
             } else {
-                status = cmdModdedCommand.modStatus.CONTAINS;
+                status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
             includedMods = GameMod.get(mods_flag(word.toUpperCase()));

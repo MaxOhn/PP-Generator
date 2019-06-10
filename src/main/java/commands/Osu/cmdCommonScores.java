@@ -101,10 +101,10 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         if (mIdx != -1) {
             String word = argList.get(mIdx);
             if (word.contains("!")) {
-                status = modStatus.EXACT;
-                word = word.substring(1, word.length()-1);
+                status = cmdModdedCommand.modStatus.EXACT;
+                word = word.substring(1, word.length() - 1);
             } else {
-                status = modStatus.CONTAINS;
+                status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
             includedMods = GameMod.get(mods_flag(word.toUpperCase()));
