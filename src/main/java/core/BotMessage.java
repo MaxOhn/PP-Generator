@@ -315,11 +315,10 @@ public class BotMessage {
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
-                flagFile = new File(statics.flagPath + "BE.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
                                 + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
-                        "https://osu.ppy.sh/b/" + p.getMap().getID(), "attachment://flag.png");
+                        "https://osu.ppy.sh/b/" + p.getMap().getID(), "https://a.ppy.sh/" + scores.get(0).getUserID());
                 String comboDisplay;
                 StringBuilder descr = new StringBuilder();
                 idx = 1;
@@ -475,7 +474,6 @@ public class BotMessage {
                     });
                     break;
                 case LEADERBOARD:
-                    ma = ma.addFile(flagFile, "flag.png");
                 case SCORES:
                 case TOPSCORES:
                 case TOPSOTARKS:

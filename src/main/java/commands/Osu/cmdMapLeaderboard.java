@@ -4,6 +4,8 @@ import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.backend.EndpointScores;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -20,6 +22,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -144,9 +147,25 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
 
         List<OsuScore> scores;
         try {
-            scores = Main.customOsu.getScores(mapID).stream().limit(status != modStatus.WITHOUT ? 100 : 10)
-                    .filter(this::isValidScore)
-                    .collect(Collectors.toList());
+            int limit = status != modStatus.WITHOUT ? 100 : 10;
+            switch (getType()) {
+                case NATIONAL:
+                    scores = Main.customOsu.getScores(mapID).stream().limit(limit)
+                            .filter(this::isValidScore)
+                            .collect(Collectors.toList());
+                    break;
+                case GLOBAL:
+                    scores = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(Integer.parseInt(mapID)).setLimit(limit).build())
+                            .stream()
+                            .filter(this::isValidScore)
+                            .collect(Collectors.toList());
+                    for (OsuScore s : scores) {
+                        s.setUsername(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).getUsername());
+                    }
+                    break;
+                default:
+                    scores = new ArrayList<>();
+            }
         } catch (IOException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");
             e.printStackTrace();
@@ -180,5 +199,14 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
     public INumberedCommand setNumber(int number) {
         this.number = number;
         return this;
+    }
+
+    protected enum lbType {
+        NATIONAL,
+        GLOBAL
+    }
+
+    protected lbType getType() {
+        return lbType.NATIONAL;
     }
 }

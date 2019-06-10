@@ -93,6 +93,8 @@ public class Main {
         commandHandler.commands.put("ss", new cmdSS());
         commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
         commandHandler.commands.put("lb", new cmdMapLeaderboard());
+        commandHandler.commands.put("glb", new cmdGlobalLeaderboard());
+        commandHandler.commands.put("globallb", new cmdGlobalLeaderboard());
         commandHandler.commands.put("common", new cmdCommonScores());
         commandHandler.commands.put("ratio", new cmdRatio());
         commandHandler.commands.put("ratios", new cmdRatio());
