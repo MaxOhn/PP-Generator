@@ -4,8 +4,6 @@ import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
-import com.oopsjpeg.osu4j.backend.EndpointScores;
-import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -155,13 +153,9 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                             .collect(Collectors.toList());
                     break;
                 case GLOBAL:
-                    scores = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(Integer.parseInt(mapID)).setLimit(limit).build())
-                            .stream()
+                    scores = Main.customOsu.getScores(mapID, false).stream().limit(limit)
                             .filter(this::isValidScore)
                             .collect(Collectors.toList());
-                    for (OsuScore s : scores) {
-                        s.setUsername(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).getUsername());
-                    }
                     break;
                 default:
                     scores = new ArrayList<>();
@@ -179,8 +173,9 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         String help = " (`" + statics.prefix + "leaderboard -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "leaderboard[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>]` to make me show the beatmap's "
+                return "Enter `" + statics.prefix + "leaderboard[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me show the beatmap's "
                         + " national top 10 scores."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nBeatmap urls from both the new and old website are supported."
                         + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
             case 1:

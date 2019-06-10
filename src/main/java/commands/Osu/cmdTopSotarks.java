@@ -37,9 +37,9 @@ public class cmdTopSotarks extends cmdTopScores {
         String help = " (`" + statics.prefix + "topsotarks -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topsotarks [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 scores"
-                        + " on any Sotarks maps.\nIf no player name specified, your discord must be linked to an osu profile via `"
-                        + statics.prefix + "link <osu name>" + "`";
+                return "Enter `" + statics.prefix + "topsotarks [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top 5 scores on any Sotarks maps."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
+                        + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
             case 2:

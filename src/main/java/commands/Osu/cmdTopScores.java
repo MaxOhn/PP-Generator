@@ -213,9 +213,8 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         String help = " (`" + statics.prefix + "topscores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]]` to make me list the user's top 5 scores."
-                        + "\n If `!` is added to the mods, e.g. `+hd!`, I will only choose scores that contain exactly HD as mod, without `!`"
-                        + " I will choose scores that at least contain HD e.g. also HDHR scores."
+                return "Enter `" + statics.prefix + "topscores [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top 5 scores."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

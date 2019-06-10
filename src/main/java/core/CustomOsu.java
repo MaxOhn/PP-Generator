@@ -25,12 +25,12 @@ import java.util.Collection;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class CustomRequester {
+public class CustomOsu {
 
     private HttpClient client;
     private RateLimiter limiter;
 
-    public CustomRequester() {
+    public CustomOsu() {
         this.limiter = RateLimiter.create(0.60);
         CookieStore cookieStore = new BasicCookieStore();
         BasicClientCookie cookie = new BasicClientCookie("osu_session", secrets.osu_session);
@@ -41,10 +41,13 @@ public class CustomRequester {
                 .setDefaultCookieStore(cookieStore)
                 .build();
     }
-
     public Collection<OsuScore> getScores(String mapID) throws IOException {
+        return getScores(mapID, true);
+    }
+
+    public Collection<OsuScore> getScores(String mapID, boolean national) throws IOException {
         limiter.acquire();
-        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?type=country");
+        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores" + (national ? "?type=country" : ""));
         HttpResponse response = client.execute(getRequest);
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new IOException("No valid response from server:\n" + response.getEntity().toString());

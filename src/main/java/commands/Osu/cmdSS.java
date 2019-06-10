@@ -37,7 +37,8 @@ public class cmdSS extends cmdTopScores {
         String help = " (`" + statics.prefix + "ss -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "ss [-m <s/t/c/m for mode>] [osu name]` to make me list the user's top 5 SS scores."
+                return "Enter `" + statics.prefix + "ss [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top 5 SS scores."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `"
                         + statics.prefix + "link <osu name>" + "`";
             case 1:

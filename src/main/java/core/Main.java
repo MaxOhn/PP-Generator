@@ -25,7 +25,7 @@ public class Main {
     private static JDABuilder builder;
     public static JDA jda;
     public static Osu osu;
-    public static CustomRequester customOsu;
+    public static CustomOsu customOsu;
     public static TwitchHook twitch;
     public static DiscordLink discLink;
     public static HashSet<String> runningLyrics;

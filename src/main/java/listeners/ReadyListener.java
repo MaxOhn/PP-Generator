@@ -15,8 +15,7 @@ public class ReadyListener extends ListenerAdapter {
         Logger logger = Logger.getLogger(this.getClass());
         logger.info("API is ready!");
         Main.osu = Osu.getAPI(secrets.osuAPIkey);
-        Main.osu.setRateLimiter(1.5);
-        Main.customOsu = new CustomRequester();
+        Main.customOsu = new CustomOsu();
         if (secrets.RELEASE)
             Main.twitch = new TwitchHook();
         Main.discLink = new DiscordLink();

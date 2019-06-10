@@ -212,13 +212,12 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         String help = " (`" + statics.prefix + "common -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "common <osu name 1> [osu name 2 [ osu name 3 ...]] [-m <s/t/c/m for mode>] [+<nm/hd/nfeznc/...>[!]]` to make "
+                return "Enter `" + statics.prefix + "common <osu name 1> [osu name 2 [ osu name 3 ...]] [-m <s/t/c/m for mode>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make "
                         + "me list the maps appearing in all given player's top 100 scores.\nIf you're not linked via `"
                         + statics.prefix + "link <osu name>" + "`, you must specify at least two names, otherwise I compare "
                         + "your linked account with the specified name.\n**User names that contain spaces must be "
-                        + "encapsulated with \"** e.g. \"nathan on osu"
-                        + "\nIf `!` is added to the mods, e.g. `+hd!`, I will only choose scores that contain exactly HD as mod, without `!`"
-                        + " I will choose scores that at least contain HD e.g. also HDHR scores.";
+                        + "encapsulated with \"** e.g. \"nathan on osu\""
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods.";
             case 1:
                 return "Either specify an second user name or link your discord to an osu profile via `" + statics.prefix
                         + "link <osu name>" + "` so that I compare you account with the specified name" + help;
