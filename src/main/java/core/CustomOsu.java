@@ -2,6 +2,7 @@ package main.java.core;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
@@ -18,12 +19,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,12 +47,19 @@ public class CustomOsu {
     }
 
     public List<String> getRankings() throws IOException {
-        return getRankings("");
+        return getRankings(GameMode.STANDARD, "");
     }
 
-    public List<String> getRankings(String countryShort) throws IOException {
+    public List<String> getRankings(GameMode mode, String countryShort) throws IOException {
         limiter.acquire();
-        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/rankings/osu/performance?country=" + countryShort);
+        String modeStr;
+        switch (mode) {
+            case TAIKO: modeStr = "taiko"; break;
+            case MANIA: modeStr = "mania"; break;
+            case CATCH_THE_BEAT: modeStr = "fruits"; break;
+            default: modeStr = "osu"; break;
+        }
+        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/rankings/" + modeStr + "/performance?country=" + countryShort);
         HttpResponse response = client.execute(getRequest);
         String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Document doc = Jsoup.parse(responseStr);

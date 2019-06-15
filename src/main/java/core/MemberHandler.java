@@ -1,6 +1,7 @@
 package main.java.core;
 
 import com.google.common.collect.BiMap;
+import com.oopsjpeg.osu4j.GameMode;
 import main.java.util.secrets;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -110,9 +112,16 @@ public class MemberHandler {
                 e.printStackTrace();
                 return;
             }
-            List<String> topPlayers;
+            int TOP_OSU = 10;
+            int TOP_TAIKO = 3;
+            int TOP_CTB = 3;
+            int TOP_MANIA = 5;
+            HashSet<String> topPlayers = new HashSet<>();
             try {
-                topPlayers = Main.customOsu.getRankings("be").subList(0, 10);
+                topPlayers.addAll(Main.customOsu.getRankings(GameMode.STANDARD, "be").subList(0, TOP_OSU));
+                topPlayers.addAll(Main.customOsu.getRankings(GameMode.TAIKO, "be").subList(0, TOP_TAIKO));
+                topPlayers.addAll(Main.customOsu.getRankings(GameMode.CATCH_THE_BEAT, "be").subList(0, TOP_CTB));
+                topPlayers.addAll(Main.customOsu.getRankings(GameMode.MANIA, "be").subList(0, TOP_MANIA));
             } catch (IOException e) {
                 logger.error("Could not retrieve rankings:");
                 e.printStackTrace();
@@ -132,7 +141,9 @@ public class MemberHandler {
                 }
             }
             for (String player : topPlayers) {
-                Member member = mainGuild.getMemberById(links.inverse().get(player));
+                String discordID = links.inverse().get(player);
+                if (discordID == null) continue;
+                Member member = mainGuild.getMemberById(discordID);
                 if (member != null && !topMembers.contains(member)) {
                     controller.addSingleRoleToMember(member, topRole).queue();
                     logger.info(member.getEffectiveName() + "(" + links.get(member.getUser().getId()
