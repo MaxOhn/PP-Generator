@@ -30,37 +30,33 @@ public class utilGeneral {
     }
 
     public static String howLongAgo(ZonedDateTime d) {
-        OffsetDateTime now = OffsetDateTime.now();
         OffsetDateTime date = OffsetDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
-        int temp = now.getYear() - date.getYear();
-        if (temp > 1 || (temp == 1 && now.getMonthValue() >= date.getMonthValue()))
-            return temp + " year" + (temp == 1 ? "" : "s") + " ago";
-        temp = now.getMonthValue() - date.getMonthValue();
-        if (temp < 0)
-            temp += 12;
-        if (temp > 1 || temp == 1 && now.getDayOfMonth() >= date.getDayOfMonth())
-            return temp + " month" + (temp == 1 ? "" : "s") + " ago";
-        temp = now.getDayOfMonth() - date.getDayOfMonth();
-        if (temp < 0)
-            temp += date.getMonth().length(false);
-        if (temp > 1 || temp == 1 && now.getHour() >= date.getHour())
-            return temp + " day" + (temp == 1 ? "" : "s") + " ago";
-        temp = now.getHour() - date.getHour();
-        if (temp < 0)
-            temp += 24;
-        if (temp > 1 || temp == 1 && now.getMinute() >= date.getMinute())
-            return temp + " hour" + (temp == 1 ? "" : "s") + " ago";
-        temp = now.getMinute() - date.getMinute();
-        if (temp < 0)
-            temp += 60;
-        if (temp > 1 || temp == 1 && now.getSecond() >= date.getSecond())
-            return temp + " minute" + (temp == 1 ? "" : "s") + " ago";
-        temp = now.getSecond() - date.getSecond();
-        if (temp < 0) {
-            temp += 60;
-            return temp + " second" + (temp == 1 ? "" : "s") + " ago";
+        long factor = 60;
+        long diffSeconds = OffsetDateTime.now().toEpochSecond() - date.toEpochSecond();
+        long diffMinutes = diffSeconds / factor;
+        if (diffMinutes < 1)
+            return diffSeconds + " second" + (diffSeconds == 1 ? "" : "s") + " ago";
+        long diffHours = diffSeconds / (factor *= 60);
+        if (diffHours < 1)
+            return diffMinutes + " minute" + (diffMinutes == 1 ? "" : "s") + " ago";
+        long diffDays = diffSeconds / (factor *= 24);
+        if (diffDays < 1)
+            return diffHours + " hour" + (diffHours == 1 ? "" : "s") + " ago";
+        long diffWeeks = diffSeconds / (factor * 7);
+        if (diffWeeks < 1)
+            return diffDays + " day" + (diffDays == 1 ? "" : "s") + " ago";
+        long diffMonths = diffSeconds / (long)(factor * 30.41666666);
+        if (diffMonths < 1)
+            return diffWeeks + " week" + (diffWeeks == 1 ? "" : "s") + " ago";
+        long diffYears = diffSeconds / (factor * 365);
+        if (diffYears < 1) {
+            if (diffDays - (diffMonths * 30.41666666) > 20)
+                diffMonths++;
+            return diffMonths + " month" + (diffMonths == 1 ? "" : "s") + " ago";
         }
-        return "";
+        if (diffMonths - (diffYears * 12) > 6)
+            diffYears++;
+        return diffYears + " year" + (diffYears == 1 ? "" : "s") + " ago";
     }
 
     public static boolean isAuthority(Member author, String serverID) throws SQLException, ClassNotFoundException {

@@ -399,7 +399,7 @@ public class Performance {
             /* // debugging
             String line;
             while ((line = input.readLine()) != null)
-                logger.error(line);
+                logger.warn(line);
             while ((line = errors.readLine()) != null)
                 logger.error(line);
             //*/
@@ -407,7 +407,7 @@ public class Performance {
             input.close();
             //errors.close();
             pr.waitFor();
-        } catch (InterruptedException | IOException e) {
+        } catch (Exception e) {
             logger.error("Something went wrong while calculating the star rating: ");
             e.printStackTrace();
         }
