@@ -1,5 +1,7 @@
 package main.java.core;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.oopsjpeg.osu4j.ApprovalState;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
@@ -482,6 +484,26 @@ public class DBProvider {
                 "' where server='" + serverID + "'");
         stmnt.close();
         c.close();
+    }
+
+    /*
+     * ------------------------
+     *       manual links
+     * ------------------------
+     */
+
+    static BiMap<String, String> getManualLinks() throws SQLException, ClassNotFoundException {
+        BiMap<String, String> links = HashBiMap.create();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from manualLinks");
+        while(rs.next()) {
+            links.put(rs.getString("discord"), rs.getString("osu"));
+        }
+        stmnt.close();
+        c.close();
+        return links;
     }
 
     /*

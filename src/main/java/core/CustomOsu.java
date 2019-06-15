@@ -13,8 +13,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +27,8 @@ import java.io.InputStreamReader;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
@@ -41,6 +48,23 @@ public class CustomOsu {
                 .setDefaultCookieStore(cookieStore)
                 .build();
     }
+
+    public List<String> getRankings() throws IOException {
+        return getRankings("");
+    }
+
+    public List<String> getRankings(String countryShort) throws IOException {
+        limiter.acquire();
+        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/rankings/osu/performance?country=" + countryShort);
+        HttpResponse response = client.execute(getRequest);
+        String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Document doc = Jsoup.parse(responseStr);
+        return doc.select(".ranking-page-table").first()
+                .getElementsByTag("tbody").first().children().stream()
+                .map(e -> e.child(1).child(0).child(1).child(0).text())
+                .collect(Collectors.toList());
+    }
+
     public Collection<OsuScore> getScores(String mapID) throws IOException {
         return getScores(mapID, true);
     }
@@ -52,16 +76,9 @@ public class CustomOsu {
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new IOException("No valid response from server:\n" + response.getEntity().toString());
         }
-        BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-        StringBuilder responseStr = new StringBuilder();
-        String line;
-        while ((line = rd.readLine()) != null) {
-            responseStr.append(line);
-            responseStr.append('\r');
-        }
-        rd.close();
+        String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Collection<OsuScore> scores = new ArrayList<>();
-        JSONArray rawScores = new JSONObject(responseStr.toString()).getJSONArray("scores");
+        JSONArray rawScores = new JSONObject(responseStr).getJSONArray("scores");
         for (int i = 0; i < rawScores.length(); i++) {
             JSONObject o = (JSONObject)rawScores.get(i);
             JSONObject m = o.getJSONObject("beatmap");
