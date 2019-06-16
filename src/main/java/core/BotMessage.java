@@ -390,30 +390,18 @@ public class BotMessage {
                 int[] accs = new int[] {0, 90, 95, 97, 99};
                 double factor = 1;
                 int[] nScores = new int[accs.length];
-                //*
+                int[] nMisses = new int[accs.length];
+                int[] nTotal = new int[accs.length];
                 int[] nGekis = new int[accs.length];
                 int[] n300 = new int[accs.length];
-                double[] nGekisW = new double[accs.length];
-                double[] n300W = new double[accs.length];
-                //*/
-                /*
-                double[] ratios = new double[accs.length];
-                double[] ratiosW = new double[accs.length];
-                //*/
                 for (OsuScore s : scores) {
                     double acc = utilOsu.getAcc(s, p.getMode());
                     for (int i = 0; i < accs.length; i++) {
                         if (acc > accs[i]) {
-                            //*
                             nGekis[i] += s.getGekis();
                             n300[i] += s.getHit300();
-                            nGekisW[i] += factor * s.getGekis();
-                            n300W[i] += factor * s.getHit300();
-                            //*/
-                            /*
-                            ratios[i] += (double)s.getGekis() / s.getHit300();
-                            ratiosW[i] += factor * ratios[i];
-                            //*/
+                            nTotal[i] += s.getGekis() + s.getHit300() + s.getKatus() + s.getHit100() + s.getHit50() + s.getMisses();
+                            nMisses[i] += s.getMisses();
                             nScores[i]++;
                         }
                         factor *= 0.95;
@@ -427,13 +415,11 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
-                StringBuilder desc = new StringBuilder("__**Min acc: #Scores | Avg | Weighted avg:**__");
+                StringBuilder desc = new StringBuilder("__**Min acc: #Scores | Avg | Weighted avg | % misses:**__");
                 for (int i = 0; i < accs.length; i++) {
                     desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
                             .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
-                            .append((double)(Math.round(100 * nGekisW[i]/n300W[i])) / 100)
-                            //.append((double)(Math.round(100 * ratios[i]/scores.size())) / 100).append(" | ")
-                            //.append((double)(Math.round(100 * ratiosW[i]/scores.size())) / 100)
+                            .append((double)(Math.round(100 * 100 * (double)nMisses[i]/nTotal[i])) / 100).append("%")
                     ;
                 }
                 eb.setDescription(desc.toString());
