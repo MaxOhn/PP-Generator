@@ -62,33 +62,32 @@ public class MemberHandler {
 
     public void kickUser(String userID, String guildID) {
         while (Main.jda == null);
-        if (secrets.RELEASE) {
+        try {
+            uncheckedUsers.remove(userID);
             try {
-                uncheckedUsers.remove(userID);
-                try {
-                    if (secrets.WITH_DB)
-                        DBProvider.removeUncheckedUser(userID);
-                } catch (ClassNotFoundException | SQLException e1) {
-                    logger.error("Could not remove kicked user from DB:");
-                    e1.printStackTrace();
-                }
-                Main.jda.getGuildById(guildID).getController()
-                        .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
-                        .queue();
-                logger.info("Kicked unchecked user " + userID);
-            } catch (IllegalArgumentException e) {
-                logger.warn("User " + userID + " was no longer on the server " + guildID + ", could not be kicked");
-            } catch (Exception e) {
-                logger.error("Could not kick user " + userID + " from server " + guildID + ":");
-                e.printStackTrace();
+                if (secrets.WITH_DB)
+                    DBProvider.removeUncheckedUser(userID);
+            } catch (ClassNotFoundException | SQLException e1) {
+                logger.error("Could not remove kicked user from DB:");
+                e1.printStackTrace();
             }
+            Main.jda.getGuildById(guildID).getController()
+                    .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
+                    .queue();
+            logger.info("Kicked unchecked user " + userID);
+        } catch (IllegalArgumentException e) {
+            logger.warn("User " + userID + " was no longer on the server " + guildID + ", could not be kicked");
+        } catch (Exception e) {
+            logger.error("Could not kick user " + userID + " from server " + guildID + ":");
+            e.printStackTrace();
         }
     }
 
     private void runRegularChecks() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable kickerIterator = this::regularIteration;
-        scheduler.scheduleAtFixedRate(kickerIterator, 0, 1, DAYS);
+        if (secrets.RELEASE)
+            scheduler.scheduleAtFixedRate(kickerIterator, 0, 1, DAYS);
     }
 
     private void regularIteration() {
@@ -136,8 +135,9 @@ public class MemberHandler {
             for (Member member : topMembers) {
                 if (!topPlayers.contains(links.get(member.getUser().getId()))) {
                     controller.removeSingleRoleFromMember(member, topRole).queue();
-                    logger.info(member.getEffectiveName() + "(" + links.get(member.getUser().getId()
-                            + ") not in  top 10, removed top role"));
+                    logger.info(member.getEffectiveName()
+                            + (links.get(member.getUser().getId()) != null ? " (" + links.get(member.getUser().getId()) + ") " : "")
+                            + " not in top 10, removed top role");
                 }
             }
             for (String player : topPlayers) {
@@ -146,8 +146,8 @@ public class MemberHandler {
                 Member member = mainGuild.getMemberById(discordID);
                 if (member != null && !topMembers.contains(member)) {
                     controller.addSingleRoleToMember(member, topRole).queue();
-                    logger.info(member.getEffectiveName() + "(" + links.get(member.getUser().getId()
-                            + ") is in  top 10, added top role"));
+                    logger.info(member.getEffectiveName() + " (" + links.get(member.getUser().getId())
+                            + ") is in top 10, added top role");
                 }
             }
         });

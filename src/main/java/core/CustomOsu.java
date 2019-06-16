@@ -46,10 +46,6 @@ public class CustomOsu {
                 .build();
     }
 
-    public List<String> getRankings() throws IOException {
-        return getRankings(GameMode.STANDARD, "");
-    }
-
     public List<String> getRankings(GameMode mode, String countryShort) throws IOException {
         limiter.acquire();
         String modeStr;

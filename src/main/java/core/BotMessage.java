@@ -388,7 +388,6 @@ public class BotMessage {
                 mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
                 int[] accs = new int[] {0, 90, 95, 97, 99};
-                double factor = 1;
                 int[] nScores = new int[accs.length];
                 int[] nMisses = new int[accs.length];
                 int[] nTotal = new int[accs.length];
@@ -404,7 +403,6 @@ public class BotMessage {
                             nMisses[i] += s.getMisses();
                             nScores[i]++;
                         }
-                        factor *= 0.95;
                     }
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
@@ -415,7 +413,7 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
-                StringBuilder desc = new StringBuilder("__**Min acc: #Scores | Avg | Weighted avg | % misses:**__");
+                StringBuilder desc = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
                 for (int i = 0; i < accs.length; i++) {
                     desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
                             .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
