@@ -14,7 +14,7 @@ public class cmdGlobalLeaderboard extends cmdMapLeaderboard {
         String help = " (`" + statics.prefix + "globallb -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "globallb[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>]` to make me show the beatmap's "
+                return "Enter `" + statics.prefix + "globallb[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me show the beatmap's "
                         + " global top 10 scores."
                         + "\nWith `+` you can chose included mods, e.g. `+hddt`, with `+mod!` you can chose exact mods, and with `-mod!` you can chose excluded mods."
                         + "\nBeatmap urls from both the new and old website are supported."

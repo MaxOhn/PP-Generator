@@ -93,11 +93,11 @@ public class BotMessage {
         }
     }
 
-    public void send(String msg, Consumer consumer) {
+    public void send(String msg, Consumer<? super Message> consumer) {
         send(new MessageBuilder(msg).build(), consumer);
     }
 
-    public void send(Message msg, Consumer consumer) {
+    public void send(Message msg, Consumer<? super Message> consumer) {
         switch (event.getChannelType()) {
             case PRIVATE:
                 event.getChannel().sendMessage(msg).queue(consumer);
@@ -108,11 +108,11 @@ public class BotMessage {
         }
     }
 
-    public void send(String msg, MessageEmbed embed, Consumer consumer) {
+    public void send(String msg, MessageEmbed embed, Consumer<? super Message> consumer) {
         send(new MessageBuilder(msg).build(), embed, consumer);
     }
 
-    public void send(Message msg, MessageEmbed embed, Consumer consumer) {
+    public void send(Message msg, MessageEmbed embed, Consumer<? super Message> consumer) {
         switch (event.getChannelType()) {
             case PRIVATE:
                 event.getChannel().sendMessage(msg).embed(embed).queue(consumer);
@@ -129,7 +129,6 @@ public class BotMessage {
 
     public void buildAndSend(Runnable runnable) {
         File thumbFile = null;
-        File flagFile = null;
         int idx;
         String ppString = "**", hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
@@ -307,10 +306,15 @@ public class BotMessage {
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (scores.size() > 10) {
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
-                            "specified mods on the specified map's national leaderboard, here's the top 10 of them:");
+                            "specified mods on the specified map's leaderboard, here's the top 10 of them:");
                     scores = scores.stream().limit(10).collect(Collectors.toList());
                 } else if (scores.size() == 0) {
-                    mb.append("There appear to be no national scores on the specified map");
+                    mb.append("There appear to be no scores on the specified map");
+                    thumbFile = filesPrepared
+                            ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                            : new File(statics.thumbPath + "bgNotFound.png");
+                    eb.setThumbnail("attachment://thumb.jpg");
+                    break;
                 }
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
@@ -475,8 +479,6 @@ public class BotMessage {
         } catch (Exception e) {
             Logger.getLogger(this.getClass()).error("Caught error while sending message:");
             e.printStackTrace();
-            System.out.println(thumbFile);
-            System.out.println(flagFile);
         }
         if (runnable != null) runnable.run();
     }

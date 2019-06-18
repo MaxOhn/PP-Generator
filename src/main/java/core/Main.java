@@ -67,16 +67,24 @@ public class Main {
         commandHandler.commands.put("rs", new cmdRecent());
         commandHandler.commands.put("compare", new cmdScores());
         commandHandler.commands.put("c", new cmdScores());
+        commandHandler.commands.put("recentleaderboard", new cmdRecentLeaderboard());
+        commandHandler.commands.put("rlb", new cmdRecentLeaderboard());
+        commandHandler.commands.put("recentglb", new cmdRecentGlobalLeaderboard());
+        commandHandler.commands.put("rglb", new cmdRecentGlobalLeaderboard());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
         commandHandler.commands.put("ct", new cmdScores());
+        commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
+        commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
         commandHandler.commands.put("cm", new cmdScores());
+        commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
+        commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());

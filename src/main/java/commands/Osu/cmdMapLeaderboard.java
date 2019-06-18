@@ -91,29 +91,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             argList.remove(mIdx);
         }
 
-        String mapID = "-1";
-        if (argList.size() > 0)
-            mapID = utilOsu.getIdFromString(argList.get(0));
-        else {
-            int counter = 100;
-            for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
-                if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
-                    MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
-                    List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                    if (fields.size() > 0) {
-                        if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*")
-                                || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*"))) {
-                            mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
-                            if (--number <= 0) break;
-                        }
-                    }
-                }
-                if (--counter == 0) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
-                    return;
-                }
-            }
-        }
+        String mapID = getMapId(event, argList);
         if (mapID.equals("-1")) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
             return;
@@ -174,7 +152,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "leaderboard[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me show the beatmap's "
-                        + " national top 10 scores."
+                        + (getType() == lbType.NATIONAL ? "national" : "global") + " top 10 scores."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nBeatmap urls from both the new and old website are supported."
                         + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
@@ -199,6 +177,31 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
     protected enum lbType {
         NATIONAL,
         GLOBAL
+    }
+
+    protected String getMapId(MessageReceivedEvent event, List<String> argList) {
+        if (argList.size() > 0)
+            return utilOsu.getIdFromString(argList.get(0));
+        else {
+            int counter = 100;
+            for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
+                if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
+                    MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
+                    List<MessageEmbed.Field> fields = msgEmbed.getFields();
+                    if (fields.size() > 0) {
+                        if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
+                                || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
+                            return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                        }
+                    }
+                }
+                if (--counter == 0) {
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
+                    return "-1";
+                }
+            }
+        }
+        return "-1";
     }
 
     protected lbType getType() {
