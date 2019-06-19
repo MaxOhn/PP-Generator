@@ -258,19 +258,45 @@ public class utilOsu {
         return hitresults;
     }
 
-    public static String getRank(OsuScore score, int nObjects, Set<GameMod> mods) {
-        double ratio300 = (double)score.getHit300()/nObjects;
-        if (score.getHit300() == nObjects)
-            return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
-        else if (ratio300 > 0.9 && (double)score.getHit50()/nObjects < 0.01 && score.getMisses() == 0)
-             return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
-        else if ((ratio300 > 0.8 && score.getMisses() == 0) || ratio300 > 0.9)
-            return "A";
-        else if ((ratio300 > 0.7 && score.getMisses() == 0) || ratio300 > 0.8)
-            return "B";
-        else if (ratio300 > 0.6)
-            return "C";
-        else
-            return "D";
+    public static String getRank(GameMode mode, OsuScore score, int nObjects, Set<GameMod> mods) {
+        double ratio300;
+        double acc;
+        switch (mode) {
+            case STANDARD:
+                if (score.getHit300() == nObjects)
+                    return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
+                ratio300 = (double)score.getHit300()/nObjects;
+                if (ratio300 > 0.9 && (double)score.getHit50()/nObjects < 0.01 && score.getMisses() == 0)
+                    return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
+                else if ((ratio300 > 0.8 && score.getMisses() == 0) || ratio300 > 0.9)
+                    return "A";
+                else if ((ratio300 > 0.7 && score.getMisses() == 0) || ratio300 > 0.8)
+                    return "B";
+                else if (ratio300 > 0.6)
+                    return "C";
+            case MANIA:
+                if (score.getGekis() == nObjects)
+                    return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
+                acc = getAcc(score, mode);
+                if (acc > 95)
+                    return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
+                else if (acc > 90)
+                    return "A";
+                else if (acc > 80)
+                    return "B";
+                else if (acc > 70)
+                    return "C";
+            case TAIKO:
+                if (score.getHit300() == nObjects)
+                    return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
+                acc = getAcc(score, mode);
+                if (acc > 95)
+                    return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
+                else if (acc > 90)
+                    return "A";
+                else if (acc > 80)
+                    return "B";
+        }
+        return "D";
     }
 }

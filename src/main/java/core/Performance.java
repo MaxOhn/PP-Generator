@@ -88,7 +88,7 @@ public class Performance {
         score.setCountmiss(0);
         this.acc = 0;
         score.setPp(0);
-        score.setRank(utilOsu.getRank(score, getNObjects(), mods));
+        score.setRank(utilOsu.getRank(mode, score, getNObjects(), mods));
     }
 
     public int getNPassedObjects() {
@@ -113,7 +113,7 @@ public class Performance {
 
     public String getRank() {
         if (score.getRank().equals(""))
-            score.setRank(utilOsu.getRank(score, getNObjects(), mods));
+            score.setRank(utilOsu.getRank(mode, score, getNObjects(), mods));
         return score.getRank();
     }
 
@@ -394,10 +394,10 @@ public class Performance {
                 logger.warn(line);
             while ((line = errors.readLine()) != null)
                 logger.error(line);
+            errors.close();
             //*/
             starRating = Double.parseDouble(input.readLine());
             input.close();
-            //errors.close();
             pr.waitFor();
         } catch (Exception e) {
             logger.error("Something went wrong while calculating the star rating: ");

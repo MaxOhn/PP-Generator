@@ -1,6 +1,7 @@
 package main.java.commands.Osu;
 
 import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
@@ -82,7 +83,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
         double acc = -1;
         int combo = 0, nM = 0, score = 0, n320 = 0, n300 = 0, n200 = 0, n100 = 0, n50 = 0;
 
-        if ((mIdx = argList.indexOf("-a")) != -1) {
+        if ((mIdx = argList.indexOf("-a")) != -1 || (mIdx = argList.indexOf("-acc")) != -1) {
             if (argList.size() < mIdx + 2) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-a` must come a decimal number!");
                 return;
@@ -110,15 +111,15 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
             argList.remove(mIdx);
             argList.remove(mIdx);
         }
-        if ((mIdx = argList.indexOf("-x")) != -1) {
+        if ((mIdx = argList.indexOf("-x")) != -1 || (mIdx = argList.indexOf("-m")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x` must come an integer number!");
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x`/`-m` must come an integer number!");
                 return;
             }
             try {
                 nM = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x` must come an integer number!");
+                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x`/`m` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -269,7 +270,11 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("The map has only " + nTotal + " objects, you gave too many (" + hitSum + ") in the parameters");
             return;
         } else if (hitSum == 0 && acc == -1) {
-            n300 = nTotal;
+            if (map.getMode() == GameMode.MANIA) n320 = nTotal;
+            else n300 = nTotal;
+        }
+        if (map.getMode() == GameMode.MANIA && score == 0) {
+            score = 1000000;
         }
 
         // Create simulated score
@@ -323,7 +328,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "simulate[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>] "
-                        + "[-a <accuracy>] [-c <combo>] [-x <misses>] [-s <score>] [-320 <320s>] [-300 <300s>] [-200 <200s>] [-100 <100s>] [-50 <50s>]`"
+                        + "[-a <accuracy>] [-c <combo>] [-x/-m <misses>] [-s <score>] [-320 <320s>] [-300 <300s>] [-200 <200s>] [-100 <100s>] [-50 <50s>]`"
                         + "to make me calculate the pp of the specified score on the map, defaults to SS score."
                         + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "simulate8`, I will skip the most recent 7 score embeds "
                         + "and show the 8-th score embed, defaults to 1."

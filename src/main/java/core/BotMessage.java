@@ -458,7 +458,8 @@ public class BotMessage {
                 if (p.getMode() == GameMode.MANIA)
                     eb.addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true);
                 fields.add(new MessageEmbed.Field("Acc", p.getAcc() + "%", true));
-                fields.add(new MessageEmbed.Field("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true));
+                if (p.getMode() != GameMode.MANIA)
+                    fields.add(new MessageEmbed.Field("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true));
                 fields.add(new MessageEmbed.Field("Hits", hitString, true));
                 if (scores.size() == 1) {
                     eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
@@ -473,24 +474,15 @@ public class BotMessage {
                     StringBuilder descri = new StringBuilder();
                     for (OsuScore s : scores) {
                         osuscore(s);
-                        //*
-                        fields.add(new MessageEmbed.Field("**•** " + (getModString().equals("") ? "NM" : getModString().substring(2))
-                                + " (" + p.getStarRating() + "★):\t"
-                                + "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", "", false));
-                        //*/
                         /*
-                        eb.addField("**•** " + (getModString().equals("") ? "NM" : getModString().substring(2))
-                                + " (" + p.getStarRating() + "★):\t"
-                                + "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", "", false);
-                        //*/
-                        /*
-                        if (!descri.toString().equals("")) descri.append("\n");
-                        descri.append("**• ").append(getModString().equals("") ? "NM" : getModString().substring(2)).append("** (")
+                        descri.append("\n").append("**• ").append(getModString().equals("") ? "NM" : getModString().substring(2)).append("** (")
                                 .append(p.getStarRating()).append("★): **").append(p.getPp()).append("pp** / ").append(p.getPpMax()).append("PP");
                         //*/
+                        fields.add(new MessageEmbed.Field(getModString().equals("") ? "NM" : getModString().substring(2) + " (" + p.getStarRating() + "★):",
+                                "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", true));
                     }
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
-                    eb.setDescription(descri);
+                    eb.setDescription(descri.append("\n"));
                 }
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
