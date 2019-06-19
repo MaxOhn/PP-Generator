@@ -1,9 +1,6 @@
 package main.java.core;
 
-import com.oopsjpeg.osu4j.GameMode;
-import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.*;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -472,11 +469,18 @@ public class BotMessage {
                     fields.add(0, new MessageEmbed.Field("Rank", getRank(), true));
                     StringBuilder descri = new StringBuilder();
                     for (OsuScore s : scores) {
+                        if (p.getMode() == GameMode.MANIA) {
+                            GameMod[] tempMods = s.getEnabledMods();
+                            boolean foundMod = false;
+                            for (int i = 0; i < s.getEnabledMods().length; i++) {
+                                if (tempMods[i] == GameMod.HARD_ROCK || tempMods[i] == GameMod.HIDDEN) {
+                                    foundMod = true;
+                                    break;
+                                }
+                            }
+                            if (foundMod) continue;
+                        }
                         osuscore(s);
-                        /*
-                        descri.append("\n").append("**• ").append(getModString().equals("") ? "NM" : getModString().substring(2)).append("** (")
-                                .append(p.getStarRating()).append("★): **").append(p.getPp()).append("pp** / ").append(p.getPpMax()).append("PP");
-                        //*/
                         fields.add(new MessageEmbed.Field(getModString().equals("") ? "NM" : getModString().substring(2) + " (" + p.getStarRating() + "★):",
                                 "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", true));
                     }
