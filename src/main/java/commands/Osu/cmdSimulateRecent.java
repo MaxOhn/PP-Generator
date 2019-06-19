@@ -3,7 +3,6 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
-import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
@@ -12,15 +11,7 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements INumberedCommand {
-
-    private int number = 1;
-
-    @Override
-    public boolean called(String[] args, MessageReceivedEvent event) {
-        number = 1;
-        return super.called(args, event);
-    }
+public class cmdSimulateRecent extends cmdSimulateMap {
 
     @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
@@ -71,32 +62,34 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
     }
 
     @Override
-    public cmdRecentGlobalLeaderboard setNumber(int number) {
-        this.number = number;
-        return this;
-    }
-
-    protected GameMode getMode() {
-        return GameMode.STANDARD;
+    public String help(int hCode) {
+        String help = " (`" + statics.prefix + "simulate" + getName() + " -h` for more help)";
+        switch(hCode) {
+            case 0:
+                return "Enter `" + statics.prefix + "simulate" + getName() + "[number] [osu name]"
+                        + "[-a <accuracy>] [-c <combo>] [-x/-m <misses>] [-s <score>] [-320 <320s>] [-300 <300s>] [-200 <200s>] [-100 <100s>] [-50 <50s>]`"
+                        + "to make me calculate the pp of the specified score on the user's most recently played map, defaults to SS score."
+                        + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "simulate" + getName() + "8`, I will skip the most recent 7 scores "
+                        + "and choose the 8-th recent score, defaults to 1."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
+                        + "\nIf no mods are specified, I will simulate for the mods NM, HD, HR, DT, and HDDT."
+                        + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
+            default:
+                return help(0);
+        }
     }
 
     protected String getName() {
         return "recent";
     }
 
+    protected GameMode getMode() {
+        return GameMode.STANDARD;
+    }
+
     @Override
-    public String help(int hCode) {
-        String help = " (`" + statics.prefix + getName() + "glb -h` for more help)";
-        switch(hCode) {
-            case 0:
-                return "Enter `" + statics.prefix + getName() + "glb[number] [osu name]` to make me show the global top 10 scores on the beatmap of the user's last play."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "leaderboard8`, I will skip the most recent 7 scores "
-                        + "and show the leaderboard of the 8-th recent score, defaults to 1."
-                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
-            case 1:
-                return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
-            default:
-                return help(0);
-        }
+    public cmdSimulateRecent setNumber(int number) {
+        this.number = number;
+        return this;
     }
 }

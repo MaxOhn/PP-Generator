@@ -17,6 +17,12 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
     private int number = 1;
 
     @Override
+    public boolean called(String[] args, MessageReceivedEvent event) {
+        number = 1;
+        return super.called(args, event);
+    }
+
+    @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
 
         if (number > 50) {

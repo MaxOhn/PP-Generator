@@ -6,12 +6,15 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
-import main.java.commands.ICommand;
+import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.FileInteractor;
 import main.java.core.Main;
-import main.java.util.*;
+import main.java.util.secrets;
+import main.java.util.statics;
+import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
@@ -27,7 +30,9 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
 
-public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
+public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand {
+
+    protected int number = 1;
 
     private static final GameMod[][] allMods = {
             {},
@@ -40,6 +45,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
@@ -331,7 +337,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
                         + "[-a <accuracy>] [-c <combo>] [-x/-m <misses>] [-s <score>] [-320 <320s>] [-300 <300s>] [-200 <200s>] [-100 <100s>] [-50 <50s>]`"
                         + "to make me calculate the pp of the specified score on the map, defaults to SS score."
                         + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "simulate8`, I will skip the most recent 7 score embeds "
-                        + "and show the 8-th score embed, defaults to 1."
+                        + "and choose the 8-th score embed, defaults to 1."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nIf no mods are specified, I will simulate for the mods NM, HD, HR, DT, and HDDT."
                         + "\nBeatmap urls from both the new and old website are supported."
@@ -353,7 +359,8 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
                     if (fields.size() > 0) {
                         if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
                                 || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
-                            return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                            if (--number <= 0)
+                                return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
                         }
                     }
                 }
@@ -364,6 +371,12 @@ public class cmdSimulateMap extends cmdModdedCommand implements ICommand {
             }
         }
         return "-1";    // never reached
+    }
+
+    @Override
+    public cmdSimulateMap setNumber(int number) {
+        this.number = number;
+        return this;
     }
 
     @Override

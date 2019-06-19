@@ -71,6 +71,8 @@ public class Main {
         commandHandler.commands.put("rlb", new cmdRecentLeaderboard());
         commandHandler.commands.put("recentglb", new cmdRecentGlobalLeaderboard());
         commandHandler.commands.put("rglb", new cmdRecentGlobalLeaderboard());
+        commandHandler.commands.put("simulaterecent", new cmdSimulateRecent());
+        commandHandler.commands.put("sr", new cmdSimulateRecent());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
@@ -78,6 +80,8 @@ public class Main {
         commandHandler.commands.put("ct", new cmdScores());
         commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
+        commandHandler.commands.put("simulatetaiko", new cmdSimulateTaiko());
+        commandHandler.commands.put("st", new cmdSimulateTaiko());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
@@ -85,6 +89,8 @@ public class Main {
         commandHandler.commands.put("cm", new cmdScores());
         commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
+        commandHandler.commands.put("simulatemania", new cmdSimulateMania());
+        commandHandler.commands.put("sm", new cmdSimulateMania());
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());
