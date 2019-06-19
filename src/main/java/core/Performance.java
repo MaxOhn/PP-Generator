@@ -88,19 +88,7 @@ public class Performance {
         score.setCountmiss(0);
         this.acc = 0;
         score.setPp(0);
-        double ratio300 = (double)score.getHit300()/getNObjects();
-        if (score.getHit300() == getNObjects())
-            score.setRank(mods.contains(GameMod.HIDDEN) ? "XH" : "X");
-        else if (ratio300 > 0.9 && (double)score.getHit50()/getNObjects() < 0.01 && score.getMisses() == 0)
-            score.setRank(mods.contains(GameMod.HIDDEN) ? "SH" : "S");
-        else if ((ratio300 > 0.8 && score.getMisses() == 0) || ratio300 > 0.9)
-            score.setRank("A");
-        else if ((ratio300 > 0.7 && score.getMisses() == 0) || ratio300 > 0.8)
-            score.setRank("B");
-        else if (ratio300 > 0.6)
-            score.setRank("C");
-        else
-            score.setRank("D");
+        score.setRank(utilOsu.getRank(score, getNObjects(), mods));
     }
 
     public int getNPassedObjects() {
@@ -124,6 +112,8 @@ public class Performance {
     }
 
     public String getRank() {
+        if (score.getRank().equals(""))
+            score.setRank(utilOsu.getRank(score, getNObjects(), mods));
         return score.getRank();
     }
 
@@ -397,7 +387,7 @@ public class Performance {
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-            //* // debugging
+            /* // debugging
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             String line;
             while ((line = input.readLine()) != null)
@@ -405,7 +395,7 @@ public class Performance {
             while ((line = errors.readLine()) != null)
                 logger.error(line);
             //*/
-            //starRating = Double.parseDouble(input.readLine());
+            starRating = Double.parseDouble(input.readLine());
             input.close();
             //errors.close();
             pr.waitFor();
