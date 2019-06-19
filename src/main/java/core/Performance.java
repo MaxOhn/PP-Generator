@@ -16,7 +16,6 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static main.java.util.utilOsu.abbrvModSet;
 import static main.java.util.utilOsu.mods_str;
@@ -76,19 +75,8 @@ public class Performance {
 
     public void noChoke() {
         if (mode != GameMode.STANDARD) return;
-        if (getCombo() == getMaxCombo()) return;
-        score.setMaxcombo(map.getMaxCombo());
-        double ratio = (double)score.getHit300()/(score.getHit300() + score.getHit100() + score.getHit50());
-        for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {
-            if (ThreadLocalRandom.current().nextDouble(1) < ratio)
-                score.setCount100(score.getHit100() + 1);
-            else
-                score.setCount300(score.getHit300() + 1);
-        }
-        score.setCountmiss(0);
+        utilOsu.unchokeScore(score, getMaxCombo(), mode, getNObjects());
         this.acc = 0;
-        score.setPp(0);
-        score.setRank(utilOsu.getRank(mode, score, getNObjects(), mods));
     }
 
     public int getNPassedObjects() {
@@ -113,7 +101,7 @@ public class Performance {
 
     public String getRank() {
         if (score.getRank().equals(""))
-            score.setRank(utilOsu.getRank(mode, score, getNObjects(), mods));
+            score.setRank(utilOsu.getRank(mode, score, getNObjects()));
         return score.getRank();
     }
 

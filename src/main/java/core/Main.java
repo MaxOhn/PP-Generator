@@ -78,6 +78,8 @@ public class Main {
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
         commandHandler.commands.put("ct", new cmdScores());
+        commandHandler.commands.put("recenttaikolb", new cmdRecentTaikoLeaderboard());
+        commandHandler.commands.put("rtlb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("simulatetaiko", new cmdSimulateTaiko());
@@ -87,6 +89,8 @@ public class Main {
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
         commandHandler.commands.put("cm", new cmdScores());
+        commandHandler.commands.put("recentmanialb", new cmdRecentTaikoLeaderboard());
+        commandHandler.commands.put("rmlb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("simulatemania", new cmdSimulateMania());

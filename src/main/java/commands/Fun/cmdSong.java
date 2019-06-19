@@ -15,7 +15,7 @@ import java.sql.SQLException;
 
 public abstract class cmdSong implements ICommand {
 
-    String busyID;
+    private String busyID;
 
     abstract String[] getLyrics();
 

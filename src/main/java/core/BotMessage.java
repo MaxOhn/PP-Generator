@@ -455,8 +455,7 @@ public class BotMessage {
                         + p.getMap().getApproach() + "` OD: `" + p.getMap().getOverall() + "` HP: `"
                         + p.getMap().getDrain() + "` Stars: `" + df.format(p.getMap().getDifficulty()) + "`";
                 List<MessageEmbed.Field> fields = new ArrayList<>();
-                if (p.getMode() == GameMode.MANIA)
-                    eb.addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true);
+                fields.add(new MessageEmbed.Field("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true));
                 fields.add(new MessageEmbed.Field("Acc", p.getAcc() + "%", true));
                 if (p.getMode() != GameMode.MANIA)
                     fields.add(new MessageEmbed.Field("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true));

@@ -13,6 +13,8 @@ import java.util.List;
 
 public class cmdSimulateRecent extends cmdSimulateMap {
 
+    private OsuScore recent;
+
     @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
 
@@ -20,6 +22,8 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
             return "-1";
         }
+
+        recent = null;
 
         String name;
         if (argList.size() == 0) {
@@ -40,7 +44,6 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         }
 
         ArrayList<OsuScore> userRecents;
-        OsuScore recent;
         try {
             userRecents = new ArrayList<>(Main.osu.userRecents.query(
                     new EndpointUserRecents.ArgumentsBuilder(name).setMode(getMode()).setLimit(50).build())
@@ -59,6 +62,11 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             return "-1";
         }
         return recent.getBeatmapID() + "";
+    }
+
+    @Override
+    protected OsuScore getScore() {
+        return recent;
     }
 
     @Override

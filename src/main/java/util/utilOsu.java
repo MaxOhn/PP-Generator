@@ -4,9 +4,8 @@ import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -258,7 +257,8 @@ public class utilOsu {
         return hitresults;
     }
 
-    public static String getRank(GameMode mode, OsuScore score, int nObjects, Set<GameMod> mods) {
+    public static String getRank(GameMode mode, OsuScore score, int nObjects) {
+        Set<GameMod> mods = new HashSet<>(Arrays.asList(score.getEnabledMods()));
         double ratio300;
         double acc;
         switch (mode) {
@@ -298,5 +298,21 @@ public class utilOsu {
                     return "B";
         }
         return "D";
+    }
+
+    public static OsuScore unchokeScore(OsuScore score, int maxCombo, GameMode mode, int nObjects) {
+        if (score.getMaxCombo() == maxCombo) return score;
+        score.setMaxcombo(maxCombo);
+        double ratio = (double)score.getHit300()/(score.getHit300() + score.getHit100() + score.getHit50());
+        for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {
+            if (ThreadLocalRandom.current().nextDouble(1) < ratio)
+                score.setCount100(score.getHit100() + 1);
+            else
+                score.setCount300(score.getHit300() + 1);
+        }
+        score.setCountmiss(0);
+        score.setPp(0);
+        score.setRank(utilOsu.getRank(mode, score, nObjects));
+        return score;
     }
 }

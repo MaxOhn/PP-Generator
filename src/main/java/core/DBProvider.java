@@ -300,8 +300,10 @@ public class DBProvider {
         m.setMaxCombo(rs.getInt("combo"));
         m.setCreatorName(removeReplacer(rs.getString("creator")));
         m.setSource(removeReplacer(rs.getString("source")));
-        m.setApprovedDate(Utility.parseDate(rs.getString("date")));
-        m.setApprovedDate(Utility.parseDate(rs.getString("updated")));
+        String date = rs.getString("date");
+        m.setApprovedDate(date.equals("null") ? null : Utility.parseDate(date));
+        date = rs.getString("updated");
+        m.setApprovedDate(date.equals("null") ? null : Utility.parseDate(date));
         stmnt.close();
         c.close();
         return m;

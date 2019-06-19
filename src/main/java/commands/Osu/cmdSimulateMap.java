@@ -284,22 +284,38 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
 
         // Create simulated score
-        if (hitSum < nTotal) {
-            HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : 100, nTotal, n320, n300, n200, n100, n50, nM);
-            n320 = hitresults.get("n320");
-            n300 = hitresults.get("n300");
-            n200 = hitresults.get("n200");
-            n100 = hitresults.get("n100");
-            n50 = hitresults.get("n50");
-            nM = hitresults.get("nM");
-        }
-        if (combo == 0) combo = map.getMaxCombo();
+        OsuScore osuscore = getScore();
         List<OsuScore> scores = new ArrayList<>();
-        if (noMods) {
-            for (GameMod[] mods : allMods) {
+        if (osuscore == null || map.getMode() != GameMode.STANDARD || osuscore.getRank().equals("F")) {
+            if (hitSum < nTotal) {
+                HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : 100, nTotal, n320, n300, n200, n100, n50, nM);
+                n320 = hitresults.get("n320");
+                n300 = hitresults.get("n300");
+                n200 = hitresults.get("n200");
+                n100 = hitresults.get("n100");
+                n50 = hitresults.get("n50");
+                nM = hitresults.get("nM");
+            }
+            if (combo == 0) combo = map.getMaxCombo();
+            if (noMods) {
+                for (GameMod[] mods : allMods) {
+                    OsuScore s = new OsuScore(Main.osu);
+                    s.setBeatmapID(map.getID());
+                    s.setEnabledMods(mods);
+                    s.setMaxcombo(combo);
+                    s.setScore(score);
+                    s.setCountgeki(n320);
+                    s.setCount300(n300);
+                    s.setCountkatu(n200);
+                    s.setCount100(n100);
+                    s.setCount50(n50);
+                    s.setCountmiss(nM);
+                    scores.add(s);
+                }
+            } else {
                 OsuScore s = new OsuScore(Main.osu);
                 s.setBeatmapID(map.getID());
-                s.setEnabledMods(mods);
+                s.setEnabledMods(includedMods);
                 s.setMaxcombo(combo);
                 s.setScore(score);
                 s.setCountgeki(n320);
@@ -311,21 +327,15 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 scores.add(s);
             }
         } else {
-            OsuScore s = new OsuScore(Main.osu);
-            s.setBeatmapID(map.getID());
-            s.setEnabledMods(includedMods);
-            s.setMaxcombo(combo);
-            s.setScore(score);
-            s.setCountgeki(n320);
-            s.setCount300(n300);
-            s.setCountkatu(n200);
-            s.setCount100(n100);
-            s.setCount50(n50);
-            s.setCountmiss(nM);
-            scores.add(s);
+            osuscore = utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
+            scores.add(osuscore);
         }
 
         new BotMessage(event, BotMessage.MessageType.SIMULATE).map(map).osuscores(scores).buildAndSend();
+    }
+
+    protected OsuScore getScore() {
+        return null;
     }
 
     @Override

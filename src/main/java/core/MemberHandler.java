@@ -136,7 +136,7 @@ public class MemberHandler {
                 if (!topPlayers.contains(links.get(member.getUser().getId()))) {
                     controller.removeSingleRoleFromMember(member, topRole).queue();
                     logger.info(member.getEffectiveName()
-                            + (links.get(member.getUser().getId()) != null ? " (" + links.get(member.getUser().getId()) + ") " : "")
+                            + (links.get(member.getUser().getId()) != null ? " (" + links.get(member.getUser().getId()) + ")" : "")
                             + " not in top 10, removed top role");
                 }
             }
