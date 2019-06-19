@@ -24,7 +24,7 @@ public abstract class cmdModdedCommand implements ICommand {
 
     void setInitial() {
         status = modStatus.WITHOUT;
-        includedMods =new GameMod[0];
+        includedMods = new GameMod[0];
         excludedMods = new HashSet<>();
         excludeNM = false;
     }
@@ -33,27 +33,21 @@ public abstract class cmdModdedCommand implements ICommand {
         boolean response = excludedMods.size() == 0 || excludesMods(score);
         switch (status) {
             case CONTAINS:
-                response &= includesMods(score);
+                response &= utilGeneral.isSubarray(includedMods, score.getEnabledMods());
                 break;
             case EXACT:
-                response &= hasSameMods(score);
+                response &= Arrays.equals(score.getEnabledMods(), includedMods);
                 break;
         }
         return response & (!excludeNM || score.getEnabledMods().length > 0);
     }
 
-    boolean includesMods(OsuScore s) {
-        return utilGeneral.isSubarray(includedMods, s.getEnabledMods());
-    }
-    boolean hasSameMods(OsuScore s) {
-        return Arrays.equals(s.getEnabledMods(), includedMods);
-    }
-    boolean excludesMods(OsuScore s) {
-        return !excludedMods.stream().allMatch(m -> {
+    private boolean excludesMods(OsuScore s) {
+        return excludedMods.stream().allMatch(m -> {
             for (GameMod mod : s.getEnabledMods())
                 if (m == mod)
-                    return true;
-            return false;
+                    return false;
+            return true;
         });
     }
 }

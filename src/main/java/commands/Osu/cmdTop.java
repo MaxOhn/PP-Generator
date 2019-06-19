@@ -29,6 +29,7 @@ public class cmdTop implements INumberedCommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        number = 1;
         return true;
     }
 

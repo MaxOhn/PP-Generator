@@ -1,13 +1,15 @@
 package main.java.core;
 
-import com.oopsjpeg.osu4j.*;
+import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilOsu;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
@@ -395,15 +397,15 @@ public class Performance {
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-            //BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
-            /* // debugging
+            //* // debugging
+            BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             String line;
             while ((line = input.readLine()) != null)
                 logger.warn(line);
             while ((line = errors.readLine()) != null)
                 logger.error(line);
             //*/
-            starRating = Double.parseDouble(input.readLine());
+            //starRating = Double.parseDouble(input.readLine());
             input.close();
             //errors.close();
             pr.waitFor();

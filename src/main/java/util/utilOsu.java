@@ -5,6 +5,7 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -199,5 +200,61 @@ public class utilOsu {
         if (mode == GameMode.MANIA) denominator *= 300;
         double res = numerator / denominator;
         return 100*Math.max(0.0D, Math.min(res, 1.0D));
+    }
+
+    public static HashMap<String, Integer> getHitResults(GameMode mode, double acc, OsuScore s) {
+        int nTotal = 0;
+        switch (mode) {
+            case STANDARD:
+                nTotal += s.getHit300() + s.getHit100() + s.getHit50() + s.getMisses();
+                break;
+            case MANIA:
+                nTotal += s.getGekis() + s.getHit300() + s.getKatus() + s.getHit100() + s.getHit50() + s.getMisses();
+                break;
+            case TAIKO:
+                nTotal += s.getHit300() + s.getHit100() + s.getMisses();
+                break;
+        }
+        return getHitResults(mode, acc, nTotal, s.getGekis(), s.getHit300(), s.getKatus(), s.getHit100(), s.getHit50(), s.getMisses());
+    }
+
+    public static HashMap<String, Integer> getHitResults(GameMode mode, double acc, int nTotal, int n320, int n300, int n200, int n100, int n50, int nM) {
+
+        if (acc > 1)
+            acc /= 100;
+
+        HashMap<String, Integer> hitresults = new HashMap<>();
+        hitresults.put("nTotal", nTotal);
+
+        switch (mode) {
+            case STANDARD:
+                if (n50 > 0 || n100 > 0)
+                        n300 = nTotal - (n100 > 0 ? n100 : 0) - (n50 > 0 ? n50 : 0) - nM;
+                else {
+                    int targetTotal = (int) Math.round(acc * nTotal * 6);
+                    int delta = targetTotal - (nTotal - nM);
+                    n300 = delta / 5;
+                    n100 = delta % 5;
+                    n50 = nTotal - n300 - n100 - nM;
+                }
+                break;
+            case TAIKO:
+                if (n100 > 0)
+                    n300 = nTotal - n100 - nM;
+                else {
+                    int targetTotal = (int) Math.round(acc * nTotal * 2);
+                    n300 = targetTotal - (nTotal - nM);
+                    n100 = nTotal - n300 - nM;
+                }
+                break;
+            default: break;
+        }
+        hitresults.put("n320", n320);
+        hitresults.put("n300", n300);
+        hitresults.put("n200", n200);
+        hitresults.put("n100", n100);
+        hitresults.put("n50", n50);
+        hitresults.put("nM", nM);
+        return hitresults;
     }
 }

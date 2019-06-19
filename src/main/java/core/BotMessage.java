@@ -426,6 +426,92 @@ public class BotMessage {
                 }
                 eb.setDescription(desc.toString());
                 break;
+            case SIMULATE:
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                thumbFile = filesPrepared
+                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(statics.thumbPath + "bgNotFound.png");
+                eb.setThumbnail("attachment://thumb.jpg");
+                /*
+                eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
+                                + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
+                        "https://osu.ppy.sh/b/" + p.getMap().getID(), "https://a.ppy.sh/" + scores.get(0).getUserID());
+                //*/
+                osuscore(scores.get(0));
+                switch (p.getMode()) {
+                    case STANDARD:
+                        hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
+                        break;
+                    case TAIKO:
+                        hitString += p.getN300() + " / " + p.getN100();
+                    case MANIA:
+                        hitString += hitString.equals("{ ") ? p.getNGeki() + " / " + p.getN300() + " / "
+                                + p.getNKatu() + " / " + p.getN100() + " / " + p.getN50() : "";
+                        break;
+                    default:
+                        throw new IllegalStateException("GameMode not supported");
+                }
+                ppString += p.getPp();
+                hitString += " / " + p.getNMisses() + " }";
+                if (scores.size() == 1) {
+                    String mapInf = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
+                            + secondsToTimeFormat(p.getMap().getHitLength()) + "`) BPM: `" + p.getMap().getBPM() + "` Objects: `"
+                            + p.getNObjects() + "`\nCS: `" + p.getMap().getSize() + "` AR: `"
+                            + p.getMap().getApproach() + "` OD: `" + p.getMap().getOverall() + "` HP: `"
+                            + p.getMap().getDrain() + "` Stars: `" + df.format(p.getMap().getDifficulty()) + "`";
+                    eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
+                            + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID())
+                            .addField("Rank", getRank() + getModString(), true)
+                            .addField("Acc", p.getAcc() + "%", true)
+                            .addField("PP", ppString + "**/" + p.getPpMax() + "PP", true)
+                            .addField("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true)
+                            .addField("Hits", hitString, true)
+                            .addField("Map Info", mapInf, true);
+                    if (p.getMode() == GameMode.MANIA)
+                        eb.addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true);
+                } else {
+                    eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
+                        + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
+                    //StringBuilder descri = new StringBuilder();
+                    for (OsuScore s : scores) {
+                        osuscore(s);
+                        eb.addField(new MessageEmbed.Field(getRank() + (getModString().equals("") ? "+NM" : getModString()) + "\t" +
+                                NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
+                                p.getAcc() + "%)", "**" + p.getPp() +
+                                "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
+                                p.getMaxCombo() + "x ]\t " + hitString, false));
+                        /*
+                        if (!descri.toString().equals("")) descri.append("\n");
+                        descri.append("**• ").append(getModString().equals("") ? "NM" : getModString()).append(":** [**")
+                                .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
+                                .append(p.getMap().getID()).append(")").append(getModString().equals("") ? "" : "**" + getModString() + "**").append(" [")
+                                .append(p.getStarRating()).append("★]\n ")
+                                .append(getRank()).append(" **").append(p.getPp()).append("**").append(p.getPpMax()) // / behind last **
+                                .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
+                                .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore())).append("\n  [ ")
+                                .append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ] ~ { ");
+                        switch (p.getMode()) {
+                            case STANDARD:
+                                descri.append(s.getHit300()).append(" / ").append(s.getHit100()).append(" / ")
+                                        .append(s.getHit50());
+                                break;
+                            case MANIA:
+                                descri.append(s.getGekis()).append(" / ").append(s.getHit300()).append(" / ")
+                                        .append(s.getKatus()).append(" / ").append(s.getHit100()).append(" / ")
+                                        .append(s.getHit50());
+                                break;
+                            case TAIKO:
+                                descri.append(s.getHit300()).append(" / ").append(s.getHit100());
+                                break;
+                            default: break;
+                        }
+                        descri.append(" / ").append(s.getMisses()).append(" }");
+                        //*/
+                    }
+                    //eb.setDescription(descri);
+                }
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
@@ -468,6 +554,7 @@ public class BotMessage {
                 case SS:
                 case RATIO:
                 case NOCHOKESCORES:
+                case SIMULATE:
                     ma.queue();
                     break;
                 case COMMONSCORES:
@@ -598,6 +685,7 @@ public class BotMessage {
         LEADERBOARD,
         TEXT,
         COMMONSCORES,
-        RATIO
+        RATIO,
+        SIMULATE
     }
 }

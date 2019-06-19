@@ -34,6 +34,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
@@ -92,10 +93,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         }
 
         String mapID = getMapId(event, argList);
-        if (mapID.equals("-1")) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
-            return;
-        }
+        if (mapID.equals("-1")) return;
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -153,11 +151,11 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             case 0:
                 return "Enter `" + statics.prefix + "leaderboard[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me show the beatmap's "
                         + (getType() == lbType.NATIONAL ? "national" : "global") + " top 10 scores."
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + "leaderboard8`, I will skip the most recent 7 score embeds "
+                        + "and show the 8-th score embed, defaults to 1."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nBeatmap urls from both the new and old website are supported."
                         + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
-            case 1:
-                return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
             default:
                 return help(0);
         }
@@ -201,7 +199,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                 }
             }
         }
-        return "-1";
+        return "-1"; // never reached
     }
 
     protected lbType getType() {

@@ -106,6 +106,7 @@ public class Main {
         commandHandler.commands.put("common", new cmdCommonScores());
         commandHandler.commands.put("ratio", new cmdRatio());
         commandHandler.commands.put("ratios", new cmdRatio());
+        commandHandler.commands.put("simulate", new cmdSimulateMap());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

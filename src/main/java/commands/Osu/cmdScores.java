@@ -32,6 +32,7 @@ public class cmdScores implements INumberedCommand {
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
@@ -151,6 +152,8 @@ public class cmdScores implements INumberedCommand {
             case 0:
                 return "Enter `" + statics.prefix + "scores[number] [beatmap url or beatmap id] [osu name]` to make me show the user's "
                         + "top scores for each mod combination of the specified map."
+                        + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "scores8`, I will skip the most recent 7 score embeds "
+                        + "and show the 8-th score embed, defaults to 1."
                         + "\nBeatmap urls from both the new and old website are supported."
                         + "\nIf no beatmap is specified, I will search through the channel's history and pick the map of [number]-th score embed I can find, number defaults to 1."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`"
