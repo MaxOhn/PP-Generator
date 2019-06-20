@@ -89,8 +89,8 @@ public class Main {
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
         commandHandler.commands.put("cm", new cmdScores());
-        commandHandler.commands.put("recentmanialb", new cmdRecentTaikoLeaderboard());
-        commandHandler.commands.put("rmlb", new cmdRecentTaikoLeaderboard());
+        commandHandler.commands.put("recentmanialb", new cmdRecentManiaLeaderboard());
+        commandHandler.commands.put("rmlb", new cmdRecentManiaLeaderboard());
         commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("simulatemania", new cmdSimulateMania());

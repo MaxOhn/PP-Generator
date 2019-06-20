@@ -328,6 +328,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             }
         } else {
             osuscore = utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
+            if (!noMods) osuscore.setEnabledMods(includedMods);
             scores.add(osuscore);
         }
 

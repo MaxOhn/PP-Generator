@@ -384,7 +384,7 @@ public class Performance {
                 logger.error(line);
             errors.close();
             //*/
-            starRating = Double.parseDouble(input.readLine());
+            starRating = Double.parseDouble(input.readLine().replace(",", "."));
             input.close();
             pr.waitFor();
         } catch (Exception e) {
