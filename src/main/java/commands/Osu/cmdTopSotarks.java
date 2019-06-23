@@ -4,8 +4,6 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 
-import java.util.regex.Pattern;
-
 public class cmdTopSotarks extends cmdTopScores {
 
     @Override
@@ -16,9 +14,7 @@ public class cmdTopSotarks extends cmdTopScores {
     @Override
     boolean getMapCondition(OsuBeatmap m) {
         if (m == null) return false;
-        Pattern p = Pattern.compile("^(?!.*Sotarks).*'s? (Easy|Normal|Hard|Insane|Expert|Extra|Extreme)");
-        return (m.getCreatorName().equals("Sotarks") && !p.matcher(m.getVersion()).matches())
-                    || m.getVersion().contains("Sotarks");
+        return (m.getCreatorName().equals("Sotarks") || m.getVersion().contains("Sotarks"));
     }
 
     @Override
