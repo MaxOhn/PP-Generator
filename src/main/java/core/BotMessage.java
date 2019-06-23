@@ -461,7 +461,7 @@ public class BotMessage {
                 if (scores.size() == 1) {
                     eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                             + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
-                    fields.add(0, new MessageEmbed.Field("Mods", getRank() + (getModString().equals("") ? "+NM" : getModString()), true));
+                    fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
                     fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
                 } else {
@@ -482,7 +482,7 @@ public class BotMessage {
                             if (foundMod) continue;
                         }
                         osuscore(s);
-                        fields.add(new MessageEmbed.Field(getModString().equals("") ? "NM" : getModString().substring(2) + " (" + p.getStarRating() + "★):",
+                        fields.add(new MessageEmbed.Field((getModString().equals("") ? "NM" : getModString().substring(2)) + " (" + p.getStarRating() + "★):",
                                 "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", true));
                     }
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
