@@ -77,9 +77,9 @@ public class FileInteractor {
     }
 
     public static int offsetOfNote(int noteIndex, int mapID) {
+        int lineNum = 0;
         try {
             BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
-            int lineNum = 0;
             String line;
             boolean reachedHO = false;
             while ((line = reader.readLine()) != null && lineNum < noteIndex - 1) {
@@ -95,6 +95,7 @@ public class FileInteractor {
             return 0;
         } catch (Exception e) {
             Logger.getLogger(FileInteractor.class).error("Unexpected error while calculating offset of note");
+            System.out.println("mapID: " + mapID + "\nnoteIndex: " + noteIndex + "\nlineNum: " + lineNum);
             e.printStackTrace();
             return 0;
         }
