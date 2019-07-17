@@ -426,6 +426,7 @@ public class BotMessage {
             case SIMULATE:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                mb.append("Simulated score:");
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
