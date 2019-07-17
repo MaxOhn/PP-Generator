@@ -33,8 +33,7 @@ public class Main {
     public static ReactionHandler reactionHandler;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
-        String log4jConfPath = statics.log4jPath;
-        PropertyConfigurator.configure(log4jConfPath);
+        PropertyConfigurator.configure(statics.log4jPath);
         builder = new JDABuilder((AccountType.BOT));
         login();
         addListeners();

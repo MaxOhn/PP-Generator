@@ -22,12 +22,11 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
+import static main.java.util.utilOsu.mods_str;
 
 public class CustomOsu {
 
@@ -65,13 +64,19 @@ public class CustomOsu {
                 .collect(Collectors.toList());
     }
 
-    public Collection<OsuScore> getScores(String mapID) throws IOException {
-        return getScores(mapID, true);
-    }
-
-    public Collection<OsuScore> getScores(String mapID, boolean national) throws IOException {
+    public Collection<OsuScore> getScores(String mapID, boolean national, Set<GameMod> mods) throws IOException {
         limiter.acquire();
-        HttpGet getRequest = new HttpGet("http://osu.ppy.sh/beatmaps/" + mapID + "/scores" + (national ? "?type=country" : ""));
+        StringBuilder url = new StringBuilder("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?");
+        if (national)
+            url.append("type=country");
+        if (mods != null) {
+            if (mods.isEmpty())
+                url.append("&mods[]=NM");
+            else
+                for (GameMod mod : mods)
+                    url.append("&mods[]=").append(mods_str((int) mod.getBit()));
+        }
+        HttpGet getRequest = new HttpGet(url.toString());
         HttpResponse response = client.execute(getRequest);
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new IOException("No valid response from server:\n" + response.getEntity().toString());
