@@ -63,7 +63,7 @@ public class cmdScores implements INumberedCommand {
             for (Message msg : (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
-                    if (msgEmbed.getAuthor().getUrl().contains("/b/")) {
+                    if (msgEmbed.getAuthor() != null && msgEmbed.getAuthor().getUrl().contains("/b/")) {
                         mapID = msgEmbed.getAuthor().getUrl().substring(msgEmbed.getAuthor().getUrl().lastIndexOf("/") + 1);
                         if (--number <= 0) break;
                     } else {
