@@ -30,7 +30,7 @@ public class cmdTrackedStreams implements ICommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "trackedstreams`" +
-                        "to make me display all twitch streams I'm currently tracking";
+                        " to make me display all twitch streams I'm currently tracking";
             default:
                 return help(0);
         }
