@@ -28,6 +28,9 @@ public class secretsButPublic {
     // Provided by twitch
     public static final String twitchClientID = "";
 
+    // Provided by mixer (streaming)
+    public static final String mixerClientID = "";
+
     // Only important if WITH_DB is true
     public static final String dbUser = "";
     public static final String dbPw = "";
