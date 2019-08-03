@@ -29,16 +29,15 @@ public class cmdAllStreamers implements ICommand {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         Map<String, Game> streamMap = event.getGuild().getMembers().stream()
-                .filter(m -> m.getGame().getType() != Game.GameType.STREAMING)
+                .filter(m -> m.getGame() != null && m.getGame().getType() == Game.GameType.STREAMING)
                 .collect(Collectors.toMap(Member::getNickname, Member::getGame));
         StringBuilder msg = new StringBuilder();
         if (streamMap.size() > 0) {
             msg.append("__Current streamers on this server:__");
-            for (String name : streamMap.keySet()) {
+            for (String name : streamMap.keySet())
                 msg.append("- `").append(name).append("`: `")
                         .append(streamMap.get(name).getName()).append("` on `")
                         .append(streamMap.get(name).getUrl()).append("`\n");
-            }
         } else msg.append("No current streamers on this server");
         new BotMessage(event, BotMessage.MessageType.TEXT).send(msg.toString());
     }

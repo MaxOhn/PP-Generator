@@ -91,8 +91,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
             case 0:
                 return "Enter `" + statics.prefix + getName() + "leaderboard[number] [osu name]` to make me show the national top 10 scores on the beatmap of the user's last play."
                         + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "leaderboard8`, I will skip the most recent 7 scores "
-                        + "and show the leaderboard of the 8-th recent score, defaults to 1."
-                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
+                        + "and show the leaderboard of the 8-th recent score, defaults to 1.";
             case 1:
                 return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
             default:
