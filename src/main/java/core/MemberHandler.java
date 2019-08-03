@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -95,11 +96,10 @@ public class MemberHandler {
 
             // Kick unchecked members
             ZonedDateTime now = ZonedDateTime.now();
-            for (String discord : uncheckedUsers.keySet()) {
-                if (now.isAfter(uncheckedUsers.get(discord).plusDays(uncheckedKickDelay))) {
+            new ArrayList<>(uncheckedUsers.keySet()).forEach(discord -> {
+                if (now.isAfter(uncheckedUsers.get(discord).plusDays(uncheckedKickDelay)))
                     kickUser(discord, secrets.mainGuildID);
-                }
-            }
+            });
 
             // Check top player roles
             if (!secrets.WITH_DB) return;

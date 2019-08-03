@@ -164,7 +164,6 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             if (getScoreCondition(score, mode) && getMapCondition(map)) {
                 FileInteractor.prepareFiles(map);
                 maps.add(map);
-                if (maps.size() >= 5) break;
             }
         }
 

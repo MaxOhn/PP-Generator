@@ -4,7 +4,6 @@ import main.java.commands.ICommand;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 public class cmdPing implements ICommand {
@@ -17,7 +16,7 @@ public class cmdPing implements ICommand {
         long time = System.currentTimeMillis();
         if(args.length == 0)
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Pong!", message ->
-                    ((Message)message).editMessageFormat("Pong! (%dms)", System.currentTimeMillis() - time).queue());
+                    message.editMessageFormat("Pong! (%dms)", System.currentTimeMillis() - time).queue());
         else
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
     }

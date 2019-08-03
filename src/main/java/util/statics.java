@@ -6,7 +6,7 @@ public class statics {
 
     public static final String prefixAlt = "!!";
 
-    public static final String[] authorities = {"admin", "mod", "moderator", "botcommander", "bot commander"};
+    public static final String[] authorities = {"admin", "mod", "moderator"};
 
     public static final String raspResources = "./resources/";
 

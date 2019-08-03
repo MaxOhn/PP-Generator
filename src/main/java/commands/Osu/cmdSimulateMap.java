@@ -286,7 +286,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         // Create simulated score
         OsuScore osuscore = getScore();
         List<OsuScore> scores = new ArrayList<>();
-        if (osuscore == null || map.getMode() != GameMode.STANDARD || osuscore.getRank().equals("F")) {
+        if (osuscore == null || map.getMode() != GameMode.STANDARD) {
             if (hitSum < nTotal) {
                 HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : utilOsu.getAcc(osuscore, map.getMode()), nTotal, n320, n300, n200, n100, n50, nM);
                 n320 = hitresults.get("n320");
@@ -328,6 +328,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             }
         } else {
             osuscore = utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
+            if (!noMods) osuscore.setEnabledMods(includedMods);
             scores.add(osuscore);
         }
 

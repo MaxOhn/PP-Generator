@@ -426,6 +426,7 @@ public class BotMessage {
             case SIMULATE:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                mb.append("Simulated score:");
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
@@ -452,7 +453,8 @@ public class BotMessage {
                         + p.getMap().getApproach() + "` OD: `" + p.getMap().getOverall() + "` HP: `"
                         + p.getMap().getDrain() + "` Stars: `" + df.format(p.getMap().getDifficulty()) + "`";
                 List<MessageEmbed.Field> fields = new ArrayList<>();
-                fields.add(new MessageEmbed.Field("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true));
+                if (p.getScore() > 0)
+                    fields.add(new MessageEmbed.Field("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true));
                 fields.add(new MessageEmbed.Field("Acc", p.getAcc() + "%", true));
                 if (p.getMode() != GameMode.MANIA)
                     fields.add(new MessageEmbed.Field("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true));
@@ -460,7 +462,7 @@ public class BotMessage {
                 if (scores.size() == 1) {
                     eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                             + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
-                    fields.add(0, new MessageEmbed.Field("Mods", getRank() + (getModString().equals("") ? "+NM" : getModString()), true));
+                    fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
                     fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
                 } else {
@@ -481,7 +483,7 @@ public class BotMessage {
                             if (foundMod) continue;
                         }
                         osuscore(s);
-                        fields.add(new MessageEmbed.Field(getModString().equals("") ? "NM" : getModString().substring(2) + " (" + p.getStarRating() + "★):",
+                        fields.add(new MessageEmbed.Field((getModString().equals("") ? "NM" : getModString().substring(2)) + " (" + p.getStarRating() + "★):",
                                 "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", true));
                     }
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));

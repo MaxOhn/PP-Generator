@@ -13,9 +13,8 @@ If you have any questions, ideas, suggestions, improvements, ..., feel free to e
 
 
 
-I can't be bothered to update this file regularly with new commands but you can either take a look into `core/Main.java` to see which commands are added in the `addCommands` function or you can simply use the `<help` command which lists all commands.
-I might create a spreadsheet that contains all the commands in the future, I'll see.
-
+Commands can be found in the spreadsheet [http://bit.ly/badecoms](http://bit.ly/badecoms) although I can't guarantee that it is always up to date.
+To be sure what commands there are, you can either just use the command `<help` which displays all current commands, or you can take a look into `core/Main.java` to see which commands are added in the `addCommands` function.
 
 
 # Get it started yourself

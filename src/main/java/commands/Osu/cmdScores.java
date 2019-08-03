@@ -63,14 +63,19 @@ public class cmdScores implements INumberedCommand {
             for (Message msg : (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
-                    List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                    if (fields.size() > 0) {
-                        if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*")
-                                || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*"))) {
-                            mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
-                            if (--number <= 0) break;
-                        }
+                    if (msgEmbed.getAuthor().getUrl().contains("/b/")) {
+                        mapID = msgEmbed.getAuthor().getUrl().substring(msgEmbed.getAuthor().getUrl().lastIndexOf("/") + 1);
+                        if (--number <= 0) break;
+                    } else {
+                        List<MessageEmbed.Field> fields = msgEmbed.getFields();
+                        if (fields.size() > 0) {
+                            if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*")
+                                    || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?\\/){2,} ?\\d+ ?\\}.*"))) {
+                                mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                                if (--number <= 0) break;
+                            }
 
+                        }
                     }
                 }
                 if (--counter == 0) {

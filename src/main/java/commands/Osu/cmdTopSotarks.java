@@ -18,7 +18,7 @@ public class cmdTopSotarks extends cmdTopScores {
         if (m == null) return false;
         Pattern p = Pattern.compile("^(?!.*Sotarks).*'s? (Easy|Normal|Hard|Insane|Expert|Extra|Extreme)");
         return (m.getCreatorName().equals("Sotarks") && !p.matcher(m.getVersion()).matches())
-                    || m.getVersion().contains("Sotarks");
+                || m.getVersion().contains("Sotarks");
     }
 
     @Override

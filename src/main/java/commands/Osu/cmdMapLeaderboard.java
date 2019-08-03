@@ -20,8 +20,8 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -122,20 +122,10 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         List<OsuScore> scores;
         try {
             int limit = status != modStatus.WITHOUT ? 50 : 10;
-            switch (getType()) {
-                case NATIONAL:
-                    scores = Main.customOsu.getScores(mapID).stream().limit(limit)
-                            .filter(this::isValidScore)
-                            .collect(Collectors.toList());
-                    break;
-                case GLOBAL:
-                    scores = Main.customOsu.getScores(mapID, false).stream().limit(limit)
-                            .filter(this::isValidScore)
-                            .collect(Collectors.toList());
-                    break;
-                default:
-                    scores = new ArrayList<>();
-            }
+            scores = Main.customOsu.getScores(mapID, getType() == lbType.NATIONAL, status == modStatus.WITHOUT ? null : new HashSet<>(Arrays.asList(includedMods)))
+                    .stream().limit(limit)
+                    .filter(this::isValidScore)
+                    .collect(Collectors.toList());
         } catch (IOException e) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");
             e.printStackTrace();
