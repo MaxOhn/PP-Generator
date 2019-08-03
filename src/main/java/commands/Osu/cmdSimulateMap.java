@@ -250,7 +250,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             }
         }
 
-        // Check parameter contrains
+        // Check parameter constrains
         int hitSum = 0;
         FileInteractor.prepareFiles(map);
         int nTotal = FileInteractor.countTotalObjects(map.getID());
@@ -288,7 +288,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         List<OsuScore> scores = new ArrayList<>();
         if (osuscore == null || map.getMode() != GameMode.STANDARD) {
             if (hitSum < nTotal) {
-                HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : 100, nTotal, n320, n300, n200, n100, n50, nM);
+                HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : utilOsu.getAcc(osuscore, map.getMode()), nTotal, n320, n300, n200, n100, n50, nM);
                 n320 = hitresults.get("n320");
                 n300 = hitresults.get("n300");
                 n200 = hitresults.get("n200");

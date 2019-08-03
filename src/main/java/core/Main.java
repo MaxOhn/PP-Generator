@@ -4,6 +4,7 @@ import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
 import main.java.commands.Osu.*;
 import main.java.commands.Twitch.cmdAddStream;
+import main.java.commands.Twitch.cmdAllStreamers;
 import main.java.commands.Twitch.cmdRemoveStream;
 import main.java.commands.Twitch.cmdTrackedStreams;
 import main.java.commands.Utility.*;
@@ -122,6 +123,8 @@ public class Main {
         commandHandler.commands.put("addstream", new cmdAddStream());
         commandHandler.commands.put("removestream", new cmdRemoveStream());
         commandHandler.commands.put("trackedstreams", new cmdTrackedStreams());
+        commandHandler.commands.put("allstreamers", new cmdAllStreamers());
+        commandHandler.commands.put("allstreams", new cmdAllStreamers());
 
         // fun
         commandHandler.commands.put("ding", new cmdDing());
