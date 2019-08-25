@@ -17,7 +17,7 @@ public class ReadyListener extends ListenerAdapter {
         Main.osu = Osu.getAPI(secrets.osuAPIkey);
         Main.customOsu = new CustomOsu();
         if (secrets.RELEASE)
-            Main.twitch = new TwitchHook();
+            Main.twitch = new StreamHook();
         Main.discLink = new DiscordLink();
         Main.runningLyrics = new HashSet<>();
         Main.memberHandler = new MemberHandler();

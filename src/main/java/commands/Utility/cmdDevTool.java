@@ -93,16 +93,22 @@ public class cmdDevTool implements ICommand {
                 if (args.length == 1)
                     event.getTextChannel().sendMessage("Current streamers: `" + Main.twitch.getStreamers().toString() + "`").queue();
                 else {
-                    if (args[1].equals("r") && args.length >= 4) {
-                        if (!Main.twitch.removeStreamer(args[2], args[3]))
+                    if (args.length < 5 || (!args[2].equals("twitch") && !args[2].equals("mixer"))) {
+                        event.getTextChannel().sendMessage(help(1)).queue();
+                        break;
+                    }
+                    if (args[1].equals("r")) {
+                        if (!Main.twitch.removeStreamer(args[3], args[4], args[2]))
                             event.getTextChannel().sendMessage(help(1)).queue();
                         else
-                            event.getTextChannel().sendMessage("Removed `(" + args[2] + ", " + args[3] + ")` from streamers").queue();
-                    } else if (args[1].equals("a") && args.length >= 4) {
-                        if (!Main.twitch.addStreamer(args[2], args[3]))
+                            event.getTextChannel().sendMessage("Removed `(" + args[2] + ", " + args[3] + ")` from " + args[2] + " streamers").queue();
+                    } else if (args[1].equals("a")) {
+                        if (!Main.twitch.addStreamer(args[3], args[4], args[2]))
                             event.getTextChannel().sendMessage(help(1)).queue();
                         else
-                            event.getTextChannel().sendMessage("Added `(" + args[2] + ", " + args[3] + ")` to streamers").queue();
+                            event.getTextChannel().sendMessage("Added `(" + args[2] + ", " + args[3] + ")` to " + args[2] + " streamers").queue();
+                    } else {
+                        event.getTextChannel().sendMessage(help(1)).queue();
                     }
                 }
                 break;

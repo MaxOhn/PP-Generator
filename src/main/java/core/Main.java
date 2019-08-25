@@ -27,7 +27,7 @@ public class Main {
     public static JDA jda;
     public static Osu osu;
     public static CustomOsu customOsu;
-    public static TwitchHook twitch;
+    public static StreamHook twitch;
     public static DiscordLink discLink;
     public static HashSet<String> runningLyrics;
     public static MemberHandler memberHandler;
