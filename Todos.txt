@@ -1,5 +1,4 @@
 
-add 100% for <ratio
 add mirror mod for mania
 check if pp calculation has an update
 have <lb pickup other lb's

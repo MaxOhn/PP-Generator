@@ -21,8 +21,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -65,13 +65,10 @@ public class BotMessage {
     }
 
     public void send(Message msg) {
-        switch (event.getChannelType()) {
-            case PRIVATE:
-                event.getChannel().sendMessage(msg).queue();
-                break;
-            default:
-                event.getTextChannel().sendMessage(msg).queue();
-                break;
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendMessage(msg).queue();
+        } else {
+            event.getTextChannel().sendMessage(msg).queue();
         }
     }
 
@@ -80,13 +77,10 @@ public class BotMessage {
     }
 
     public void send(Message msg, MessageEmbed embed) {
-        switch (event.getChannelType()) {
-            case PRIVATE:
-                event.getChannel().sendMessage(msg).embed(embed).queue();
-                break;
-            default:
-                event.getTextChannel().sendMessage(msg).embed(embed).queue();
-                break;
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendMessage(msg).embed(embed).queue();
+        } else {
+            event.getTextChannel().sendMessage(msg).embed(embed).queue();
         }
     }
 
@@ -95,13 +89,10 @@ public class BotMessage {
     }
 
     public void send(Message msg, Consumer<? super Message> consumer) {
-        switch (event.getChannelType()) {
-            case PRIVATE:
-                event.getChannel().sendMessage(msg).queue(consumer);
-                break;
-            default:
-                event.getTextChannel().sendMessage(msg).queue(consumer);
-                break;
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendMessage(msg).queue(consumer);
+        } else {
+            event.getTextChannel().sendMessage(msg).queue(consumer);
         }
     }
 
@@ -110,13 +101,10 @@ public class BotMessage {
     }
 
     public void send(Message msg, MessageEmbed embed, Consumer<? super Message> consumer) {
-        switch (event.getChannelType()) {
-            case PRIVATE:
-                event.getChannel().sendMessage(msg).embed(embed).queue(consumer);
-                break;
-            default:
-                event.getTextChannel().sendMessage(msg).embed(embed).queue(consumer);
-                break;
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendMessage(msg).embed(embed).queue(consumer);
+        } else {
+            event.getTextChannel().sendMessage(msg).embed(embed).queue(consumer);
         }
     }
 
@@ -331,13 +319,10 @@ public class BotMessage {
                 for (OsuScore s : scores) {
                     osuscore(s);
                     comboDisplay = " [ " + p.getCombo() + "x/";
-                    switch (p.getMode()) {
-                        case MANIA:
-                            comboDisplay += " " + p.getNMisses() + " miss" + (p.getNMisses() != 1 ? "es" : "") + " ]";
-                            break;
-                        default:
-                            comboDisplay += p.getMaxCombo() + "x ]";
-                            break;
+                    if (p.getMode() == GameMode.MANIA) {
+                        comboDisplay += " " + p.getNMisses() + " miss" + (p.getNMisses() != 1 ? "es" : "") + " ]";
+                    } else {
+                        comboDisplay += p.getMaxCombo() + "x ]";
                     }
                     if (!descr.toString().equals("")) descr.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
@@ -393,7 +378,7 @@ public class BotMessage {
                 if (u == null) throw new IllegalStateException(Error.USER.getMsg());
                 mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
-                int[] accs = new int[] {0, 90, 95, 97, 99};
+                int[] accs = new int[] {0, 90, 95, 97, 99, 100};
                 int[] nScores = new int[accs.length];
                 int[] nMisses = new int[accs.length];
                 int[] nTotal = new int[accs.length];
@@ -402,7 +387,7 @@ public class BotMessage {
                 for (OsuScore s : scores) {
                     double acc = utilOsu.getAcc(s, p.getMode());
                     for (int i = 0; i < accs.length; i++) {
-                        if (acc > accs[i]) {
+                        if (acc > accs[i] || (acc == 100 && i == accs.length - 1)) {
                             nGekis[i] += s.getGekis();
                             n300[i] += s.getHit300();
                             nTotal[i] += s.getGekis() + s.getHit300() + s.getKatus() + s.getHit100() + s.getHit50() + s.getMisses();
@@ -420,11 +405,10 @@ public class BotMessage {
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 StringBuilder desc = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
-                for (int i = 0; i < accs.length; i++) {
-                    desc.append("\n**>").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
+                for (int i = 0, iLimit = nScores[nScores.length - 1] == 0 ? accs.length - 1 : accs.length; i < iLimit; i++) {
+                    desc.append("\n**").append(accs[i] < 100 ? ">" : "").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
                             .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
-                            .append((double)(Math.round(100 * 100 * (double)nMisses[i]/nTotal[i])) / 100).append("%")
-                    ;
+                            .append((double)(Math.round(100 * 100 * (double)nMisses[i]/nTotal[i])) / 100).append("%");
                 }
                 eb.setDescription(desc.toString());
                 break;
@@ -488,8 +472,18 @@ public class BotMessage {
                             if (foundMod) continue;
                         }
                         osuscore(s);
+                        String ppStr = "";
+                        if (s.getPp() == 0) {
+                            try {
+                                ppStr = new DecimalFormat("0.00").format(DBProvider.getPpRating(p.getMap().getID(), utilOsu.abbrvModSet(s.getEnabledMods())));
+                            } catch (Exception e) {
+                                ppStr = p.getPp();
+                            }
+                        } else {
+                            ppStr = p.getPp();
+                        }
                         fields.add(new MessageEmbed.Field((getModString().equals("") ? "NM" : getModString().substring(2)) + " (" + p.getStarRating() + "★):",
-                                "**" + p.getPp() + "pp** / " + p.getPpMax() + "PP", true));
+                                "**" + ppStr + "pp** / " + p.getPpMax() + "PP", true));
                     }
                     fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
                     eb.setDescription(descri.append("\n"));
