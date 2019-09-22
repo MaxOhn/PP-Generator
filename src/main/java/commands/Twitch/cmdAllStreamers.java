@@ -46,8 +46,7 @@ public class cmdAllStreamers implements ICommand {
     public String help(int hCode) {
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "allstreamers`" +
-                        " to make me list all members of this server who are currently streaming";
+                return "Enter `" + statics.prefix + "allstreamers` to make me list all members of this server who are currently streaming";
             default:
                 return help(0);
         }

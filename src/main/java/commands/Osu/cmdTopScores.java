@@ -29,6 +29,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
+        setInitial();
         return true;
     }
 

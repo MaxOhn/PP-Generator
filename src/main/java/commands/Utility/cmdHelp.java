@@ -23,19 +23,18 @@ public class cmdHelp implements ICommand {
     public void action(String[] args, MessageReceivedEvent event) {
         MessageBuilder mb = new MessageBuilder("Prefix: `" + statics.prefix + "`")
                 .append("\nTo get help for a specific command, type `" + statics.prefix + "[command] -h`")
-                .append("\nCommands can also be used in private messages to me");
+                .append("\nCommands can also be used in private messages to me")
+                .append("\nFurther help on the spreadsheet: http://bit.ly/badecoms");
         EmbedBuilder eb = new EmbedBuilder()
                 .setColor(Color.green)
                 .setAuthor("Command list", "https://github.com/MaxOhn/PP-Generator");
         for (utilGeneral.Category c : utilGeneral.Category.values()) {
             Map<String, ICommand> cmds = commandHandler.getCommands(c);
-            String fieldString = String.join(", ",
-                    cmds.keySet().stream()
-                            .collect(Collectors.groupingBy(invoke -> cmds.get(invoke).getClass()))
-                            .values().stream()
-                            .map(list -> list.size() == 1 ? list.get(0) : "[" + String.join(", ", list) + "]")
-                            .collect(Collectors.toList())
-            );
+            String fieldString = cmds.keySet().stream()
+                    .collect(Collectors.groupingBy(invoke -> cmds.get(invoke).getClass()))
+                    .values().stream()
+                    .map(list -> list.size() == 1 ? list.get(0) : "[" + String.join(", ", list) + "]")
+                    .collect(Collectors.joining(", "));
             eb.addField("__**" + c.getName() + "**__", fieldString, false);
         }
         new BotMessage(event, BotMessage.MessageType.TEXT).send(mb.build(), eb.build());

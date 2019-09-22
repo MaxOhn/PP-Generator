@@ -96,7 +96,7 @@ public class cmdRecent implements INumberedCommand {
         } catch (SQLException | ClassNotFoundException e) {
             try {
                 map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(recent.getBeatmapID()).setMode(getMode()).setLimit(1).build()
+                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(recent.getBeatmapID()).setLimit(1).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap id `" + recent.getBeatmapID() + "`");

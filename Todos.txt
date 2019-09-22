@@ -1,0 +1,23 @@
+
+add 100% for <ratio
+add this todo file to github
+add command spreadsheet to <help
+add mirror mod for mania
+fix rock_e_feller lyrics
+write max combo in bold
+check if pp calculation has an update
+add map name, ... for empty <lb
+have <lb pickup other lb's
+page scrap to get last ranked/loved/... maps
+fix IndexOutOfBoundsException for customOsu.getRankings (line 63)
+improve argument handling for <s
+fix <s for mania (ln count as 2 hitresults)
+if no mods for <s, chose max pp as played pp instead of calculating
+fill hitobjects for <sr on failed score
+fix FileInteractor.offsetOfNode NullPointerExceptions
+	- mapid 107410 (nyan [Insane]) at 100% completion?
+	- mapid 1256809, noteIndex 3201, lineNum 3200
+
+add <snipeprogress command (?)
+command showing average max combo, maybe weighted (?)
+command to show all scores of mapset (?)
