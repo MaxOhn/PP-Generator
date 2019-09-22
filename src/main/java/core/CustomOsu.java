@@ -66,10 +66,10 @@ public class CustomOsu {
         try {
             return doc.select(".ranking-page-table").first()
                     .getElementsByTag("tbody").first().children().stream()
-                    .map(e -> e.child(1).child(0).child(1).child(0).text())
+                    .map(e -> e.child(1).child(0).child(1).textNodes().get(0).text())
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            logger.warn("Error while scraping rankings page, is osu_session still up to date?", e);
+            logger.warn("Error while scraping rankings page, is osu_session still up to date?");
             throw e;
         }
     }

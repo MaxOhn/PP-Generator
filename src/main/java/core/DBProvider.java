@@ -557,7 +557,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("delete from twitch where name='" + streamer + "' and channel='" + channelID + "' and platform='" + platform + "'");
+        stmnt.execute("delete from streams where name='" + streamer + "' and channel='" + channelID + "' and platform='" + platform + "'");
         stmnt.close();
         c.close();
     }
@@ -566,7 +566,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into twitch(name, channel, platform) values ('" + streamer + "', '" + channelID + "', '" + platform + "')");
+        stmnt.execute("insert into streams(name, channel, platform) values ('" + streamer + "', '" + channelID + "', '" + platform + "')");
         stmnt.close();
         c.close();
     }
@@ -576,7 +576,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select * from twitch");
+        ResultSet rs = stmnt.executeQuery("select * from streams");
         while(rs.next()) {
             if (rs.getString("platform").equals("mixer")) {
                 String mixerName = rs.getString("name");
@@ -597,7 +597,7 @@ public class DBProvider {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select * from twitch");
+        ResultSet rs = stmnt.executeQuery("select * from streams");
         while(rs.next()) {
             if (rs.getString("platform").equals("twitch")) {
                 String twitchName = rs.getString("name");
