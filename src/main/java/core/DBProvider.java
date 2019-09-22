@@ -553,22 +553,43 @@ public class DBProvider {
      * ------------------------
      */
 
-    static void removeStreamer(String streamer, String channelID) throws ClassNotFoundException, SQLException {
+    static void removeStreamer(String streamer, String channelID, String platform) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("delete from twitch where name='" + streamer + "' and channel='" + channelID + "'");
+        stmnt.execute("delete from twitch where name='" + streamer + "' and channel='" + channelID + "' and platform='" + platform + "'");
         stmnt.close();
         c.close();
     }
 
-    static void addStreamer(String streamer, String channelID) throws ClassNotFoundException, SQLException {
+    static void addStreamer(String streamer, String channelID, String platform) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        stmnt.execute("insert into twitch(name, channel) values ('" + streamer + "', '" + channelID + "')");
+        stmnt.execute("insert into twitch(name, channel, platform) values ('" + streamer + "', '" + channelID + "', '" + platform + "')");
         stmnt.close();
         c.close();
+    }
+
+    public static HashMap<String, ArrayList<String>> getMixer() throws SQLException, ClassNotFoundException {
+        HashMap<String, ArrayList<String>> streamers = new HashMap<>();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from twitch");
+        while(rs.next()) {
+            if (rs.getString("platform").equals("mixer")) {
+                String mixerName = rs.getString("name");
+                String channelID = rs.getString("channel");
+                if (streamers.containsKey(mixerName))
+                    streamers.get(mixerName).add(channelID);
+                else
+                    streamers.put(mixerName, new ArrayList<>(Collections.singletonList(channelID)));
+            }
+        }
+        stmnt.close();
+        c.close();
+        return streamers;
     }
 
     public static HashMap<String, ArrayList<String>> getTwitch() throws SQLException, ClassNotFoundException {
@@ -578,12 +599,14 @@ public class DBProvider {
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select * from twitch");
         while(rs.next()) {
-            String twitchName = rs.getString("name");
-            String channelID = rs.getString("channel");
-            if (streamers.containsKey(twitchName))
-                streamers.get(twitchName).add(channelID);
-            else
-                streamers.put(twitchName, new ArrayList<>(Collections.singletonList(channelID)));
+            if (rs.getString("platform").equals("twitch")) {
+                String twitchName = rs.getString("name");
+                String channelID = rs.getString("channel");
+                if (streamers.containsKey(twitchName))
+                    streamers.get(twitchName).add(channelID);
+                else
+                    streamers.put(twitchName, new ArrayList<>(Collections.singletonList(channelID)));
+            }
         }
         stmnt.close();
         c.close();
