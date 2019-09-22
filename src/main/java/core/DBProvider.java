@@ -494,7 +494,7 @@ public class DBProvider {
      * ------------------------
      */
 
-    static BiMap<String, String> getManualLinks() throws SQLException, ClassNotFoundException {
+    public static BiMap<String, String> getManualLinks() throws SQLException, ClassNotFoundException {
         BiMap<String, String> links = HashBiMap.create();
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
