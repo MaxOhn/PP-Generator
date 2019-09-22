@@ -1,9 +1,7 @@
 
 add 100% for <ratio
 add mirror mod for mania
-fix rock_e_feller lyrics
 check if pp calculation has an update
-add map name, ... for empty <lb
 have <lb pickup other lb's
 page scrap to get last ranked/loved/... maps
 fix IndexOutOfBoundsException for customOsu.getRankings (line 63)

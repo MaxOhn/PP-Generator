@@ -22,7 +22,7 @@ public class cmdTrackedStreams implements ICommand {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help")))
             event.getTextChannel().sendMessage(help(0)).queue();
         else
-            event.getTextChannel().sendMessage("I'm current tracking in this channel: `" + Main.twitch.trackedStreamers(event.getTextChannel().getId()) + "`").queue();
+            event.getTextChannel().sendMessage("I'm current tracking in this channel: `" + Main.streamHook.trackedStreamers(event.getTextChannel().getId()) + "`").queue();
     }
 
     @Override

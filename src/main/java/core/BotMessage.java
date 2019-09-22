@@ -301,25 +301,30 @@ public class BotMessage {
             case LEADERBOARD:
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                String iconURL = "";
                 if (scores.size() > 10) {
+                    iconURL = "https://a.ppy.sh/" + scores.get(0).getUserID();
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
                             "specified mods on the specified map's leaderboard, here's the top 10 of them:");
                     scores = scores.stream().limit(10).collect(Collectors.toList());
-                } else if (scores.size() == 0) {
-                    mb.append("There appear to be no scores on the specified map");
-                    thumbFile = filesPrepared
-                            ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                            : new File(statics.thumbPath + "bgNotFound.png");
-                    eb.setThumbnail("attachment://thumb.jpg");
-                    break;
                 }
+                else if (scores.size() == 0) {
+                    mb.append("There appear to be no scores on the specified map");
+                } else
+                    iconURL = "https://a.ppy.sh/" + scores.get(0).getUserID();
                 thumbFile = filesPrepared
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
                 eb.setThumbnail("attachment://thumb.jpg");
-                eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
-                                + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
-                        "https://osu.ppy.sh/b/" + p.getMap().getID(), "https://a.ppy.sh/" + scores.get(0).getUserID());
+                if (iconURL.isEmpty()) {
+                    eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
+                                    + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
+                            "https://osu.ppy.sh/b/" + p.getMap().getID());
+                } else {
+                    eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
+                                    + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
+                            "https://osu.ppy.sh/b/" + p.getMap().getID(), iconURL);
+                }
                 String comboDisplay;
                 StringBuilder descr = new StringBuilder();
                 idx = 1;

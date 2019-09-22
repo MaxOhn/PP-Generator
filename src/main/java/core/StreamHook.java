@@ -5,11 +5,6 @@ import com.mb3364.twitch.api.Twitch;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.models.Stream;
 import com.mixer.api.MixerAPI;
-import com.mixer.api.resource.MixerUser;
-import com.mixer.api.resource.channel.MixerChannel;
-import com.mixer.api.resource.channel.MixerChannelStatus;
-import com.mixer.api.resource.channel.MixerResource;
-import com.mixer.api.services.impl.ChannelsService;
 import main.java.util.secrets;
 import org.apache.log4j.Logger;
 
@@ -17,7 +12,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -195,15 +189,9 @@ public class StreamHook {
         return outputStr + "Mixer: " + output.toString();
     }
 
-    public boolean isTracked(String streamer, String channelID, String platform) {
-        //return (twitchStreamers.containsKey(streamer) && twitchStreamers.get(streamer).contains(channelID))
-        //        || (mixerStreamers.containsKey(streamer) && mixerStreamers.get(streamer).contains(channelID));
-        if (platform.equals("twitch"))
-            return twitchStreamers.containsKey(streamer) && twitchStreamers.get(streamer).contains(channelID);
-        else if (platform.equals("mixer"))
-            return mixerStreamers.containsKey(streamer) && mixerStreamers.get(streamer).contains(channelID);
-        else
-            return false;
+    public boolean isTracked(String streamer, String channelID) {
+        return twitchStreamers.containsKey(streamer) && twitchStreamers.get(streamer).contains(channelID)
+                || mixerStreamers.containsKey(streamer) && mixerStreamers.get(streamer).contains(channelID);
     }
 
     private void streamMessage(Stream stream, String channelID, String platform) {

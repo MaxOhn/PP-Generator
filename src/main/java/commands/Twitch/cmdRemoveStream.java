@@ -14,7 +14,7 @@ public class cmdRemoveStream extends PrivilegedCommand {
 
     @Override
     public boolean customCalled(String[] args, MessageReceivedEvent event) {
-        if ((args.length < 1 || args.length > 3)) {
+        if (args.length != 2) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         }
@@ -23,10 +23,14 @@ public class cmdRemoveStream extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        if (Main.twitch.removeStreamer(args[0], event.getTextChannel().getId()))
-            event.getTextChannel().sendMessage("I'm no longer tracking `" + args[0] + "`'s twitch stream.").queue();
+        if (!args[0].equals("twitch") && !args[0].equals("mixer")) {
+            event.getTextChannel().sendMessage(help(2)).queue();
+            return;
+        }
+        if (Main.streamHook.removeStreamer(args[1], event.getTextChannel().getId(), args[0]))
+            event.getTextChannel().sendMessage("I'm no longer tracking `" + args[1] + "`'s " + args[0] + "stream.").queue();
         else
-            event.getTextChannel().sendMessage("Could not remove `" + args[0] + "`'s stream. Is the name being tracked in this channel?").queue();
+            event.getTextChannel().sendMessage("Could not remove `" + args[1] + "`'s stream. Is the name being tracked in this channel?").queue();
     }
 
     @Override
@@ -36,15 +40,17 @@ public class cmdRemoveStream extends PrivilegedCommand {
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Error while retrieving authorityRoles: " + e);
+            logger.error("Error while retrieving authorityRoles:");
+            e.printStackTrace();
         }
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "removestream <twitch name>` to make me remove the name from the" +
-                        " stream-tracking list\nUsing this command requires either the admin " + "" +
-                        "permission or one of these roles: `[" + roles + "]`";
+                return "Enter `" + statics.prefix + "removestream twitch/mixer <stream name>` to make me remove the name from the stream-tracking list" +
+                        "\nUsing this command requires either the admin permission or one of these roles: `[" + roles + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
+            case 2:
+                return "The first argument must either be `twitch` or `mixer`, the second one must be the name of the stream" + help;
             default:
                 return help(0);
         }

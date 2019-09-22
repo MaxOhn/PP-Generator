@@ -15,7 +15,7 @@ public class cmdAddStream extends PrivilegedCommand {
 
     @Override
     public boolean customCalled(String[] args, MessageReceivedEvent event) {
-        if ((args.length < 1 || args.length > 3)) {
+        if (args.length != 2) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         }
@@ -24,27 +24,19 @@ public class cmdAddStream extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        String name = "";
-        if (args[0].equals("-l") || args[0].equals("-link")) {
-            if (args.length  < 2) {
-                event.getTextChannel().sendMessage(help(0)).queue();
-                return;
-            }
-            if (args[1].matches("((https?:\\/\\/)?(www\\.)?)?twitch\\.tv\\/\\w+"))
-                name =  args[1].substring(args[1].lastIndexOf("/"));
-            else
-                event.getTextChannel().sendMessage(help(2)).queue();
-        } else
-            name = args[0];
-        if (Main.twitch.isTracked(name, event.getTextChannel().getId())) {
+        if (!args[0].equals("twitch") && !args[0].equals("mixer")) {
             event.getTextChannel().sendMessage(help(3)).queue();
             return;
         }
-        if (Main.twitch.addStreamer(name, event.getTextChannel().getId()))
+        String name = args[1];
+        if (Main.streamHook.isTracked(name, event.getTextChannel().getId())) {
+            event.getTextChannel().sendMessage(help(2)).queue();
+            return;
+        }
+        if (Main.streamHook.addStreamer(name, event.getTextChannel().getId(), args[0]))
             event.getTextChannel().sendMessage("I'm now tracking `" + name + "`'s twitch stream.").queue();
         else {
-            MessageBuilder builder = new MessageBuilder("Could not track `" + name +
-                    "`'s stream for some reason, blame ").append(event.getGuild().getMemberById(secrets.badewanne3ID));
+            MessageBuilder builder = new MessageBuilder("Could not track `" + name + "`'s stream for some reason, blame bade");
             event.getTextChannel().sendMessage(builder.build()).queue();
         }
     }
@@ -56,19 +48,20 @@ public class cmdAddStream extends PrivilegedCommand {
         try {
             roles = String.join(", ", DBProvider.getAuthorityRoles(serverID));
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Error while retrieving authorityRoles: " + e);
+            logger.error("Error while retrieving authorityRoles:");
+            e.printStackTrace();
         }
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "addstream <twitch name>` or `" + statics.prefix + "addstream -link <link to twitch stream>`" +
-                        "to make me respond whenever the stream comes online\nUsing this command requires either the admin " + "" +
-                        "permission or one of these roles: `[" + roles + "]`";
+                return "Enter `" + statics.prefix + "addstream twitch/mixer <stream name>` to make me respond whenever the stream comes online." +
+                        "The platform specification `twitch` or `mixer` is so that I know where to look for the stream name." +
+                        "\nUsing this command requires either the admin permission or one of these roles: `[" + roles + "]`";
             case 1:
                 return "This command is only for the big boys. Your privilege is too low, yo" + help;
             case 2:
-                return "The stream link should be of the form `https://www.twitch.tv/<twitch name>`" + help;
+                return "Streamer is already being tracked in this channel" + help;
             case 3:
-                return "User is already being tracked in this channel!" + help;
+                return "The first argument must either be `twitch` or `mixer`, the second one must be the name of the stream" + help;
             default:
                 return help(0);
         }
