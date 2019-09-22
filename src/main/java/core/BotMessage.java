@@ -183,7 +183,7 @@ public class BotMessage {
                     .addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()),true)
                     .addField("Acc", p.getAcc() + "%",true)
                     .addField("PP", ppString + "**/" + p.getPpMax() + "PP",true)
-                    .addField("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x",true)
+                    .addField("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x",true)
                     .addField("Hits", hitString,true)
                     .addField("Map Info", mapInfo,true);
                 break;
@@ -210,8 +210,8 @@ public class BotMessage {
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
                             NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
                     if (p.getMode() == GameMode.MANIA) fieldName += "\t" + getKeyString();
-                    String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ "
-                            + s.getMaxCombo() + "x/" + p.getMaxCombo() + "x ]\t {";
+                    String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ **"
+                            + s.getMaxCombo() + "x**/" + p.getMaxCombo() + "x ]\t {";
                     switch (p.getMode()) {
                         case STANDARD: fieldValue += s.getHit300() + "/" + s.getHit100() + "/" + s.getHit50(); break;
                         case TAIKO: fieldValue +=  s.getHit300() + "/" + s.getHit100(); break;
@@ -457,7 +457,7 @@ public class BotMessage {
                     fields.add(new MessageEmbed.Field("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true));
                 fields.add(new MessageEmbed.Field("Acc", p.getAcc() + "%", true));
                 if (p.getMode() != GameMode.MANIA)
-                    fields.add(new MessageEmbed.Field("Combo", p.getCombo() + "x/" + p.getMaxCombo() + "x", true));
+                    fields.add(new MessageEmbed.Field("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x", true));
                 fields.add(new MessageEmbed.Field("Hits", hitString, true));
                 if (scores.size() == 1) {
                     eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
@@ -519,7 +519,7 @@ public class BotMessage {
                                     .addField(new MessageEmbed.Field(getRank() + getModString() + "\t" +
                                             NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
                                             p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
-                                            "**/" + p.getPpMax() + "PP\t[ " + p.getCombo() + "x/" +
+                                            "**/" + p.getPpMax() + "PP\t[ **" + p.getCombo() + "x**/" +
                                             p.getMaxCombo() + "x ]\t " + hString, false));
                             eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + p.getMap().getID());
                             message.editMessage(eb.build()).queue();

@@ -5,10 +5,10 @@ public class cmdRockefeller extends cmdSong {
     String[] getLyrics() {
         return new String[] {
                 "1 - 2 - 7 - 3,",
-                "down the Rockerfeller street.",
+                "down the Rockefeller street.",
                 "Life is marchin' on, do you feel that?",
                 "1 - 2 - 7 - 3,",
-                "down the Rockerfeller street.",
+                "down the Rockefeller street.",
                 "Everything is more than surreal"
         };
     }
