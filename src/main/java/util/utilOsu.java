@@ -303,6 +303,8 @@ public class utilOsu {
     public static OsuScore unchokeScore(OsuScore score, int maxCombo, GameMode mode, int nObjects) {
         if (score.getMaxCombo() == maxCombo) return score;
         score.setMaxcombo(maxCombo);
+        int missing = nObjects - (score.getHit300() + score.getHit100() + score.getHit50() + score.getMisses());
+        if (missing > 0) score.setCount300(score.getHit300() + missing);
         double ratio = (double)score.getHit300()/(score.getHit300() + score.getHit100() + score.getHit50());
         for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {
             if (ThreadLocalRandom.current().nextDouble(1) < ratio)

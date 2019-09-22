@@ -15,6 +15,7 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -22,7 +23,10 @@ import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_flag;
@@ -32,6 +36,7 @@ public class CustomOsu {
 
     private HttpClient client;
     private RateLimiter limiter;
+    private Logger logger = Logger.getLogger(CustomOsu.class);
 
     public CustomOsu() {
         this.limiter = RateLimiter.create(0.60);
@@ -58,10 +63,15 @@ public class CustomOsu {
         HttpResponse response = client.execute(getRequest);
         String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Document doc = Jsoup.parse(responseStr);
-        return doc.select(".ranking-page-table").first()
-                .getElementsByTag("tbody").first().children().stream()
-                .map(e -> e.child(1).child(0).child(1).child(0).text())
-                .collect(Collectors.toList());
+        try {
+            return doc.select(".ranking-page-table").first()
+                    .getElementsByTag("tbody").first().children().stream()
+                    .map(e -> e.child(1).child(0).child(1).child(0).text())
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.warn("Error while scraping rankings page, is osu_session still up to date?", e);
+            throw e;
+        }
     }
 
     public Collection<OsuScore> getScores(String mapID, boolean national, Set<GameMod> mods) throws IOException {
