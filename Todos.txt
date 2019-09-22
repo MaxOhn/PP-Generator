@@ -1,17 +1,13 @@
 
 add mirror mod for mania
 check if pp calculation has an update
-have <lb pickup other lb's
-page scrap to get last ranked/loved/... maps
 fix IndexOutOfBoundsException for customOsu.getRankings (line 63)
-improve argument handling for <s
-fix <s for mania (ln count as 2 hitresults)
-if no mods for <s, chose max pp as played pp instead of calculating
 fill hitobjects for <sr on failed score
 fix FileInteractor.offsetOfNode NullPointerExceptions
 	- mapid 107410 (nyan [Insane]) at 100% completion?
 	- mapid 1256809, noteIndex 3201, lineNum 3200
 
+page scrap to get last ranked/loved/... maps (?)
 add <snipeprogress command (?)
 command showing average max combo, maybe weighted (?)
 command to show all scores of mapset (?)

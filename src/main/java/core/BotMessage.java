@@ -407,7 +407,7 @@ public class BotMessage {
                 StringBuilder desc = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
                 for (int i = 0, iLimit = nScores[nScores.length - 1] == 0 ? accs.length - 1 : accs.length; i < iLimit; i++) {
                     desc.append("\n**").append(accs[i] < 100 ? ">" : "").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
-                            .append((double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
+                            .append(n300[i] == 0 ? nGekis[i] > 0 ? 1 : 0 : (double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
                             .append((double)(Math.round(100 * 100 * (double)nMisses[i]/nTotal[i])) / 100).append("%");
                 }
                 eb.setDescription(desc.toString());

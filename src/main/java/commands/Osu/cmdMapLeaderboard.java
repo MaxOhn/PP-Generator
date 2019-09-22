@@ -175,12 +175,15 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
+                    MessageEmbed.AuthorInfo embedAuthor = msgEmbed.getAuthor();
                     List<MessageEmbed.Field> fields = msgEmbed.getFields();
                     if (fields.size() > 0) {
                         if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
                                 || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
                             return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
                         }
+                    } else if (embedAuthor != null && embedAuthor.getUrl().matches("https://osu.ppy.sh/b/.*")) {
+                        return embedAuthor.getUrl().substring(embedAuthor.getUrl().lastIndexOf("/") + 1);
                     }
                 }
                 if (--counter == 0) {

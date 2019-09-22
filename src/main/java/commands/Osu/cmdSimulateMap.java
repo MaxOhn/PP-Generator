@@ -145,20 +145,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
             argList.remove(mIdx);
         }
-        if ((mIdx = argList.indexOf("-320")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-320` must come an integer number!");
-                return;
-            }
-            try {
-                n320 = Integer.parseInt(argList.get(mIdx + 1));
-            } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-320` must come an integer number!");
-                return;
-            }
-            argList.remove(mIdx);
-            argList.remove(mIdx);
-        }
         if ((mIdx = argList.indexOf("-300")) != -1) {
             if (argList.size() < mIdx + 2) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
@@ -168,20 +154,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 n300 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
-                return;
-            }
-            argList.remove(mIdx);
-            argList.remove(mIdx);
-        }
-        if ((mIdx = argList.indexOf("-200")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-200` must come an integer number!");
-                return;
-            }
-            try {
-                n200 = Integer.parseInt(argList.get(mIdx + 1));
-            } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-200` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -215,7 +187,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
             argList.remove(mIdx);
         }
-        if (acc < -1 || acc > 100 || combo < 0 || score < 0 || nM < 0 || n320 < 0 || n300 < 0 || n200 < 0 || n100 < 0 || n50 < 0 ) {
+        if (acc < -1 || acc > 100 || combo < 0 || score < 0 || nM < 0 || n300 < 0 || n100 < 0 || n50 < 0 ) {
             new BotMessage(event, BotMessage.MessageType.TEXT).send("Invalid hit results. Acc must be between 0 and 100, everything else must be non-negative.");
             return;
         }
@@ -259,7 +231,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 hitSum = n300 + n100 + n50 + nM;
                 break;
             case MANIA:
-                hitSum = n320 + n300 + n200 + n100 + n50 + nM;
+                hitSum = 0;
                 if (score > 1000000) {
                     new BotMessage(event, BotMessage.MessageType.TEXT).send("The score must be between 0 and 1000000 on mania maps");
                     return;
@@ -345,15 +317,15 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "simulate[number] [beatmap url or beatmap id] [+<nm/hd/nfeznc/...>]"
-                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-s <score>] [-320 <amount 320s>] [-300 <amount 300s>] [-200 <amount 200s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
+                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-s <score>] [-300 <amount 300s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
                         + " to make me calculate the pp of the specified score on the map, defaults to SS score."
-                        + "\nFor mania scores, only the score value matters so don't bother adding acc, misses, 320s, ..."
+                        + "\nFor mania scores, only the score value matters so don't bother adding acc, misses, 300s, ..."
                         + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "simulate8`, I will skip the most recent 7 score embeds "
+                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1."
                         + "and choose the 8-th score embed, defaults to 1."
                         + "\nWith `+` you can choose mods, e.g. `+ezhddt`."
                         + "\nIf no mods are specified, I will simulate for the mods NM, HD, HR, DT, and HDDT."
-                        + "\nBeatmap urls from both the new and old website are supported."
-                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
+                        + "\nBeatmap urls from both the new and old website are supported.";
             default:
                 return help(0);
         }
