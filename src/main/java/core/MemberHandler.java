@@ -147,7 +147,7 @@ public class MemberHandler {
                 if (member != null && !topMembers.contains(member)) {
                     controller.addSingleRoleToMember(member, topRole).queue();
                     logger.info(member.getEffectiveName() + " (" + links.get(member.getUser().getId())
-                            + ") is in top 10, added top role");
+                            + ") satisfies top condition, added top role");
                 }
             }
         });

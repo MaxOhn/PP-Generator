@@ -25,6 +25,8 @@ hs_err_pid*
 # Custom tags
 target/
 .idea/
+src/main/resources/bgGame/*.jpg
+src/main/resources/bgGame/*.png
 src/main/resources/mapThumb/*.jpg
 src/main/java/util/secrets.java
 src/main/java/util/MainTest.java

@@ -156,5 +156,7 @@ public class Main {
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
         commandHandler.commands.put("roleassign", new cmdRoleAssign());
+        commandHandler.commands.put("bg", new cmdBackgroundGame());
+        commandHandler.commands.put("background", new cmdBackgroundGame());
     }
 }

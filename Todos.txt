@@ -2,6 +2,7 @@
 --- GENERAL ---
 add mirror mod for mania
 check if pp calculation has an update
+extend StreamerHook with mixer
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions
@@ -10,6 +11,6 @@ fix FileInteractor.offsetOfNode NullPointerExceptions
 
 --- IDEAS ---
 page scrap to get last ranked/loved/... maps
-add <snipeprogress command (?)
+add <snipeprogress command
 command showing average max combo, maybe weighted
 command to show all scores of mapset
