@@ -1,5 +1,6 @@
 package main.java.commands.Fun;
 
+import com.auth0.jwt.internal.org.apache.commons.lang3.StringUtils;
 import com.oopsjpeg.osu4j.OsuBeatmapSet;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmapSet;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
@@ -8,6 +9,7 @@ import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
@@ -17,6 +19,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.*;
@@ -24,20 +28,8 @@ import java.util.concurrent.*;
 public class cmdBackgroundGame implements ICommand {
 
     private Logger logger = Logger.getLogger(cmdBackgroundGame.class);
-    private File image = null;
-    private BufferedImage origin = null;
-    private int rX;
-    private int rY;
-    private int radius;
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private ScheduledFuture<?> timeLeft = null;
-    private ScheduledFuture<?> chatChecker = null;
-    private String lastMsgChecked;
-    private MessageReceivedEvent originEvent;
-    private String artist = "";
-    private String title = "";
-    private String[] titleSplit = new String[0];
-    private Boolean artistGuessed;
+    private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
     private Queue<String> previous = new LinkedList<>();
 
     @Override
@@ -55,12 +47,18 @@ public class cmdBackgroundGame implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        action(args, event, true);
+    }
+
+    public void action(String[] args, MessageReceivedEvent event, boolean autostart) {
         switch (args[0].toLowerCase()) {
             case "start":
             case "s":
+                runningGames.remove(event.getChannel().getIdLong());
                 File[] files = new File(getSourcePath()).listFiles();
                 assert files != null;
+                File image;
+                BufferedImage origin;
                 while (true) {
                     image = files[ThreadLocalRandom.current().nextInt(files.length)];
                     try {
@@ -75,17 +73,6 @@ public class cmdBackgroundGame implements ICommand {
                 previous.add(image.getName());
                 if (previous.size() > files.length / 2)
                     previous.remove();
-                artistGuessed = false;
-                originEvent = event;
-                lastMsgChecked = event.getMessage().getId();
-                radius = 100;
-                rX = ThreadLocalRandom.current().nextInt(radius, origin.getWidth() - radius);
-                rY = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
-                try {
-                    ImageIO.write(origin.getSubimage(rX - radius, rY - radius, 2 * radius, 2 * radius), "png", result);
-                } catch (IOException e) {
-                    logger.error("Error while writing result", e);
-                }
                 OsuBeatmapSet mapset;
                 try {
                     mapset = Main.osu.beatmapSets.query(new EndpointBeatmapSet
@@ -95,50 +82,29 @@ public class cmdBackgroundGame implements ICommand {
                     action(args, event);
                     return;
                 }
-                artist = removeParanthesis(mapset.getArtist().toLowerCase());
-                title = removeParanthesis(mapset.getTitle().toLowerCase());
-                titleSplit = title.split(" ");
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(result.toByteArray(), "Guess the background.png");
-                if (timeLeft != null)
-                    timeLeft.cancel(false);
-                timeLeft = scheduler.schedule(() -> action(new String[] {"r"}, event), 5, TimeUnit.MINUTES);
-                if (chatChecker == null)
-                    chatChecker = scheduler.scheduleAtFixedRate(this::checkChat, 0, 1500, TimeUnit.MILLISECONDS);
+                BackgroundGame bgGame = new BackgroundGame(event, image, origin, mapset, scheduler);
+                if (args.length > 1)
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
+                else
+                    new BotMessage(event, BotMessage.MessageType.TEXT).send(bgGame.getResult(), "Guess the background.png");
+                runningGames.put(event.getChannel().getIdLong(), bgGame);
                 break;
             case "bigger":
             case "b":
-                if (origin == null) {
+                if (!runningGames.containsKey(event.getChannel().getIdLong())) {
                     new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                radius += 75;
-                int x = rX - radius, y = rY - radius;
-                int xEnd = Math.min(origin.getWidth(), x < 0 ? rX + radius - x : rX + radius);
-                int yEnd = Math.min(origin.getHeight(), y < 0 ? rY + radius - y : rY + radius);
-                if (x < 0) x = 0;
-                if (y < 0) y = 0;
-                try {
-                    ImageIO.write(origin.getSubimage(x, y, xEnd - x, yEnd - y), "png", result);
-                } catch (IOException e) {
-                    logger.error("Error while writing result", e);
-                }
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(result.toByteArray(), "Guess the background.png");
+                runningGames.get(event.getChannel().getIdLong()).increaseRadius();
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
                 break;
             case "resolve":
             case "solve":
             case "r":
-                if (origin == null) {
+                if (!runningGames.containsKey(event.getChannel().getIdLong())) {
                     new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                try {
-                    ImageIO.write(origin, "png", result);
-                } catch (IOException e) {
-                    logger.error("Error while writing result", e);
-                }
-                timeLeft.cancel(false);
-                chatChecker.cancel(false);
-                chatChecker = null;
                 String text = "Full background: https://osu.ppy.sh/beatmapsets/";
                 if (args.length > 1) {
                     String name = args[1];
@@ -148,78 +114,78 @@ public class cmdBackgroundGame implements ICommand {
                                 : "You were close enough `" + name + "`, gratz")
                         + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
                 }
+                String imgName = runningGames.get(event.getChannel().getIdLong()).image.getName();
                 new BotMessage(event, BotMessage.MessageType.TEXT)
-                        .send(text + image.getName().substring(0, image.getName().indexOf('.')), result.toByteArray(), "Guess the background.png");
-                image = null;
-                origin = null;
-                radius = 100;
-                originEvent = null;
-                lastMsgChecked = "";
-                artist = "";
-                title = "";
-                titleSplit = new String[0];
+                        .send(text + imgName.substring(0, imgName.indexOf('.')), runningGames.get(event.getChannel().getIdLong()).getReveal(), "Guess the background.png");
+                runningGames.get(event.getChannel().getIdLong()).dispose();
+                runningGames.remove(event.getChannel().getIdLong());
+                if (autostart) {
+                    String[] newArgs = Arrays.copyOf(args, args.length + 1);
+                    newArgs[0] = "s";
+                    action(newArgs, event, true);
+                }
                 break;
             case "hint":
             case "h":
-                if (origin == null) {
+                if (!runningGames.containsKey(event.getChannel().getIdLong())) {
                     new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                String hint = "Let me give you a hint: The title has " + titleSplit.length + " word";
-                if (titleSplit.length > 1)
-                    hint += "s";
-                hint += " and the starting letter is `" + title.substring(0, 1) + "`";
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(hint);
+                new BotMessage(event, BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getHint());
                 break;
             default:
                 new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
         }
     }
 
-    private void checkChat() {
-        int counter = 50;
-        String newLast = originEvent.getTextChannel().getLatestMessageId();
-        for (Message msg : originEvent.getTextChannel().getIterableHistory()) {
-            if (--counter == 0 || msg.getId().equals(lastMsgChecked)) break;
-            if (msg.getAuthor() == Main.jda.getSelfUser()) continue;
-            String content = msg.getContentRaw().toLowerCase();
-            if (title.equals(content)) {
-                action(new String[] { "r", msg.getAuthor().getName(), "1"}, originEvent);
-                return;
-            }
-            if (titleSplit.length > 0) {
-                String[] contentSplit = content.split(" ");
-                int hit = 0;
-                for (String c : contentSplit) {
-                    for (String t : titleSplit) {
-                        if (c.equals(t)) {
-                            if ((hit += c.length()) > 7) {
-                                action(new String[]{"r", msg.getAuthor().getName(), "0.9"}, originEvent);
-                                return;
+    private void checkChat(BackgroundGame bgGame) {
+        int counter = 20;
+        long newLast = bgGame.originEvent.getChannelType() == ChannelType.PRIVATE
+                ? Main.jda.getPrivateChannelById(bgGame.originEvent.getChannel().getIdLong()).getLatestMessageIdLong()
+                : bgGame.originEvent.getChannel().getLatestMessageIdLong();
+        if (bgGame.lastMsgChecked != newLast) {
+            for (Message msg : bgGame.originEvent.getChannel().getIterableHistory()) {
+                if (--counter == 0 || msg.getIdLong() == bgGame.lastMsgChecked) break;
+                if (msg.getAuthor() == Main.jda.getSelfUser()) continue;
+                String content = msg.getContentRaw().toLowerCase();
+                if (bgGame.title.equals(content)) {
+                    action(new String[]{"r", msg.getAuthor().getName(), "1"}, bgGame.originEvent);
+                    return;
+                }
+                if (bgGame.titleSplit.length > 0) {
+                    String[] contentSplit = content.split(" ");
+                    int hit = 0;
+                    for (String c : contentSplit) {
+                        for (String t : bgGame.titleSplit) {
+                            if (c.equals(t)) {
+                                if ((hit += c.length()) > 8) {
+                                    action(new String[]{"r", msg.getAuthor().getName(), "0.9"}, bgGame.originEvent);
+                                    return;
+                                }
                             }
                         }
                     }
                 }
-            }
-            double similarity = utilGeneral.similarity(title, content);
-            if (similarity > 0.5) {
-                action(new String[] { "r", msg.getAuthor().getName(), "" + similarity }, originEvent);
-                return;
-            }
-            if (!artistGuessed) {
-                if (artist.equals(content)) {
-                    new BotMessage(originEvent, BotMessage.MessageType.TEXT)
-                            .send("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?");
-                    artistGuessed = true;
-                } else if (similarity < 0.3 && utilGeneral.similarity(artist, content) > 0.5) {
-                    new BotMessage(originEvent, BotMessage.MessageType.TEXT)
-                            .send("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `" +
-                                    artist + "` but can you get the title?");
-                    artistGuessed = true;
+                double similarity = utilGeneral.similarity(bgGame.title, content);
+                if (similarity > 0.5) {
+                    action(new String[]{"r", msg.getAuthor().getName(), "" + similarity}, bgGame.originEvent);
+                    return;
+                }
+                if (!bgGame.artistGuessed) {
+                    if (bgGame.artist.equals(content)) {
+                        new BotMessage(bgGame.originEvent, BotMessage.MessageType.TEXT)
+                                .send("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?");
+                        bgGame.artistGuessed = true;
+                    } else if (similarity < 0.3 && utilGeneral.similarity(bgGame.artist, content) > 0.5) {
+                        new BotMessage(bgGame.originEvent, BotMessage.MessageType.TEXT)
+                                .send("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `" +
+                                        bgGame.artist + "` but can you get the title?");
+                        bgGame.artistGuessed = true;
+                    }
                 }
             }
+            bgGame.lastMsgChecked = newLast;
         }
-        lastMsgChecked = newLast;
     }
 
     @Override
@@ -230,7 +196,7 @@ public class cmdBackgroundGame implements ICommand {
                 return "Enter `" + statics.prefix + getName() + " <start/bigger/hint/resolve>` to play the background-guessing game." +
                         "\nWith `start` I will select and show part of a new background for you to guess." +
                         "\nWith `bigger` I will slightly enlargen the currently shown part of the background to make it easier." +
-                        "\nWith `hint` I will provide you a clue for the map title." +
+                        "\nWith `hint` I will provide you some clues for the map title." +
                         "\nWith `resolve` I will show you the entire background and its mapset";
             case 1:
                 return "You must first start a new round via `" + statics.prefix + getName() + " start`" + help;
@@ -264,4 +230,112 @@ public class cmdBackgroundGame implements ICommand {
             idx = newStr.indexOf("ft.");
         return (idx != -1 ? newStr.substring(0, idx) : newStr).trim();
     }
+
+    private class BackgroundGame {
+        private File image;
+        private BufferedImage origin;
+        private int x;
+        private int y;
+        private int radius;
+        private ScheduledFuture<?> timeLeft;
+        private ScheduledFuture<?> chatChecker;
+        private long lastMsgChecked;
+        private MessageReceivedEvent originEvent;
+        private String artist;
+        private String title;
+        private String[] titleSplit;
+        private boolean artistGuessed;
+        private int hintDepth;
+
+        BackgroundGame(MessageReceivedEvent event, File image, BufferedImage origin, OsuBeatmapSet mapset, ScheduledExecutorService scheduler) {
+            originEvent = event;
+            this.image = image;
+            this.origin = origin;
+            artistGuessed = false;
+            hintDepth = 0;
+            lastMsgChecked = event.getMessage().getIdLong();
+            radius = 100;
+            x = ThreadLocalRandom.current().nextInt(radius, origin.getWidth() - radius);
+            y = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
+            artist = removeParanthesis(mapset.getArtist().toLowerCase());
+            title = removeParanthesis(mapset.getTitle().toLowerCase());
+            titleSplit = title.split(" ");
+            timeLeft = scheduler.schedule(() -> action(new String[] {"r"}, event, false), 5, TimeUnit.MINUTES);
+            chatChecker = scheduler.scheduleAtFixedRate(() -> checkChat(this), 0, 1500, TimeUnit.MILLISECONDS);
+        }
+
+        String getHint() {
+            String hint;
+            String[] titleCpy;
+            switch (hintDepth++) {
+                case 0:
+                    hint = "Let me give you a hint: The title has " + titleSplit.length + " word";
+                    if (titleSplit.length != 1)
+                        hint += "s";
+                    hint += " and the starting letter is `" + title.substring(0, 1) + "`";
+                    return hint;
+                case 1:
+                    if (!artistGuessed) {
+                        hint = "Here's my second hint: The artist is called `" + artist + "`";
+                        artistGuessed = true;
+                        return hint;
+                    }
+                case 2:
+                    hint = "My last hint for you: The title looks like this `";
+                    titleCpy = new String[titleSplit.length];
+                    for (int i = 0; i < titleSplit.length; i++)
+                        titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
+                    return hint + String.join(" ", titleCpy) + "`";
+                default:
+                    hint = "All the hints I give you: The artist is `" + artist + "` and the title looks like `";
+                    titleCpy = new String[titleSplit.length];
+                    titleCpy[0] = title.substring(0, 1) + StringUtils.repeat("▢", titleSplit[0].length() - 1);
+                    for (int i = 1; i < titleSplit.length; i++)
+                        titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
+                    return hint + String.join(" ", titleCpy) + "`";
+            }
+        }
+
+        BufferedImage getSubimage() {
+            int cx = Math.max(0, x - radius), cy = Math.max(0, y - radius);
+            return origin.getSubimage(cx, cy,
+                    Math.min(origin.getWidth(), x + radius) - cx,
+                    Math.min(origin.getHeight(), y + radius) - cy
+            );
+        }
+
+        byte[] getResult() {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            while (true) {
+                try {
+                    ImageIO.write(getSubimage(), "png", result);
+                    return result.toByteArray();
+                } catch (IOException e) {
+                    logger.error("Error while writing result", e);
+                }
+            }
+        }
+
+        byte[] getReveal() {
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            while (true) {
+                try {
+                    ImageIO.write(origin, "png", result);
+                    return result.toByteArray();
+                } catch (IOException e) {
+                    logger.error("Error while revealing", e);
+                }
+            }
+        }
+
+        void increaseRadius() {
+            radius += 75;
+        }
+
+        void dispose() {
+            timeLeft.cancel(false);
+            chatChecker.cancel(false);
+        }
+    }
+
 }
