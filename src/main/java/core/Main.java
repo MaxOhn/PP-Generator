@@ -158,5 +158,6 @@ public class Main {
         commandHandler.commands.put("roleassign", new cmdRoleAssign());
         commandHandler.commands.put("bg", new cmdBackgroundGame());
         commandHandler.commands.put("background", new cmdBackgroundGame());
+        commandHandler.commands.put("bgm", new cmdBackgroundGameMania());
     }
 }

@@ -108,6 +108,22 @@ public class BotMessage {
         }
     }
 
+    public void send(byte[] file, String filename) {
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendFile(file, filename).queue();
+        } else {
+            event.getTextChannel().sendFile(file, filename).queue();
+        }
+    }
+
+    public void send(String msg, byte[] file, String filename) {
+        if (event.getChannelType() == ChannelType.PRIVATE) {
+            event.getChannel().sendMessage(msg).addFile(file, filename).queue();
+        } else {
+            event.getTextChannel().sendMessage(msg).addFile(file, filename).queue();
+        }
+    }
+
     public void buildAndSend() {
         buildAndSend(null);
     }

@@ -16,7 +16,8 @@ public class statics {
 
     public static final String thumbPath = secrets.RELEASE
             ? raspResources + "mapThumb/"
-            : ".\\src\\main\\resources\\mapThumb\\";
+            //: ".\\src\\main\\resources\\mapThumb\\";
+            : "../PPGenerator-Resources/mapThumb/";
 
     public static final String gameName = secrets.RELEASE
             ? ("osu! slave (" + prefix + "help)")
@@ -29,10 +30,14 @@ public class statics {
     public static final String execPrefix = secrets.RELEASE ? "" : "cmd /c ";
 
     public static final String flagPath = secrets.RELEASE
-            ? statics.raspResources + "flags/"
-            : "./src/main/resources/flags/";
+            ? raspResources + "flags/"
+            //: "./src/main/resources/flags/";
+            : "../PPGenerator-Resources/flags/";
 
     public static final String bgGamePath = secrets.RELEASE
-            ? statics.raspResources + "bgGame/"
-            : "./src/main/resources/bgGame/";
+            ? raspResources + "bgGame/"
+            //: "./src/main/resources/bgGame/";
+            : "../PPGenerator-Resources/bgGame/";
+
+    public static final String getBgGamePathMania = bgGamePath + "mania/";
 }
