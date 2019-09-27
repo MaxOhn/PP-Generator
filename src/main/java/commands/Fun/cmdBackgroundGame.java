@@ -20,9 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class cmdBackgroundGame implements ICommand {
@@ -32,6 +30,7 @@ public class cmdBackgroundGame implements ICommand {
     private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
     private Queue<Integer> previous = new LinkedList<>();
     private File[] files = new File(getSourcePath()).listFiles();
+    private final int checkInterval = 3000;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -125,6 +124,7 @@ public class cmdBackgroundGame implements ICommand {
 
     private void resolveGame(MessageChannel channel, String name, double similarity, boolean autostart) {
         BackgroundGame game = runningGames.get(channel.getIdLong());
+        if (game == null) return;
         String text = "Full background: https://osu.ppy.sh/beatmapsets/";
         if (!name.isEmpty()) {
             text = (similarity == 1
@@ -143,54 +143,67 @@ public class cmdBackgroundGame implements ICommand {
             startGame(channel);
     }
 
-    private void checkChat(BackgroundGame bgGame) {
-        int counter = 20;
-        long newLast = bgGame.channel.getType() == ChannelType.PRIVATE
-                ? Main.jda.getPrivateChannelById(bgGame.channel.getIdLong()).getLatestMessageIdLong()
-                : bgGame.channel.getLatestMessageIdLong();
-        if (bgGame.lastMsgChecked != newLast) {
-            for (Message msg : bgGame.channel.getIterableHistory()) {
-                if (--counter == 0 || msg.getIdLong() == bgGame.lastMsgChecked) break;
+    private void checkChat(long channel, long mapsetid) {
+        BackgroundGame game = runningGames.get(channel);
+        logger.info("Checking chat (bgGame: " + (game != null ? game.mapsetid : "null") + ", mapset: " + mapsetid + ")");
+        if (game == null || game.mapsetid != mapsetid) {
+            logger.info("Stop checking because new map");
+            return;
+        }
+        game.channel.getHistoryAfter(game.lastMsgChecked, 10).queue(messageHistory -> {
+            if (messageHistory.isEmpty()) {
+                logger.info("No new messages -> schedule in " + (checkInterval / 1000d) + " seconds");
+                scheduler.schedule(() -> checkChat(channel, mapsetid), checkInterval, TimeUnit.MILLISECONDS);
+                return;
+            }
+            ListIterator<Message> it = messageHistory.getRetrievedHistory().listIterator(messageHistory.size());
+            while (it.hasPrevious()) {
+                Message msg = it.previous();
                 if (msg.getAuthor() == Main.jda.getSelfUser()) continue;
                 String content = msg.getContentRaw().toLowerCase();
-                if (bgGame.title.equals(content)) {
-                    resolveGame(bgGame.channel, msg.getAuthor().getName(), 1, true);
+                if (game.title.equals(content)) {
+                    logger.info("Resolved title " + game.title + " == " + content);
+                    resolveGame(game.channel, msg.getAuthor().getName(), 1, true);
                     return;
                 }
-                if (bgGame.titleSplit.length > 0) {
+                if (game.titleSplit.length > 0) {
                     String[] contentSplit = content.split(" ");
                     int hit = 0;
                     for (String c : contentSplit) {
-                        for (String t : bgGame.titleSplit) {
+                        for (String t : game.titleSplit) {
                             if (c.equals(t)) {
                                 if ((hit += c.length()) > 8) {
-                                    resolveGame(bgGame.channel, msg.getAuthor().getName(), 0.9, true);
+                                    logger.info("Resolved title " + game.title + " ~= " + content + " (" + hit + ")");
+                                    resolveGame(game.channel, msg.getAuthor().getName(), 0.9, true);
                                     return;
                                 }
                             }
                         }
                     }
                 }
-                double similarity = utilGeneral.similarity(bgGame.title, content);
+                double similarity = utilGeneral.similarity(game.title, content);
                 if (similarity > 0.5) {
-                    resolveGame(bgGame.channel, msg.getAuthor().getName(), similarity, true);
+                    logger.info("Resolved title " + game.title + " ~= " + content + " (" + similarity + ")");
+                    resolveGame(game.channel, msg.getAuthor().getName(), similarity, true);
                     return;
                 }
-                if (!bgGame.artistGuessed) {
-                    if (bgGame.artist.equals(content)) {
-                        new BotMessage(bgGame.channel, BotMessage.MessageType.TEXT)
+                if (!game.artistGuessed) {
+                    if (game.artist.equals(content)) {
+                        new BotMessage(game.channel, BotMessage.MessageType.TEXT)
                                 .send("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?");
-                        bgGame.artistGuessed = true;
-                    } else if (similarity < 0.3 && utilGeneral.similarity(bgGame.artist, content) > 0.5) {
-                        new BotMessage(bgGame.channel, BotMessage.MessageType.TEXT)
+                        game.artistGuessed = true;
+                    } else if (similarity < 0.3 && utilGeneral.similarity(game.artist, content) > 0.5) {
+                        new BotMessage(game.channel, BotMessage.MessageType.TEXT)
                                 .send("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `" +
-                                        bgGame.artist + "` but can you get the title?");
-                        bgGame.artistGuessed = true;
+                                        game.artist + "` but can you get the title?");
+                        game.artistGuessed = true;
                     }
                 }
             }
-            bgGame.lastMsgChecked = newLast;
-        }
+            game.lastMsgChecked = it.next().getIdLong();
+            logger.info("Done checking -> immediate restart");
+            checkChat(channel, mapsetid);
+        });
     }
 
     @Override
@@ -242,12 +255,11 @@ public class cmdBackgroundGame implements ICommand {
         private int y;
         private int radius;
         private ScheduledFuture<?> timeLeft;
-        private ScheduledFuture<?> chatChecker;
         private long lastMsgChecked;
         private MessageChannel channel;
         private String artist;
         private String title;
-        private String mapsetid;
+        private long mapsetid;
         private String[] titleSplit;
         private boolean artistGuessed;
         private int hintDepth;
@@ -263,10 +275,10 @@ public class cmdBackgroundGame implements ICommand {
             y = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
             artist = removeParenthesis(mapset.getArtist().toLowerCase());
             title = removeParenthesis(mapset.getTitle().toLowerCase());
-            mapsetid = "" + mapset.getID();
+            mapsetid = mapset.getBeatmapSetID();
             titleSplit = title.split(" ");
             timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false), 5, TimeUnit.MINUTES);
-            chatChecker = scheduler.scheduleAtFixedRate(() -> checkChat(this), 0, 1500, TimeUnit.MILLISECONDS);
+            scheduler.schedule(() -> checkChat(channel.getIdLong(), mapsetid), checkInterval + 500, TimeUnit.MILLISECONDS);
         }
 
         String getHint() {
@@ -341,7 +353,6 @@ public class cmdBackgroundGame implements ICommand {
 
         void dispose() {
             timeLeft.cancel(false);
-            chatChecker.cancel(false);
         }
     }
 
