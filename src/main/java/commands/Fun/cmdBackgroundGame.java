@@ -48,10 +48,6 @@ public class cmdBackgroundGame implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        action(args, event, true);
-    }
-
-    public void action(String[] args, MessageReceivedEvent event, boolean autostart) {
         switch (args[0].toLowerCase()) {
             case "start":
             case "s":
@@ -64,7 +60,8 @@ public class cmdBackgroundGame implements ICommand {
                     return;
                 }
                 runningGames.get(event.getChannel().getIdLong()).increaseRadius();
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT)
+                        .send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
                 break;
             case "resolve":
             case "solve":
@@ -74,9 +71,9 @@ public class cmdBackgroundGame implements ICommand {
                     return;
                 }
                 if (args.length > 1)
-                    resolveGame(event.getChannel(), args[1], Double.parseDouble(args[2]), autostart);
+                    resolveGame(event.getChannel(), args[1], Double.parseDouble(args[2]), true);
                 else
-                    resolveGame(event.getChannel(), "", 0, autostart);
+                    resolveGame(event.getChannel(), "", 0, true);
                 break;
             case "hint":
             case "h":
@@ -84,7 +81,8 @@ public class cmdBackgroundGame implements ICommand {
                     new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getHint());
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT)
+                        .send(runningGames.get(event.getChannel().getIdLong()).getHint());
                 break;
             default:
                 new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
@@ -119,12 +117,14 @@ public class cmdBackgroundGame implements ICommand {
             startGame(channel);
             return;
         }
-        BackgroundGame bgGame = new BackgroundGame(channel, image, origin, mapset, scheduler);
-        new BotMessage(channel, BotMessage.MessageType.TEXT).send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
+        BackgroundGame bgGame = new BackgroundGame(channel, origin, mapset);
+        new BotMessage(channel, BotMessage.MessageType.TEXT)
+                .send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
         runningGames.put(channel.getIdLong(), bgGame);
     }
 
     private void resolveGame(MessageChannel channel, String name, double similarity, boolean autostart) {
+        BackgroundGame game = runningGames.get(channel.getIdLong());
         String text = "Full background: https://osu.ppy.sh/beatmapsets/";
         if (!name.isEmpty()) {
             text = (similarity == 1
@@ -132,10 +132,12 @@ public class cmdBackgroundGame implements ICommand {
                     : "You were close enough `" + name + "`, gratz")
                     + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
         }
-        String imgName = runningGames.get(channel.getIdLong()).image.getName();
-        new BotMessage(channel, BotMessage.MessageType.TEXT)
-                .send(text + imgName.substring(0, imgName.indexOf('.')), runningGames.get(channel.getIdLong()).getReveal(), "Guess the background.png");
-        runningGames.get(channel.getIdLong()).dispose();
+        new BotMessage(channel, BotMessage.MessageType.TEXT).send(
+                text + game.mapsetid,
+                game.getReveal(),
+                "Guess the background.png"
+        );
+        game.dispose();
         runningGames.remove(channel.getIdLong());
         if (autostart)
             startGame(channel);
@@ -235,7 +237,6 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     private class BackgroundGame {
-        private File image;
         private BufferedImage origin;
         private int x;
         private int y;
@@ -246,13 +247,13 @@ public class cmdBackgroundGame implements ICommand {
         private MessageChannel channel;
         private String artist;
         private String title;
+        private String mapsetid;
         private String[] titleSplit;
         private boolean artistGuessed;
         private int hintDepth;
 
-        BackgroundGame(MessageChannel channel, File image, BufferedImage origin, OsuBeatmapSet mapset, ScheduledExecutorService scheduler) {
+        BackgroundGame(MessageChannel channel, BufferedImage origin, OsuBeatmapSet mapset) {
             this.channel = channel;
-            this.image = image;
             this.origin = origin;
             artistGuessed = false;
             hintDepth = 0;
@@ -262,6 +263,7 @@ public class cmdBackgroundGame implements ICommand {
             y = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
             artist = removeParenthesis(mapset.getArtist().toLowerCase());
             title = removeParenthesis(mapset.getTitle().toLowerCase());
+            mapsetid = "" + mapset.getID();
             titleSplit = title.split(" ");
             timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false), 5, TimeUnit.MINUTES);
             chatChecker = scheduler.scheduleAtFixedRate(() -> checkChat(this), 0, 1500, TimeUnit.MILLISECONDS);
