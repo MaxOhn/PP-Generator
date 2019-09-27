@@ -24,6 +24,37 @@ public class DBProvider {
 
     /*
      * ------------------------
+     *     background game
+     * ------------------------
+     */
+
+    public static void incrementBgGameScore(long discord) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert into bgGameScore(discord, score) values ('" + discord
+                + "', 1)"
+                + " on duplicate key update score=score+1");
+        stmnt.close();
+        c.close();
+    }
+
+    public static HashMap<Long, Integer> getBgGameAddicts(int amount) throws ClassNotFoundException, SQLException {
+        HashMap<Long, Integer> addicts = new HashMap<>();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from bgGameScore order by score desc");
+        while(rs.next() && amount-- > 0) {
+            addicts.put(rs.getLong("discord"), rs.getInt("score"));
+        }
+        stmnt.close();
+        c.close();
+        return addicts;
+    }
+
+    /*
+     * ------------------------
      *     role assigns
      * ------------------------
      */
