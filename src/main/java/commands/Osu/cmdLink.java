@@ -19,16 +19,16 @@ public class cmdLink implements ICommand {
 
         if (args.length == 0) {
             if (Main.discLink.removeLink(event.getAuthor().getId())) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("You are no longer linked");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("You are no longer linked");
                 return;
             } else {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("I could not remove the link, blame bade");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("I could not remove the link, blame bade");
                 return;
             }
         }
 
         if (args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return;
         }
 
@@ -37,27 +37,21 @@ public class cmdLink implements ICommand {
         try {
            Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).build());
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find osu user with name `" + name + "`");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find osu user with name `" + name + "`");
             return;
         }
 
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("I linked discord's `" + event.getAuthor().getName()
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("I linked discord's `" + event.getAuthor().getName()
                     + "` with osu's `" + name + "`");
         else
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("I could not link the accounts, blame bade");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("I could not link the accounts, blame bade");
     }
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "link -h` for more help)";
-        switch(hCode) {
-            case 0:
-                return "Enter `" + statics.prefix + "link [osu name]` to make me link your discord with that osu name."
-                        + "\nIf no name is specified, I will unlink you instead.";
-            default:
-                return help(0);
-        }
+        return "Enter `" + statics.prefix + "link [osu name]` to make me link your discord with that osu name."
+                + "\nIf no name is specified, I will unlink you instead.";
     }
 
     @Override

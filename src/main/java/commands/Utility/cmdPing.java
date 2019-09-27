@@ -15,10 +15,10 @@ public class cmdPing implements ICommand {
     public void action(String[] args, MessageReceivedEvent event) {
         long time = System.currentTimeMillis();
         if(args.length == 0)
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Pong!", message ->
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Pong!", message ->
                     message.editMessageFormat("Pong! (%dms)", System.currentTimeMillis() - time).queue());
         else
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
     }
 
     public String help(int hCode) {

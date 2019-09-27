@@ -27,13 +27,7 @@ public class cmdTrackedStreams implements ICommand {
 
     @Override
     public String help(int hCode) {
-        switch(hCode) {
-            case 0:
-                return "Enter `" + statics.prefix + "trackedstreams`" +
-                        " to make me display all twitch streams I'm currently tracking";
-            default:
-                return help(0);
-        }
+        return "Enter `" + statics.prefix + "trackedstreams` to make me display all twitch streams I'm currently tracking";
     }
 
     @Override

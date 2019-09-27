@@ -25,7 +25,7 @@ public class cmdRatio implements INumberedCommand {
     public boolean called(String[] args, MessageReceivedEvent event) {
         number = 100;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -35,7 +35,7 @@ public class cmdRatio implements INumberedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (number > 100) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 100");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 100");
             return;
         }
 
@@ -49,7 +49,7 @@ public class cmdRatio implements INumberedCommand {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
         } else {
@@ -58,7 +58,7 @@ public class cmdRatio implements INumberedCommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -66,23 +66,23 @@ public class cmdRatio implements INumberedCommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
         List<OsuScore> scores;
         try {
             scores = user.getTopScores(number).get();
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
 
         if (scores.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
                     + "` in " + mode.getName());
             return;
         }
-        new BotMessage(event, BotMessage.MessageType.RATIO).user(user).mode(mode).osuscores(scores).buildAndSend();
+        new BotMessage(event.getChannel(), BotMessage.MessageType.RATIO).user(user).mode(mode).osuscores(scores).buildAndSend();
     }
 
     @Override

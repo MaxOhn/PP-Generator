@@ -37,7 +37,7 @@ public class cmdTop implements INumberedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (number > 100) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 100");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 100");
             return;
         }
 
@@ -53,17 +53,17 @@ public class cmdTop implements INumberedCommand {
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(5));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(5));
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
                             return;
                     }
                 } else {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
                     return;
                 }
             }
@@ -80,11 +80,11 @@ public class cmdTop implements INumberedCommand {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
         } else if (args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return;
         } else {
             name = String.join(" ", argList);
@@ -92,7 +92,7 @@ public class cmdTop implements INumberedCommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -100,14 +100,14 @@ public class cmdTop implements INumberedCommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
-        Collection<OsuScore> topPlays = null;
+        Collection<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(number).get();
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         final Iterator<OsuScore> itr = topPlays.iterator();
@@ -123,7 +123,7 @@ public class cmdTop implements INumberedCommand {
             try {
                 map = rbScore.getBeatmap().get();
             } catch (OsuAPIException e1) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve map");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve map");
                 return;
             }
             try {
@@ -133,14 +133,14 @@ public class cmdTop implements INumberedCommand {
                 e1.printStackTrace();
             }
         }
-        Collection<OsuScore> globalPlays = null;
+        Collection<OsuScore> globalPlays;
         try {
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve global scores");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve global scores");
             return;
         }
-        new BotMessage(event, BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)
+        new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)
                 .mode(mode).topplays(topPlays, globalPlays).buildAndSend();
     }
 

@@ -47,7 +47,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
     public boolean called(String[] args, MessageReceivedEvent event) {
         number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -91,13 +91,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
 
         if ((mIdx = argList.indexOf("-a")) != -1 || (mIdx = argList.indexOf("-acc")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-a` must come a decimal number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-a` must come a decimal number!");
                 return;
             }
             try {
                 acc = Double.parseDouble(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-a` must come a decimal number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-a` must come a decimal number!");
                 return;
             }
             argList.remove(mIdx);
@@ -105,13 +105,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-c")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-c` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-c` must come an integer number!");
                 return;
             }
             try {
                 combo = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-c` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-c` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -119,13 +119,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-x")) != -1 || (mIdx = argList.indexOf("-m")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x`/`-m` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-x`/`-m` must come an integer number!");
                 return;
             }
             try {
                 nM = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-x`/`m` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-x`/`m` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -133,13 +133,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-s")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-s` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-s` must come an integer number!");
                 return;
             }
             try {
                 score = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-s` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-s` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -147,13 +147,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-300")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
                 return;
             }
             try {
                 n300 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-300` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -161,13 +161,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-100")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-100` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-100` must come an integer number!");
                 return;
             }
             try {
                 n100 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-100` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-100` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
@@ -175,20 +175,20 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
         if ((mIdx = argList.indexOf("-50")) != -1) {
             if (argList.size() < mIdx + 2) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-50` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-50` must come an integer number!");
                 return;
             }
             try {
                 n50 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("After `-50` must come an integer number!");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("After `-50` must come an integer number!");
                 return;
             }
             argList.remove(mIdx);
             argList.remove(mIdx);
         }
         if (acc < -1 || acc > 100 || combo < 0 || score < 0 || nM < 0 || n300 < 0 || n100 < 0 || n50 < 0 ) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Invalid hit results. Acc must be between 0 and 100, everything else must be non-negative.");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Invalid hit results. Acc must be between 0 and 100, everything else must be non-negative.");
             return;
         }
 
@@ -208,10 +208,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
                 return;
             } catch (IndexOutOfBoundsException e1) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
                 return;
             }
             try {
@@ -231,9 +231,8 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 hitSum = n300 + n100 + n50 + nM;
                 break;
             case MANIA:
-                hitSum = 0;
                 if (score > 1000000) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send("The score must be between 0 and 1000000 on mania maps");
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The score must be between 0 and 1000000 on mania maps");
                     return;
                 }
                 break;
@@ -241,11 +240,11 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 hitSum = n300 + n100 + nM;
                 break;
             case CATCH_THE_BEAT:
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("Mode not yet supported :(");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Mode not yet supported :(");
                 return;
         }
         if (hitSum > nTotal) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("The map has only " + nTotal + " objects, you gave too many (" + hitSum + ") in the parameters");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The map has only " + nTotal + " objects, you gave too many (" + hitSum + ") in the parameters");
             return;
         } else if (hitSum == 0 && acc == -1) {
             if (map.getMode() == GameMode.MANIA) n320 = nTotal;
@@ -299,12 +298,12 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 scores.add(s);
             }
         } else {
-            osuscore = utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
+            utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
             if (!noMods) osuscore.setEnabledMods(includedMods);
             scores.add(osuscore);
         }
 
-        new BotMessage(event, BotMessage.MessageType.SIMULATE).map(map).osuscores(scores).buildAndSend();
+        new BotMessage(event.getChannel(), BotMessage.MessageType.SIMULATE).map(map).osuscores(scores).buildAndSend();
     }
 
     protected OsuScore getScore() {
@@ -349,7 +348,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                     }
                 }
                 if (--counter == 0) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
                     return "-1";
                 }
             }

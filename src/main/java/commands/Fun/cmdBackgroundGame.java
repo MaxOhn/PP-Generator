@@ -35,11 +35,11 @@ public class cmdBackgroundGame implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         if (args.length != 1) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
             return false;
         }
         return true;
@@ -84,25 +84,25 @@ public class cmdBackgroundGame implements ICommand {
                 }
                 BackgroundGame bgGame = new BackgroundGame(event, image, origin, mapset, scheduler);
                 if (args.length > 1)
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
                 else
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(bgGame.getResult(), "Guess the background.png");
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(bgGame.getResult(), "Guess the background.png");
                 runningGames.put(event.getChannel().getIdLong(), bgGame);
                 break;
             case "bigger":
             case "b":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
                 runningGames.get(event.getChannel().getIdLong()).increaseRadius();
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
                 break;
             case "resolve":
             case "solve":
             case "r":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
                 String text = "Full background: https://osu.ppy.sh/beatmapsets/";
@@ -115,7 +115,7 @@ public class cmdBackgroundGame implements ICommand {
                         + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
                 }
                 String imgName = runningGames.get(event.getChannel().getIdLong()).image.getName();
-                new BotMessage(event, BotMessage.MessageType.TEXT)
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT)
                         .send(text + imgName.substring(0, imgName.indexOf('.')), runningGames.get(event.getChannel().getIdLong()).getReveal(), "Guess the background.png");
                 runningGames.get(event.getChannel().getIdLong()).dispose();
                 runningGames.remove(event.getChannel().getIdLong());
@@ -128,13 +128,13 @@ public class cmdBackgroundGame implements ICommand {
             case "hint":
             case "h":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getHint());
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(runningGames.get(event.getChannel().getIdLong()).getHint());
                 break;
             default:
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
         }
     }
 
@@ -173,11 +173,11 @@ public class cmdBackgroundGame implements ICommand {
                 }
                 if (!bgGame.artistGuessed) {
                     if (bgGame.artist.equals(content)) {
-                        new BotMessage(bgGame.originEvent, BotMessage.MessageType.TEXT)
+                        new BotMessage(bgGame.originEvent.getChannel(), BotMessage.MessageType.TEXT)
                                 .send("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?");
                         bgGame.artistGuessed = true;
                     } else if (similarity < 0.3 && utilGeneral.similarity(bgGame.artist, content) > 0.5) {
-                        new BotMessage(bgGame.originEvent, BotMessage.MessageType.TEXT)
+                        new BotMessage(bgGame.originEvent.getChannel(), BotMessage.MessageType.TEXT)
                                 .send("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `" +
                                         bgGame.artist + "` but can you get the title?");
                         bgGame.artistGuessed = true;

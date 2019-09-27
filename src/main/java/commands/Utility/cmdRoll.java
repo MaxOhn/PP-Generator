@@ -14,7 +14,7 @@ public class cmdRoll implements ICommand {
     public boolean called(String[] args, MessageReceivedEvent event) {
         if(args.length > 0) {
             if(args.length > 1 || args[0].equals("-h")) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
                 return false;
             }
         }
@@ -29,14 +29,14 @@ public class cmdRoll implements ICommand {
                 max = Integer.parseInt(args[0]);
             // Catch non-number
             } catch(NumberFormatException e) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
                 return;
             }
         }
         // Give random number
         int rand = ThreadLocalRandom.current().nextInt(1,max+1);
         String out = event.getAuthor().getAsMention() + ", I rolled for you: " + rand;
-        new BotMessage(event, BotMessage.MessageType.TEXT).send(out);
+        new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(out);
     }
 
     @Override

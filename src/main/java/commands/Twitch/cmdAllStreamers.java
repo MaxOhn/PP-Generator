@@ -39,17 +39,12 @@ public class cmdAllStreamers implements ICommand {
                         .append(streamMap.get(name).getName()).append("` on `")
                         .append(streamMap.get(name).getUrl()).append("`\n");
         } else msg.append("No current streamers on this server");
-        new BotMessage(event, BotMessage.MessageType.TEXT).send(msg.toString());
+        new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(msg.toString());
     }
 
     @Override
     public String help(int hCode) {
-        switch(hCode) {
-            case 0:
-                return "Enter `" + statics.prefix + "allstreamers` to make me list all members of this server who are currently streaming";
-            default:
-                return help(0);
-        }
+        return "Enter `" + statics.prefix + "allstreamers` to make me list all members of this server who are currently streaming";
     }
 
     @Override

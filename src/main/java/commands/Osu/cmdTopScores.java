@@ -26,7 +26,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         setInitial();
@@ -47,17 +47,17 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
                             return;
                     }
                 } else {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
                     return;
                 }
             }
@@ -113,7 +113,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
         } else {
@@ -122,7 +122,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return;
             }
         }
@@ -130,14 +130,14 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
             return;
         }
         List<OsuScore> scores;
         try {
             scores = user.getTopScores(status != modStatus.WITHOUT || excludeNM || excludedMods.size() > 0 ? 100 : getAmount()).get();
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
             return;
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
@@ -179,10 +179,10 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                     .collect(Collectors.toList());
         }
         if (scores.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM));
             return;
         }
-        new BotMessage(event, getMessageType()).user(user).osuscores(scores)
+        new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
                 .maps(maps.stream().limit(5).collect(Collectors.toCollection(ArrayList::new)))
                 .mode(mode)
                 .buildAndSend();

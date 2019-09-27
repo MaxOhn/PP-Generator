@@ -19,7 +19,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
 
         if (number > 50) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
             return "-1";
         }
 
@@ -29,7 +29,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                 return "-1";
             }
         } else {
@@ -38,7 +38,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
                 return "-1";
             }
         }
@@ -54,11 +54,11 @@ public class cmdSimulateRecent extends cmdSimulateMap {
                 recent = userRecents.get(0);
             }
             if (number > 0) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send("User's recent history doesn't go that far back");
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("User's recent history doesn't go that far back");
                 return "-1";
             }
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("`" + name + "` was not found or no recent plays");
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found or no recent plays");
             return "-1";
         }
         return recent.getBeatmapID() + "";

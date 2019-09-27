@@ -27,7 +27,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(0));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
             return false;
         }
         return true;
@@ -67,17 +67,17 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(2));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
+                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
                             return;
                     }
                 } else {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send(help(3));
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
                     return;
                 }
             }
@@ -133,12 +133,12 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             argList.remove(0);
         }
         if (names.size() == 0) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send(help(4));
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
             return;
         } else if (names.size() == 1) {
             String n = Main.discLink.getOsu(event.getAuthor().getId());
             if (n == null) {
-                new BotMessage(event, BotMessage.MessageType.TEXT).send(help(1));
+                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                 return;
             }
             names.add(n);
@@ -151,7 +151,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             for (String name : names)
                 users.add(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build()));
         } catch (Exception e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not find at least one of the players (`"
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find at least one of the players (`"
                     + String.join("` / `", names) + "`)");
             return;
         }
@@ -162,7 +162,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             for (OsuUser user : users)
                 scores.add(user.getTopScores(100).get());
         } catch (OsuAPIException e) {
-            new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve top scores of at least "
+            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores of at least "
                     + "one of the players (`" + String.join("` / `", names) + "`)");
             return;
         }
@@ -190,7 +190,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 try {
                     map = common.get(i).getBeatmap().get();
                 } catch (OsuAPIException e1) {
-                    new BotMessage(event, BotMessage.MessageType.TEXT).send("Could not retrieve beatmap with id `" + mapID + "`");
+                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap with id `" + mapID + "`");
                     return;
                 }
                 try {
@@ -203,7 +203,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             maps.add(map);
         }
 
-        new BotMessage(event, BotMessage.MessageType.COMMONSCORES).maps(maps).mode(mode).osuscores(common)
+        new BotMessage(event.getChannel(), BotMessage.MessageType.COMMONSCORES).maps(maps).mode(mode).osuscores(common)
                 .users(users).buildAndSend();
     }
 

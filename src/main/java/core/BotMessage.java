@@ -7,10 +7,7 @@ import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageEmbed;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
 import org.apache.log4j.Logger;
 
@@ -32,7 +29,8 @@ import static main.java.util.utilOsu.abbrvModSet;
 
 public class BotMessage {
 
-    private MessageReceivedEvent event;
+    private MessageChannel channel;
+    private User author;
     private MessageType typeM;
     private EmbedBuilder eb;
     private MessageBuilder mb;
@@ -52,8 +50,8 @@ public class BotMessage {
     private static final DecimalFormat df = new DecimalFormat("0.00");
     private static final int shortFormatDelay = 45000;
 
-    public BotMessage(MessageReceivedEvent event, MessageType typeM) {
-        this.event = event;
+    public BotMessage(MessageChannel channel, MessageType typeM) {
+        this.channel  = channel;
         this.typeM = typeM;
         this.eb = new EmbedBuilder().setColor(Color.green);
         this.mb = new MessageBuilder();
@@ -61,67 +59,43 @@ public class BotMessage {
     }
 
     public void send(String msg) {
-        send(new MessageBuilder(msg).build());
+        channel.sendMessage(msg).queue();
     }
 
     public void send(Message msg) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendMessage(msg).queue();
-        } else {
-            event.getTextChannel().sendMessage(msg).queue();
-        }
+        channel.sendMessage(msg).queue();
     }
 
     public void send(String msg, MessageEmbed embed) {
-        send(new MessageBuilder(msg).build(), embed);
+        channel.sendMessage(msg).embed(embed).queue();
     }
 
     public void send(Message msg, MessageEmbed embed) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendMessage(msg).embed(embed).queue();
-        } else {
-            event.getTextChannel().sendMessage(msg).embed(embed).queue();
-        }
+        channel.sendMessage(msg).embed(embed).queue();
     }
 
     public void send(String msg, Consumer<? super Message> consumer) {
-        send(new MessageBuilder(msg).build(), consumer);
+        channel.sendMessage(msg).queue(consumer);
     }
 
     public void send(Message msg, Consumer<? super Message> consumer) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendMessage(msg).queue(consumer);
-        } else {
-            event.getTextChannel().sendMessage(msg).queue(consumer);
-        }
+        channel.sendMessage(msg).queue(consumer);
     }
 
     public void send(String msg, MessageEmbed embed, Consumer<? super Message> consumer) {
-        send(new MessageBuilder(msg).build(), embed, consumer);
+        channel.sendMessage(msg).embed(embed).queue(consumer);
     }
 
     public void send(Message msg, MessageEmbed embed, Consumer<? super Message> consumer) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendMessage(msg).embed(embed).queue(consumer);
-        } else {
-            event.getTextChannel().sendMessage(msg).embed(embed).queue(consumer);
-        }
+        channel.sendMessage(msg).embed(embed).queue(consumer);
     }
 
     public void send(byte[] file, String filename) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendFile(file, filename).queue();
-        } else {
-            event.getTextChannel().sendFile(file, filename).queue();
-        }
+        channel.sendFile(file, filename).queue();
     }
 
     public void send(String msg, byte[] file, String filename) {
-        if (event.getChannelType() == ChannelType.PRIVATE) {
-            event.getChannel().sendMessage(msg).addFile(file, filename).queue();
-        } else {
-            event.getTextChannel().sendMessage(msg).addFile(file, filename).queue();
-        }
+        channel.sendMessage(msg).addFile(file, filename).queue();
     }
 
     public void buildAndSend() {
@@ -140,7 +114,7 @@ public class BotMessage {
                 mb.append("Try #").append(String.valueOf(retries));
             case COMPARE:
             case RECENTBEST:
-            case SINGLETOP:
+            case SINGLETOP: {
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(u.getUsername() + ": "
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
@@ -191,7 +165,8 @@ public class BotMessage {
                     .addField("Hits", hitString,true)
                     .addField("Map Info", mapInfo,true);
                 break;
-            case SCORES:
+            }
+            case SCORES: {
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
@@ -205,7 +180,7 @@ public class BotMessage {
                         ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(statics.thumbPath + "bgNotFound.png");
                 eb.setTitle(p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
-                                + "]","https://osu.ppy.sh/b/" + p.getMap().getID());
+                        + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                 List<OsuScore> orderedScores = new ArrayList<>(scores);
                 orderedScores.sort(Comparator.comparing(OsuScore::getPp).reversed());
                 idx = 1;
@@ -217,20 +192,27 @@ public class BotMessage {
                     String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ **"
                             + s.getMaxCombo() + "x**/" + p.getMaxCombo() + "x ]\t {";
                     switch (p.getMode()) {
-                        case STANDARD: fieldValue += s.getHit300() + "/" + s.getHit100() + "/" + s.getHit50(); break;
-                        case TAIKO: fieldValue +=  s.getHit300() + "/" + s.getHit100(); break;
+                        case STANDARD:
+                            fieldValue += s.getHit300() + "/" + s.getHit100() + "/" + s.getHit50();
+                            break;
+                        case TAIKO:
+                            fieldValue += s.getHit300() + "/" + s.getHit100();
+                            break;
                         case MANIA:
                             fieldValue += s.getGekis() + "/" + s.getHit300() + "/" + s.getKatus()
                                     + "/" + s.getHit100() + "/" + s.getHit50();
                             break;
-                        default: throw new IllegalStateException(Error.MODE.getMsg());
+                        default:
+                            throw new IllegalStateException(Error.MODE.getMsg());
                     }
                     fieldValue += "/" + s.getMisses() + "}\t" + howLongAgo(s.getDate());
                     eb.addField(fieldName, fieldValue, false);
                 }
                 break;
+            }
             case NOCHOKESCORES:
-                mb.append(event.getAuthor().getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
+                if (author == null) throw new IllegalStateException(Error.AUTHOR.getMsg());
+                mb.append(author.getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
             case TOPSOTARKS:
                 if (mb.isEmpty()) {
                     if (scores.size() < 10) {
@@ -250,7 +232,7 @@ public class BotMessage {
                     else mb.append(":");
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
-            case TOPSCORES:
+            case TOPSCORES: {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (mb.isEmpty() && scores.size() > 5) {
@@ -260,11 +242,11 @@ public class BotMessage {
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
                 eb.setAuthor(u.getUsername() + ": "
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
-                            + u.getCountry()
-                            + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
-                    "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + u.getCountry()
+                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                        "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 String mods;
                 StringBuilder description = new StringBuilder();
@@ -296,13 +278,15 @@ public class BotMessage {
                         case TAIKO:
                             description.append(s.getHit300()).append(" / ").append(s.getHit100());
                             break;
-                        default: break;
+                        default:
+                            break;
                     }
                     description.append(" / ").append(s.getMisses()).append(" } ~ ").append(howLongAgo(s.getDate()));
                 }
                 eb.setDescription(description);
                 break;
-            case LEADERBOARD:
+            }
+            case LEADERBOARD: {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 String iconURL = "";
@@ -311,8 +295,7 @@ public class BotMessage {
                     mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the " +
                             "specified mods on the specified map's leaderboard, here's the top 10 of them:");
                     scores = scores.stream().limit(10).collect(Collectors.toList());
-                }
-                else if (scores.size() == 0) {
+                } else if (scores.size() == 0) {
                     mb.append("There appear to be no scores on the specified map");
                 } else
                     iconURL = "https://a.ppy.sh/" + scores.get(0).getUserID();
@@ -330,7 +313,7 @@ public class BotMessage {
                             "https://osu.ppy.sh/b/" + p.getMap().getID(), iconURL);
                 }
                 String comboDisplay;
-                StringBuilder descr = new StringBuilder();
+                StringBuilder description = new StringBuilder();
                 idx = 1;
                 for (OsuScore s : scores) {
                     osuscore(s);
@@ -340,42 +323,43 @@ public class BotMessage {
                     } else {
                         comboDisplay += p.getMaxCombo() + "x ]";
                     }
-                    if (!descr.toString().equals("")) descr.append("\n");
+                    if (!description.toString().equals("")) description.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
-                    descr.append("**").append(idx++).append(".** ").append(getRank()).append(" **[").append(s.getUsername())
+                    description.append("**").append(idx++).append(".** ").append(getRank()).append(" **[").append(s.getUsername())
                             .append("](https://osu.ppy.sh/u/").append(s.getUsername().replaceAll(" ", "%20")).append(")**: ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
                             .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
                             .append(" ~ ").append(p.getAcc()).append("% ~ ").append(howLongAgo(s.getDate()));
                 }
-                eb.setDescription(descr);
+                eb.setDescription(description);
                 break;
-            case COMMONSCORES:
+            }
+            case COMMONSCORES: {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (users == null) throw new IllegalStateException(Error.USER.getMsg());
                 if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 List<String> names = users.stream().map(OsuUser::getUsername).collect(Collectors.toList());
                 if (scores.size() > 0) {
-                    mb.append("`").append(String.join("`, `", names.subList(0, names.size()-1))).append("` and `")
-                            .append(names.get(names.size()-1)).append("` have ").append(String.valueOf(scores.size()/names.size()))
+                    mb.append("`").append(String.join("`, `", names.subList(0, names.size() - 1))).append("` and `")
+                            .append(names.get(names.size() - 1)).append("` have ").append(String.valueOf(scores.size() / names.size()))
                             .append(" common beatmaps in their top 100 scores");
-                    if (scores.size() > 15*names.size())
+                    if (scores.size() > 15 * names.size())
                         mb.append(", here's the top 15 of them:");
                     else
                         mb.append(":");
-                    scores = scores.stream().limit(15*names.size()).collect(Collectors.toList());
+                    scores = scores.stream().limit(15 * names.size()).collect(Collectors.toList());
                 } else {
-                    mb.append("`").append(String.join("`, `", names.subList(0, names.size()-1))).append("` and `")
-                            .append(names.get(names.size()-1)).append("` have no common scores in their top 100");
+                    mb.append("`").append(String.join("`, `", names.subList(0, names.size() - 1))).append("` and `")
+                            .append(names.get(names.size() - 1)).append("` have no common scores in their top 100");
                 }
-                StringBuilder des = new StringBuilder();
+                StringBuilder description = new StringBuilder();
                 idx = 1;
-                for (int i = 0; i < Math.min(scores.size(), 15*names.size()); i += names.size()) {
+                for (int i = 0; i < Math.min(scores.size(), 15 * names.size()); i += names.size()) {
                     p.osuscore(scores.get(i));
-                    p.map(maps.get(i/names.size()));
-                    if (!des.toString().equals("")) des.append("\n");
-                    des.append("**").append(idx++).append(".** [").append(p.getMap().getArtist()).append(" - ")
+                    p.map(maps.get(i / names.size()));
+                    if (!description.toString().equals("")) description.append("\n");
+                    description.append("**").append(idx++).append(".** [").append(p.getMap().getArtist()).append(" - ")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion())
                             .append("]](https://osu.ppy.sh/b/").append(p.getMap().getID()).append(")");
                 }
@@ -387,14 +371,15 @@ public class BotMessage {
                 } else {
                     eb.setThumbnail("attachment://thumb.jpg");
                 }
-                eb.setDescription(des);
+                eb.setDescription(description);
                 break;
-            case RATIO:
+            }
+            case RATIO: {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (u == null) throw new IllegalStateException(Error.USER.getMsg());
                 mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
-                int[] accs = new int[] {0, 90, 95, 97, 99, 100};
+                int[] accs = new int[]{0, 90, 95, 97, 99, 100};
                 int[] nScores = new int[accs.length];
                 int[] nMisses = new int[accs.length];
                 int[] nTotal = new int[accs.length];
@@ -420,15 +405,16 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
-                StringBuilder desc = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
+                StringBuilder description = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
                 for (int i = 0, iLimit = nScores[nScores.length - 1] == 0 ? accs.length - 1 : accs.length; i < iLimit; i++) {
-                    desc.append("\n**").append(accs[i] < 100 ? ">" : "").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
-                            .append(n300[i] == 0 ? nGekis[i] > 0 ? 1 : 0 : (double)(Math.round(100 * (double)nGekis[i]/n300[i])) / 100).append(" | ")
-                            .append((double)(Math.round(100 * 100 * (double)nMisses[i]/nTotal[i])) / 100).append("%");
+                    description.append("\n**").append(accs[i] < 100 ? ">" : "").append(accs[i]).append("% :** ").append(nScores[i]).append(" | ")
+                            .append(n300[i] == 0 ? nGekis[i] > 0 ? 1 : 0 : (double) (Math.round(100 * (double) nGekis[i] / n300[i])) / 100).append(" | ")
+                            .append((double) (Math.round(100 * 100 * (double) nMisses[i] / nTotal[i])) / 100).append("%");
                 }
-                eb.setDescription(desc.toString());
+                eb.setDescription(description.toString());
                 break;
-            case SIMULATE:
+            }
+            case SIMULATE: {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 mb.append("Simulated score:");
@@ -452,7 +438,7 @@ public class BotMessage {
                 }
                 ppString += p.getPp();
                 hitString += " / " + p.getNMisses() + " }";
-                String mapInf = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
+                String mapInfo = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
                         + secondsToTimeFormat(p.getMap().getHitLength()) + "`) BPM: `" + p.getMap().getBPM() + "` Objects: `"
                         + p.getNObjects() + "`\nCS: `" + p.getMap().getSize() + "` AR: `"
                         + p.getMap().getApproach() + "` OD: `" + p.getMap().getOverall() + "` HP: `"
@@ -469,12 +455,12 @@ public class BotMessage {
                             + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                     fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
                     fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
-                    fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
+                    fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
                 } else {
                     eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
-                        + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
+                            + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                     fields.add(0, new MessageEmbed.Field("Rank", getRank(), true));
-                    StringBuilder descri = new StringBuilder();
+                    StringBuilder description = new StringBuilder();
                     for (OsuScore s : scores) {
                         if (p.getMode() == GameMode.MANIA) {
                             GameMod[] tempMods = s.getEnabledMods();
@@ -488,7 +474,7 @@ public class BotMessage {
                             if (foundMod) continue;
                         }
                         osuscore(s);
-                        String ppStr = "";
+                        String ppStr;
                         if (s.getPp() == 0) {
                             try {
                                 ppStr = new DecimalFormat("0.00").format(DBProvider.getPpRating(p.getMap().getID(), utilOsu.abbrvModSet(s.getEnabledMods())));
@@ -501,26 +487,22 @@ public class BotMessage {
                         fields.add(new MessageEmbed.Field((getModString().equals("") ? "NM" : getModString().substring(2)) + " (" + p.getStarRating() + "★):",
                                 "**" + ppStr + "pp** / " + p.getPpMax() + "PP", true));
                     }
-                    fields.add(new MessageEmbed.Field("Map Info", mapInf, true));
-                    eb.setDescription(descri.append("\n"));
+                    fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
+                    eb.setDescription(description.append("\n"));
                 }
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
                 break;
+            }
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
         final String hString = hitString;
         final String timeAgo = howLongAgo(date);
         final String eTitle = extendedTitle;
-        MessageAction ma;
-        if (thumbFile != null) {
-            ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
-                    .sendFile(thumbFile, "thumb.jpg", mb.build());
-        } else {
-            ma = (this.event.isFromType(ChannelType.PRIVATE) ? this.event.getChannel() : this.event.getTextChannel())
-                    .sendMessage(mb.build());
-        }
+        MessageAction ma = thumbFile != null
+                ? channel.sendFile(thumbFile, "thumb.jpg", mb.build())
+                : channel.sendMessage(mb.build());
         try {
             switch (typeM) {
                 case RECENT:
@@ -632,9 +614,14 @@ public class BotMessage {
         return this;
     }
 
+    public BotMessage author(User author) {
+        this.author = author;
+        return this;
+    }
+
     private String getRank() {
         String scoreRank = p.getRank();
-        return event.getJDA().getGuildById(secrets.devGuildID)
+        return Main.jda.getGuildById(secrets.devGuildID)
                 .getEmoteById(utilOsu.getRankEmote(scoreRank).getValue()).getAsMention()
             + (scoreRank.equals("F") ? " (" + p.getCompletion() + "%)" : "");
     }
@@ -657,7 +644,8 @@ public class BotMessage {
         TYPEM("Invalid message type"),
         MODE("Unsupported game mode"),
         COLLECTION("Collection is undefined"),
-        USER("User is undefined");
+        USER("User is undefined"),
+        AUTHOR("Author is undefined");
         String msg;
         Error(String msg) {
             this.msg = msg;
