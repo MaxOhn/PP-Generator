@@ -67,6 +67,29 @@ public class DBProvider {
         return new BgGameRanking(discord, score, mu, sigma);
     }
 
+    public static HashMap<String, Double> getBgPlayerStats(long discord) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select score, rating from bgGame where discord=" + discord);
+        double score, rating;
+        if (rs.next()) {
+            score = rs.getInt("score");
+            rating = rs.getDouble("rating");
+        } else {
+            stmnt = c.createStatement();
+            stmnt.executeQuery("insert into bgGame (discord, score, mu, sigma, rating) values (" +
+                    discord + ", 0, 1500, 500, 0)");
+            score = 0; rating = 0;
+        }
+        stmnt.close();
+        c.close();
+        HashMap<String, Double> stats = new HashMap<>();
+        stats.put("Score", score);
+        stats.put("Rating", rating);
+        return stats;
+    }
+
     public static HashMap<Long, Double> getBgTopRatings(int amount) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);

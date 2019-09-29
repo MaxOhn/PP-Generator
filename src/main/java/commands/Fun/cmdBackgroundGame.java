@@ -91,6 +91,18 @@ public class cmdBackgroundGame implements ICommand {
                 }
                 event.getChannel().sendMessage(runningGames.get(event.getChannel().getIdLong()).getHint()).queue();
                 break;
+            case "-stats":
+                HashMap<String, Double> stats;
+                try {
+                    stats = DBProvider.getBgPlayerStats(event.getAuthor().getIdLong());
+                } catch (ClassNotFoundException | SQLException e) {
+                    logger.error("Could not retrieve stats for id " + event.getAuthor().getId(), e);
+                    event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                    return;
+                }
+                event.getChannel().sendMessage("`" + event.getAuthor().getName() + "` has guessed `" + stats.get("score").intValue()
+                + "` correctly and has a rating of `" + stats.get("rating") + "`").queue();
+                break;
             case "-score":
             case "-rank":
             case "-ranking":
@@ -311,17 +323,18 @@ public class cmdBackgroundGame implements ICommand {
         String help = " (`" + statics.prefix + "background -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + getName() + " [start/bigger/hint/resolve] [-score] [-rating]` to play the background-guessing game." +
+                return "Enter `" + statics.prefix + getName() + " [start/bigger/hint/resolve] [-score] [-rating] [-stats]` to play the background-guessing game." +
                         "\nWith `start` I will select and show part of a new background for you to guess." +
                         "\nWith `bigger` I will slightly enlargen the currently shown part of the background to make it easier." +
                         "\nWith `hint` I will provide you some clues for the map title." +
                         "\nWith `resolve` I will show you the entire background and its mapset" +
                         "\nIf the first argument is `-score`, I will display the score leaderboard for this server i.e. who's most addicted :^)" +
-                        "\nIf the first argument is `-rating`, I will display the \"elo\" leaderboard for this server i.e. who guesses fastest in 2+ player rounds";
+                        "\nIf the first argument is `-rating`, I will display the \"elo\" leaderboard for this server i.e. who guesses fastest in 2+ player rounds" +
+                        "\nIf the first argument is `-stats`, I will show your current score and rating";
             case 1:
                 return "You must first start a new round via `" + statics.prefix + getName() + " start`" + help;
             case 2:
-                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, `resolve`, `-score`, or `-rating`" + help;
+                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, `resolve`, `-score`, `-rating`, or `-stats`" + help;
             default:
                 return help(0);
         }
