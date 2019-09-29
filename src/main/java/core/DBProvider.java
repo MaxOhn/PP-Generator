@@ -7,6 +7,7 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.util.Utility;
 import main.java.util.secrets;
+import main.java.commands.Fun.BgGameRanking;
 
 import java.sql.*;
 import java.time.ZonedDateTime;
@@ -28,29 +29,70 @@ public class DBProvider {
      * ------------------------
      */
 
-    public static void incrementBgGameScore(long discord) throws ClassNotFoundException, SQLException {
+    public static void updateBgPlayerRanking(HashSet<BgGameRanking> rankings) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        stmnt.execute("insert into bgGameScore(discord, score) values ('" + discord
-                + "', 1)"
-                + " on duplicate key update score=score+1");
+        PreparedStatement stmnt = c.prepareStatement("update bgGame set score=? , mu=? , sigma=? , rating=? where discord=?");
+        for (BgGameRanking ranking : rankings) {
+            stmnt.setInt(1, ranking.getScore());
+            stmnt.setDouble(2, ranking.getRating().getMean());
+            stmnt.setDouble(3, ranking.getRating().getStandardDeviation());
+            stmnt.setDouble(4, ranking.getRating().getConservativeRating());
+            stmnt.setLong(5, ranking.getDiscordUser());
+            stmnt.addBatch();
+        }
+        stmnt.executeBatch();
         stmnt.close();
         c.close();
     }
 
-    public static HashMap<Long, Integer> getBgGameAddicts(int amount) throws ClassNotFoundException, SQLException {
-        HashMap<Long, Integer> addicts = new HashMap<>();
+    public static BgGameRanking getBgPlayerRanking(long discord) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select * from bgGameScore order by score desc");
-        while(rs.next() && amount-- > 0) {
-            addicts.put(rs.getLong("discord"), rs.getInt("score"));
+        ResultSet rs = stmnt.executeQuery("select * from bgGame where discord=" + discord);
+        int score; double mu, sigma;
+        if (rs.next()) {
+            score = rs.getInt("score");
+            mu = rs.getDouble("mu");
+            sigma = rs.getDouble("sigma");
+        } else {
+            stmnt = c.createStatement();
+            stmnt.executeQuery("insert into bgGame (discord, score, mu, sigma, rating) values (" +
+                    discord + ", 0, 1500, 500, 0)");
+            score = 0; mu = 1500; sigma = 500;
         }
         stmnt.close();
         c.close();
-        return addicts;
+        return new BgGameRanking(discord, score, mu, sigma);
+    }
+
+    public static HashMap<Long, Double> getBgTopRatings(int amount) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select discord, rating from bgGame order by rating desc limit " + amount);
+        HashMap<Long, Double> topRatings = new HashMap<>();
+        while (rs.next()) {
+            topRatings.put(rs.getLong("discord"), rs.getDouble("rating"));
+        }
+        stmnt.close();
+        c.close();
+        return topRatings;
+    }
+
+    public static HashMap<Long, Integer> getBgTopScores(int amount) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select discord, score from bgGame order by score desc limit " + amount);
+        HashMap<Long, Integer> topScores = new HashMap<>();
+        while (rs.next()) {
+            topScores.put(rs.getLong("discord"), rs.getInt("score"));
+        }
+        stmnt.close();
+        c.close();
+        return topScores;
     }
 
     /*

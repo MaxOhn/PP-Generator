@@ -4,12 +4,15 @@ import com.auth0.jwt.internal.org.apache.commons.lang3.StringUtils;
 import com.oopsjpeg.osu4j.OsuBeatmapSet;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmapSet;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
+import de.gesundkrank.jskills.*;
 import main.java.commands.ICommand;
 import main.java.core.BotMessage;
+import main.java.core.DBProvider;
 import main.java.core.Main;
+import main.java.util.Pair;
+import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
-import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -20,17 +23,21 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 public class cmdBackgroundGame implements ICommand {
 
     private Logger logger = Logger.getLogger(cmdBackgroundGame.class);
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
+    private HashMap<Long, HashMap<Long, Pair<Long, BgGameRanking>>> activePlayers = new HashMap<>();
     private Queue<Integer> previous = new LinkedList<>();
     private File[] files = new File(getSourcePath()).listFiles();
     private final int checkInterval = 3000;
+    private GameInfo gameInfo = new GameInfo(1500, 500, 240, 10, 0.1);
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -69,10 +76,7 @@ public class cmdBackgroundGame implements ICommand {
                     new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
                     return;
                 }
-                if (args.length > 1)
-                    resolveGame(event.getChannel(), args[1], Double.parseDouble(args[2]), true);
-                else
-                    resolveGame(event.getChannel(), "", 0, true);
+                resolveGame(event.getChannel(), "", 0, true, 0);
                 break;
             case "hint":
             case "h":
@@ -90,7 +94,8 @@ public class cmdBackgroundGame implements ICommand {
 
     private void startGame(MessageChannel channel) {
         runningGames.remove(channel.getIdLong());
-        assert files != null;
+        if (!activePlayers.containsKey(channel.getIdLong()))
+            activePlayers.put(channel.getIdLong(), new HashMap<>());
         File image;
         BufferedImage origin;
         while (true) {
@@ -100,8 +105,8 @@ public class cmdBackgroundGame implements ICommand {
                     origin = ImageIO.read(image);
                     break;
                 }
-            } catch (IOException ignored) {
-                logger.warn("Error while selecting file: " + image.getName());
+            } catch (IOException e) {
+                logger.warn("Error while selecting file: " + image.getName(), e);
             }
         }
         previous.add(image.hashCode());
@@ -122,15 +127,17 @@ public class cmdBackgroundGame implements ICommand {
         runningGames.put(channel.getIdLong(), bgGame);
     }
 
-    private void resolveGame(MessageChannel channel, String name, double similarity, boolean autostart) {
+    private void resolveGame(MessageChannel channel, String winner, double similarity, boolean autostart, long winnerID) {
         BackgroundGame game = runningGames.get(channel.getIdLong());
         if (game == null) return;
         String text = "Full background: https://osu.ppy.sh/beatmapsets/";
-        if (!name.isEmpty()) {
+        if (!winner.isEmpty()) {
             text = (similarity == 1
-                    ? "Gratz `" + name + "`, you guessed it"
-                    : "You were close enough `" + name + "`, gratz")
+                    ? "Gratz `" + winner + "`, you guessed it"
+                    : "You were close enough `" + winner + "`, gratz")
                     + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
+            updateRankingOfInactive(channel.getIdLong());
+            updateRankingOfActive(channel.getIdLong(), winnerID);
         }
         new BotMessage(channel, BotMessage.MessageType.TEXT).send(
                 text + game.mapsetid,
@@ -143,16 +150,51 @@ public class cmdBackgroundGame implements ICommand {
             startGame(channel);
     }
 
+    private void updateRankingOfInactive(long channel) {
+        HashSet<Long> inactivePlayers = activePlayers.get(channel).values().stream()
+                .filter(pair -> System.currentTimeMillis() - pair.left > 15000
+                        && !runningGames.get(channel).players.contains(pair.right.getDiscordUser()))
+                .map(pair -> pair.right.getDiscordUser())
+                .collect(Collectors.toCollection(HashSet::new));
+        if (inactivePlayers.size() > 0)
+            activePlayers.get(channel).keySet().removeIf(inactivePlayers::contains);
+        try {
+            DBProvider.updateBgPlayerRanking(inactivePlayers.stream()
+                    .map(playerID -> activePlayers.get(channel).get(playerID).right)
+                    .collect(Collectors.toCollection(HashSet::new))
+            );
+        } catch (ClassNotFoundException | SQLException e) {
+            logger.error("Could not update player rankings", e);
+        }
+    }
+
+    private void updateRankingOfActive(long channel, long winner) {
+        if (activePlayers.get(channel).size() > 1) {
+            List<ITeam> teams = activePlayers.get(channel).values().stream()
+                    .map(pair -> new Team(new Player<>(pair.getRight().getDiscordUser()), pair.getRight().getRating()))
+                    .collect(Collectors.toList());
+            int[] teamRanks = activePlayers.get(channel).values().stream()
+                    .map(pair -> pair.right.getDiscordUser() == winner ? 1 : 2)
+                    .mapToInt(x -> x).toArray();
+            Map<IPlayer, Rating> newRatings = TrueSkillCalculator.calculateNewRatings(gameInfo, teams, teamRanks);
+            for (IPlayer player : newRatings.keySet()) {
+                long playerID = Long.parseLong(player.toString());
+                activePlayers.get(channel).get(playerID).right.uptate(newRatings.get(player));
+            }
+        }
+        activePlayers.get(channel).get(winner).right.incrementScore();
+    }
+
     private void checkChat(long channel, long mapsetid) {
         BackgroundGame game = runningGames.get(channel);
-        logger.info("Checking chat (bgGame: " + (game != null ? game.mapsetid : "null") + ", mapset: " + mapsetid + ")");
+        //logger.info("Checking chat (bgGame: " + (game != null ? game.mapsetid : "null") + ", mapset: " + mapsetid + ")");
         if (game == null || game.mapsetid != mapsetid) {
-            logger.info("Stop checking because new map");
+            //logger.info("Stop checking because new map");
             return;
         }
         game.channel.getHistoryAfter(game.lastMsgChecked, 10).queue(messageHistory -> {
             if (messageHistory.isEmpty()) {
-                logger.info("No new messages -> schedule in " + (checkInterval / 1000d) + " seconds");
+                //logger.info("No new messages -> schedule in " + (checkInterval / 1000d) + " seconds");
                 scheduler.schedule(() -> checkChat(channel, mapsetid), checkInterval, TimeUnit.MILLISECONDS);
                 return;
             }
@@ -160,10 +202,24 @@ public class cmdBackgroundGame implements ICommand {
             while (it.hasPrevious()) {
                 Message msg = it.previous();
                 if (msg.getAuthor() == Main.jda.getSelfUser()) continue;
+                if (secrets.WITH_DB) {
+                    game.players.add(msg.getAuthor().getIdLong());
+                    if (!activePlayers.get(channel).containsKey(msg.getAuthor().getIdLong())) {
+                        try {
+                            activePlayers.get(channel).put(
+                                    msg.getAuthor().getIdLong(),
+                                    new Pair<>(System.currentTimeMillis(), DBProvider.getBgPlayerRanking(msg.getAuthor().getIdLong()))
+                            );
+                        } catch (SQLException | ClassNotFoundException e) {
+                            //logger.error("Could not retrieve player rating", e);
+                        }
+                    } else
+                        activePlayers.get(channel).get(msg.getAuthor().getIdLong()).left = System.currentTimeMillis();
+                }
                 String content = msg.getContentRaw().toLowerCase();
                 if (game.title.equals(content)) {
-                    logger.info("Resolved title " + game.title + " == " + content);
-                    resolveGame(game.channel, msg.getAuthor().getName(), 1, true);
+                    //logger.info("Resolved title " + game.title + " == " + content);
+                    resolveGame(game.channel, msg.getAuthor().getName(), 1, true, msg.getAuthor().getIdLong());
                     return;
                 }
                 if (game.titleSplit.length > 0) {
@@ -173,8 +229,8 @@ public class cmdBackgroundGame implements ICommand {
                         for (String t : game.titleSplit) {
                             if (c.equals(t)) {
                                 if ((hit += c.length()) > 8) {
-                                    logger.info("Resolved title " + game.title + " ~= " + content + " (" + hit + ")");
-                                    resolveGame(game.channel, msg.getAuthor().getName(), 0.9, true);
+                                    //logger.info("Resolved title " + game.title + " ~= " + content + " (" + hit + ")");
+                                    resolveGame(game.channel, msg.getAuthor().getName(), 0.9, true, msg.getAuthor().getIdLong());
                                     return;
                                 }
                             }
@@ -183,8 +239,8 @@ public class cmdBackgroundGame implements ICommand {
                 }
                 double similarity = utilGeneral.similarity(game.title, content);
                 if (similarity > 0.5) {
-                    logger.info("Resolved title " + game.title + " ~= " + content + " (" + similarity + ")");
-                    resolveGame(game.channel, msg.getAuthor().getName(), similarity, true);
+                    //logger.info("Resolved title " + game.title + " ~= " + content + " (" + similarity + ")");
+                    resolveGame(game.channel, msg.getAuthor().getName(), similarity, true, msg.getAuthor().getIdLong());
                     return;
                 }
                 if (!game.artistGuessed) {
@@ -201,7 +257,7 @@ public class cmdBackgroundGame implements ICommand {
                 }
             }
             game.lastMsgChecked = it.next().getIdLong();
-            logger.info("Done checking -> immediate restart");
+            //logger.info("Done checking -> immediate restart");
             checkChat(channel, mapsetid);
         });
     }
@@ -263,6 +319,7 @@ public class cmdBackgroundGame implements ICommand {
         private String[] titleSplit;
         private boolean artistGuessed;
         private int hintDepth;
+        private HashSet<Long> players;
 
         BackgroundGame(MessageChannel channel, BufferedImage origin, OsuBeatmapSet mapset) {
             this.channel = channel;
@@ -277,7 +334,8 @@ public class cmdBackgroundGame implements ICommand {
             title = removeParenthesis(mapset.getTitle().toLowerCase());
             mapsetid = mapset.getBeatmapSetID();
             titleSplit = title.split(" ");
-            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false), 5, TimeUnit.MINUTES);
+            players = new HashSet<>();
+            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), 5, TimeUnit.MINUTES);
             scheduler.schedule(() -> checkChat(channel.getIdLong(), mapsetid), checkInterval + 500, TimeUnit.MILLISECONDS);
         }
 
@@ -355,5 +413,4 @@ public class cmdBackgroundGame implements ICommand {
             timeLeft.cancel(false);
         }
     }
-
 }
