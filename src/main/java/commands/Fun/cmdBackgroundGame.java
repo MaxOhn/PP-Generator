@@ -6,25 +6,28 @@ import com.oopsjpeg.osu4j.backend.EndpointBeatmapSet;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import de.gesundkrank.jskills.*;
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.Pair;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
@@ -36,17 +39,17 @@ public class cmdBackgroundGame implements ICommand {
     private HashMap<Long, HashMap<Long, Pair<Long, BgGameRanking>>> activePlayers = new HashMap<>();
     private Queue<Integer> previous = new LinkedList<>();
     private File[] files = new File(getSourcePath()).listFiles();
-    private final int checkInterval = 3000;
+    private final int checkInterval = 1500;
     private GameInfo gameInfo = new GameInfo(1500, 500, 240, 10, 0.1);
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return false;
         }
         if (args.length != 1) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
+            event.getChannel().sendMessage(help(2)).queue();
             return false;
         }
         return true;
@@ -62,18 +65,20 @@ public class cmdBackgroundGame implements ICommand {
             case "bigger":
             case "b":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                    event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
                 runningGames.get(event.getChannel().getIdLong()).increaseRadius();
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT)
-                        .send(runningGames.get(event.getChannel().getIdLong()).getResult(), "Guess the background.png");
+                event.getChannel().sendFile(
+                        runningGames.get(event.getChannel().getIdLong()).getResult(),
+                        "Guess the background.png"
+                ).queue();
                 break;
             case "resolve":
             case "solve":
             case "r":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                    event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
                 resolveGame(event.getChannel(), "", 0, true, 0);
@@ -81,15 +86,67 @@ public class cmdBackgroundGame implements ICommand {
             case "hint":
             case "h":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                    event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT)
-                        .send(runningGames.get(event.getChannel().getIdLong()).getHint());
+                event.getChannel().sendMessage(runningGames.get(event.getChannel().getIdLong()).getHint()).queue();
+                break;
+            case "-score":
+            case "-rank":
+            case "-ranking":
+            case "-rating":
+                if (event.getChannelType() == ChannelType.PRIVATE) {
+                    event.getChannel().sendMessage("No highscore list in private messages").queue();
+                    return;
+                }
+                boolean wantScore = args[0].toLowerCase().equals("-score");
+                HashMap<Long, Double> topScores;
+                try {
+                    topScores = wantScore
+                            ? DBProvider.getBgTopScores(15)
+                            : DBProvider.getBgTopRatings(15);
+                } catch (ClassNotFoundException | SQLException e) {
+                    logger.error("Could not retrieve top " + (wantScore ? "scores" : "ratings"), e);
+                    event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                    return;
+                }
+                topScores.keySet().removeIf(userID -> event.getGuild().getMemberById(userID) == null);
+                EmbedBuilder eb = new EmbedBuilder()
+                        .setColor(Color.green)
+                        .setAuthor("Top " + (wantScore ? "scores" : "ratings") + " in the background game:");
+                eb.setDescription(buildMessage(event, utilGeneral.sortByValue(topScores)));
+                event.getChannel().sendMessage(eb.build()).queue();
                 break;
             default:
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
+                event.getChannel().sendMessage(help(2)).queue();
         }
+    }
+
+    private String buildMessage(MessageReceivedEvent event, Map<Long, Double> ranking) {
+        HashMap<Long, String> names = ranking.keySet().stream()
+                .collect(HashMap::new, (m, id) -> m.put(id, event.getGuild().getMemberById(id).getEffectiveName()), HashMap::putAll);
+        int longestNameLength = names.values().stream()
+                .reduce(0, (longest, next) -> next.length() > longest ? next.length() : longest, Math::max);
+        StringBuilder msg = new StringBuilder("```\n");
+        String[] symbols = new String[] { "♔", "♕", "♖", "♗", "♘", "♙"};
+        int idx = 0;
+        for (Map.Entry<Long, Double> entry : ranking.entrySet()) {
+            msg.append(++idx);
+            msg.append(" ");
+            if (idx <= symbols.length)
+                msg.append(symbols[idx - 1]);
+            else
+                msg.append(" ");
+            if (ranking.size() > 10 && idx < 10)
+                msg.append(" ");
+            msg.append(" # ");
+            msg.append(names.get(entry.getKey()));
+            msg.append(StringUtils.repeat(" ", longestNameLength - names.get(entry.getKey()).length() + 2));
+            msg.append("=> ");
+            msg.append(entry.getValue());
+            msg.append("\n");
+        }
+        return msg.append("```").toString();
     }
 
     private void startGame(MessageChannel channel) {
@@ -122,8 +179,7 @@ public class cmdBackgroundGame implements ICommand {
             return;
         }
         BackgroundGame bgGame = new BackgroundGame(channel, origin, mapset);
-        new BotMessage(channel, BotMessage.MessageType.TEXT)
-                .send("Here's the next one:", bgGame.getResult(), "Guess the background.png");
+        channel.sendMessage("Here's the next one:").addFile(bgGame.getResult(), "Guess the background.png").queue();
         runningGames.put(channel.getIdLong(), bgGame);
     }
 
@@ -136,14 +192,12 @@ public class cmdBackgroundGame implements ICommand {
                     ? "Gratz `" + winner + "`, you guessed it"
                     : "You were close enough `" + winner + "`, gratz")
                     + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
-            updateRankingOfInactive(channel.getIdLong());
-            updateRankingOfActive(channel.getIdLong(), winnerID);
+            if (secrets.WITH_DB) {
+                updateRankingOfInactive(channel.getIdLong());
+                updateRankingOfActive(channel.getIdLong(), winnerID);
+            }
         }
-        new BotMessage(channel, BotMessage.MessageType.TEXT).send(
-                text + game.mapsetid,
-                game.getReveal(),
-                "Guess the background.png"
-        );
+        channel.sendMessage(text + game.mapsetid).addFile(game.getReveal(), "Guess the background.png").queue();
         game.dispose();
         runningGames.remove(channel.getIdLong());
         if (autostart)
@@ -187,14 +241,10 @@ public class cmdBackgroundGame implements ICommand {
 
     private void checkChat(long channel, long mapsetid) {
         BackgroundGame game = runningGames.get(channel);
-        //logger.info("Checking chat (bgGame: " + (game != null ? game.mapsetid : "null") + ", mapset: " + mapsetid + ")");
-        if (game == null || game.mapsetid != mapsetid) {
-            //logger.info("Stop checking because new map");
+        if (game == null || game.mapsetid != mapsetid)
             return;
-        }
         game.channel.getHistoryAfter(game.lastMsgChecked, 10).queue(messageHistory -> {
             if (messageHistory.isEmpty()) {
-                //logger.info("No new messages -> schedule in " + (checkInterval / 1000d) + " seconds");
                 scheduler.schedule(() -> checkChat(channel, mapsetid), checkInterval, TimeUnit.MILLISECONDS);
                 return;
             }
@@ -211,14 +261,13 @@ public class cmdBackgroundGame implements ICommand {
                                     new Pair<>(System.currentTimeMillis(), DBProvider.getBgPlayerRanking(msg.getAuthor().getIdLong()))
                             );
                         } catch (SQLException | ClassNotFoundException e) {
-                            //logger.error("Could not retrieve player rating", e);
+                            logger.error("Could not retrieve player rating", e);
                         }
                     } else
                         activePlayers.get(channel).get(msg.getAuthor().getIdLong()).left = System.currentTimeMillis();
                 }
                 String content = msg.getContentRaw().toLowerCase();
                 if (game.title.equals(content)) {
-                    //logger.info("Resolved title " + game.title + " == " + content);
                     resolveGame(game.channel, msg.getAuthor().getName(), 1, true, msg.getAuthor().getIdLong());
                     return;
                 }
@@ -229,7 +278,6 @@ public class cmdBackgroundGame implements ICommand {
                         for (String t : game.titleSplit) {
                             if (c.equals(t)) {
                                 if ((hit += c.length()) > 8) {
-                                    //logger.info("Resolved title " + game.title + " ~= " + content + " (" + hit + ")");
                                     resolveGame(game.channel, msg.getAuthor().getName(), 0.9, true, msg.getAuthor().getIdLong());
                                     return;
                                 }
@@ -239,25 +287,21 @@ public class cmdBackgroundGame implements ICommand {
                 }
                 double similarity = utilGeneral.similarity(game.title, content);
                 if (similarity > 0.5) {
-                    //logger.info("Resolved title " + game.title + " ~= " + content + " (" + similarity + ")");
                     resolveGame(game.channel, msg.getAuthor().getName(), similarity, true, msg.getAuthor().getIdLong());
                     return;
                 }
                 if (!game.artistGuessed) {
                     if (game.artist.equals(content)) {
-                        new BotMessage(game.channel, BotMessage.MessageType.TEXT)
-                                .send("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?");
+                        game.channel.sendMessage("That's the correct artist `" + msg.getAuthor().getName() + "`, can you get the title too?").queue();
                         game.artistGuessed = true;
                     } else if (similarity < 0.3 && utilGeneral.similarity(game.artist, content) > 0.5) {
-                        new BotMessage(game.channel, BotMessage.MessageType.TEXT)
-                                .send("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `" +
-                                        game.artist + "` but can you get the title?");
+                        game.channel.sendMessage("`" + msg.getAuthor().getName() + "` got the artist almost correct, it's actually `"
+                                + game.artist + "` but can you get the title?").queue();
                         game.artistGuessed = true;
                     }
                 }
             }
             game.lastMsgChecked = it.next().getIdLong();
-            //logger.info("Done checking -> immediate restart");
             checkChat(channel, mapsetid);
         });
     }
@@ -267,15 +311,17 @@ public class cmdBackgroundGame implements ICommand {
         String help = " (`" + statics.prefix + "background -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + getName() + " <start/bigger/hint/resolve>` to play the background-guessing game." +
+                return "Enter `" + statics.prefix + getName() + " [start/bigger/hint/resolve] [-score] [-rating]` to play the background-guessing game." +
                         "\nWith `start` I will select and show part of a new background for you to guess." +
                         "\nWith `bigger` I will slightly enlargen the currently shown part of the background to make it easier." +
                         "\nWith `hint` I will provide you some clues for the map title." +
-                        "\nWith `resolve` I will show you the entire background and its mapset";
+                        "\nWith `resolve` I will show you the entire background and its mapset" +
+                        "\nIf the first argument is `-score`, I will display the score leaderboard for this server i.e. who's most addicted :^)" +
+                        "\nIf the first argument is `-rating`, I will display the \"elo\" leaderboard for this server i.e. who guesses fastest in 2+ player rounds";
             case 1:
                 return "You must first start a new round via `" + statics.prefix + getName() + " start`" + help;
             case 2:
-                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, or `resolve`" + help;
+                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, `resolve`, `-score`, or `-rating`" + help;
             default:
                 return help(0);
         }
@@ -291,7 +337,7 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     public String getName() {
-        return "background";
+        return "bg";
     }
 
     private static String removeParenthesis(String str) {

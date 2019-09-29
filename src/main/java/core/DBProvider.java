@@ -81,14 +81,14 @@ public class DBProvider {
         return topRatings;
     }
 
-    public static HashMap<Long, Integer> getBgTopScores(int amount) throws ClassNotFoundException, SQLException {
+    public static HashMap<Long, Double> getBgTopScores(int amount) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select discord, score from bgGame order by score desc limit " + amount);
-        HashMap<Long, Integer> topScores = new HashMap<>();
+        HashMap<Long, Double> topScores = new HashMap<>();
         while (rs.next()) {
-            topScores.put(rs.getLong("discord"), rs.getInt("score"));
+            topScores.put(rs.getLong("discord"), (double)rs.getInt("score"));
         }
         stmnt.close();
         c.close();
