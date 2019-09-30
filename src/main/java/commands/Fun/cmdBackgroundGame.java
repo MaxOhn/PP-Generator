@@ -8,7 +8,6 @@ import de.gesundkrank.jskills.*;
 import main.java.commands.ICommand;
 import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.Pair;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -218,15 +217,15 @@ public class cmdBackgroundGame implements ICommand {
 
     private void updateRankingOfInactive(long channel) {
         HashSet<Long> inactivePlayers = activePlayers.get(channel).values().stream()
-                .filter(pair -> System.currentTimeMillis() - pair.left > 15000
-                        && !runningGames.get(channel).players.contains(pair.right.getDiscordUser()))
-                .map(pair -> pair.right.getDiscordUser())
+                .filter(pair -> System.currentTimeMillis() - pair.time > 15000
+                        && !runningGames.get(channel).players.contains(pair.rating.getDiscordUser()))
+                .map(pair -> pair.rating.getDiscordUser())
                 .collect(Collectors.toCollection(HashSet::new));
         if (inactivePlayers.size() > 0)
             activePlayers.get(channel).keySet().removeIf(inactivePlayers::contains);
         try {
             DBProvider.updateBgPlayerRanking(inactivePlayers.stream()
-                    .map(playerID -> activePlayers.get(channel).get(playerID).right)
+                    .map(playerID -> activePlayers.get(channel).get(playerID).rating)
                     .collect(Collectors.toCollection(HashSet::new))
             );
         } catch (ClassNotFoundException | SQLException e) {
@@ -237,18 +236,18 @@ public class cmdBackgroundGame implements ICommand {
     private void updateRankingOfActive(long channel, long winner) {
         if (activePlayers.get(channel).size() > 1) {
             List<ITeam> teams = activePlayers.get(channel).values().stream()
-                    .map(pair -> new Team(new Player<>(pair.getRight().getDiscordUser()), pair.getRight().getRating()))
+                    .map(pair -> new Team(new Player<>(pair.rating.getDiscordUser()), pair.rating.getRating()))
                     .collect(Collectors.toList());
             int[] teamRanks = activePlayers.get(channel).values().stream()
-                    .map(pair -> pair.right.getDiscordUser() == winner ? 1 : 2)
+                    .map(pair -> pair.rating.getDiscordUser() == winner ? 1 : 2)
                     .mapToInt(x -> x).toArray();
             Map<IPlayer, Rating> newRatings = TrueSkillCalculator.calculateNewRatings(gameInfo, teams, teamRanks);
             for (IPlayer player : newRatings.keySet()) {
                 long playerID = Long.parseLong(player.toString());
-                activePlayers.get(channel).get(playerID).right.uptate(newRatings.get(player));
+                activePlayers.get(channel).get(playerID).rating.uptate(newRatings.get(player));
             }
         }
-        activePlayers.get(channel).get(winner).right.incrementScore();
+        activePlayers.get(channel).get(winner).rating.incrementScore();
     }
 
     private void checkChat(long channel, long mapsetid) {
@@ -276,7 +275,7 @@ public class cmdBackgroundGame implements ICommand {
                             logger.error("Could not retrieve player rating", e);
                         }
                     } else
-                        activePlayers.get(channel).get(msg.getAuthor().getIdLong()).left = System.currentTimeMillis();
+                        activePlayers.get(channel).get(msg.getAuthor().getIdLong()).time = System.currentTimeMillis();
                 }
                 String content = msg.getContentRaw().toLowerCase();
                 if (game.title.equals(content)) {
@@ -470,6 +469,16 @@ public class cmdBackgroundGame implements ICommand {
 
         void dispose() {
             timeLeft.cancel(false);
+        }
+    }
+
+    private static class Pair<Long, BgGameRanking> {
+        private Long time;
+        private BgGameRanking rating;
+
+        Pair(Long time, BgGameRanking rating) {
+            this.time = time;
+            this.rating = rating;
         }
     }
 }
