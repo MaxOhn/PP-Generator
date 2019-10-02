@@ -37,7 +37,7 @@ public class cmdTop implements INumberedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (number > 100) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 100");
+            event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
 
@@ -53,17 +53,17 @@ public class cmdTop implements INumberedCommand {
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(5));
+                            event.getChannel().sendMessage(help(5)).queue();
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
+                            event.getChannel().sendMessage(help(4)).queue();
                             return;
                     }
                 } else {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
+                    event.getChannel().sendMessage(help(4)).queue();
                     return;
                 }
             }
@@ -80,11 +80,11 @@ public class cmdTop implements INumberedCommand {
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                event.getChannel().sendMessage(help(1)).queue();
                 return;
             }
         } else if (args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return;
         } else {
             name = String.join(" ", argList);
@@ -92,7 +92,7 @@ public class cmdTop implements INumberedCommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
             }
         }
@@ -100,14 +100,14 @@ public class cmdTop implements INumberedCommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
         } catch (Exception e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
+            event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
         Collection<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(number).get();
         } catch (OsuAPIException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
+            event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
         final Iterator<OsuScore> itr = topPlays.iterator();
@@ -123,7 +123,7 @@ public class cmdTop implements INumberedCommand {
             try {
                 map = rbScore.getBeatmap().get();
             } catch (OsuAPIException e1) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve map");
+                event.getChannel().sendMessage("Could not retrieve map").queue();
                 return;
             }
             try {
@@ -137,7 +137,7 @@ public class cmdTop implements INumberedCommand {
         try {
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
         } catch (OsuAPIException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve global scores");
+            event.getChannel().sendMessage("Could not retrieve global scores").queue();
             return;
         }
         new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)

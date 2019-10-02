@@ -29,7 +29,7 @@ public class cmdNoChoke implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return false;
         }
         return true;
@@ -42,7 +42,7 @@ public class cmdNoChoke implements ICommand {
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                event.getChannel().sendMessage(help(1)).queue();
                 return;
             }
         } else {
@@ -54,7 +54,7 @@ public class cmdNoChoke implements ICommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
             }
         }
@@ -65,10 +65,10 @@ public class cmdNoChoke implements ICommand {
                     new EndpointUsers.ArgumentsBuilder(name).setMode(GameMode.STANDARD).build()
             );
         } catch (Exception e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found");
+            event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
-        new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done", message -> {
+        event.getChannel().sendMessage("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done").queue(message -> {
             try {
                 int currScore = 0;
                 double ppThreshold = 0;
@@ -141,8 +141,7 @@ public class cmdNoChoke implements ICommand {
                     logger.info(String.format("[Private] %s: %s", event.getAuthor().getName(), event.getMessage().getContentRaw() + " (finished)"));
                 }
             } catch (Exception e0) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("There was some problem, you might wanna retry later again and maybe"
-                        + " ping bade or smth :p");
+                event.getChannel().sendMessage("There was some problem, you might wanna retry later again and maybe ping bade or smth :p").queue();
                 e0.printStackTrace();
             }
         });

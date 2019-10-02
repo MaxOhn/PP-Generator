@@ -3,6 +3,7 @@
 add mirror mod for mania
 check if pp calculation has an update
 extend StreamerHook with mixer
+rewrite cmdSong
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions

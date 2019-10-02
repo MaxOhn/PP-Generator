@@ -39,7 +39,7 @@ public class cmdAllStreamers implements ICommand {
                         .append(streamMap.get(name).getName()).append("` on `")
                         .append(streamMap.get(name).getUrl()).append("`\n");
         } else msg.append("No current streamers on this server");
-        new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(msg.toString());
+        event.getChannel().sendMessage(msg.toString()).queue();
     }
 
     @Override

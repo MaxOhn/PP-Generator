@@ -27,7 +27,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return false;
         }
         return true;
@@ -67,17 +67,17 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(2));
+                            event.getChannel().sendMessage(help(2)).queue();
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
+                            event.getChannel().sendMessage(help(3)).queue();
                             return;
                     }
                 } else {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
+                    event.getChannel().sendMessage(help(3)).queue();
                     return;
                 }
             }
@@ -133,12 +133,12 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             argList.remove(0);
         }
         if (names.size() == 0) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
+            event.getChannel().sendMessage(help(4)).queue();
             return;
         } else if (names.size() == 1) {
             String n = Main.discLink.getOsu(event.getAuthor().getId());
             if (n == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                event.getChannel().sendMessage(help(1)).queue();
                 return;
             }
             names.add(n);
@@ -151,8 +151,8 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             for (String name : names)
                 users.add(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build()));
         } catch (Exception e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find at least one of the players (`"
-                    + String.join("` / `", names) + "`)");
+            event.getChannel().sendMessage("Could not find at least one of the players (`"
+                    + String.join("` / `", names) + "`)").queue();
             return;
         }
 
@@ -162,8 +162,8 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             for (OsuUser user : users)
                 scores.add(user.getTopScores(100).get());
         } catch (OsuAPIException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores of at least "
-                    + "one of the players (`" + String.join("` / `", names) + "`)");
+            event.getChannel().sendMessage("Could not retrieve top scores of at least "
+                    + "one of the players (`" + String.join("` / `", names) + "`)").queue();
             return;
         }
 
@@ -190,7 +190,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 try {
                     map = common.get(i).getBeatmap().get();
                 } catch (OsuAPIException e1) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap with id `" + mapID + "`");
+                    event.getChannel().sendMessage("Could not retrieve beatmap with id `" + mapID + "`").queue();
                     return;
                 }
                 try {

@@ -20,7 +20,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static main.java.util.utilGeneral.howLongAgo;
@@ -56,46 +55,6 @@ public class BotMessage {
         this.eb = new EmbedBuilder().setColor(Color.green);
         this.mb = new MessageBuilder();
         this.p = new Performance();
-    }
-
-    public void send(String msg) {
-        channel.sendMessage(msg).queue();
-    }
-
-    public void send(Message msg) {
-        channel.sendMessage(msg).queue();
-    }
-
-    public void send(String msg, MessageEmbed embed) {
-        channel.sendMessage(msg).embed(embed).queue();
-    }
-
-    public void send(Message msg, MessageEmbed embed) {
-        channel.sendMessage(msg).embed(embed).queue();
-    }
-
-    public void send(String msg, Consumer<? super Message> consumer) {
-        channel.sendMessage(msg).queue(consumer);
-    }
-
-    public void send(Message msg, Consumer<? super Message> consumer) {
-        channel.sendMessage(msg).queue(consumer);
-    }
-
-    public void send(String msg, MessageEmbed embed, Consumer<? super Message> consumer) {
-        channel.sendMessage(msg).embed(embed).queue(consumer);
-    }
-
-    public void send(Message msg, MessageEmbed embed, Consumer<? super Message> consumer) {
-        channel.sendMessage(msg).embed(embed).queue(consumer);
-    }
-
-    public void send(byte[] file, String filename) {
-        channel.sendFile(file, filename).queue();
-    }
-
-    public void send(String msg, byte[] file, String filename) {
-        channel.sendMessage(msg).addFile(file, filename).queue();
     }
 
     public void buildAndSend() {
@@ -666,7 +625,6 @@ public class BotMessage {
         TOPSOTARKS,
         SS,
         LEADERBOARD,
-        TEXT,
         COMMONSCORES,
         RATIO,
         SIMULATE

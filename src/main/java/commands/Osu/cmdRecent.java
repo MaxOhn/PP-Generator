@@ -39,7 +39,7 @@ public class cmdRecent implements INumberedCommand {
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (number > 50) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
+            event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
 
@@ -47,11 +47,11 @@ public class cmdRecent implements INumberedCommand {
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+                event.getChannel().sendMessage(help(1)).queue();
                 return;
             }
         } else if (args[0].equals("-h") || args[0].equals("-help")) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return;
         } else {
             List<String> argsList = Arrays.stream(args)
@@ -62,7 +62,7 @@ public class cmdRecent implements INumberedCommand {
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
             }
         }
@@ -80,12 +80,12 @@ public class cmdRecent implements INumberedCommand {
                 recent = userRecents.get(0);
             }
             if (number > 0) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("User's recent history doesn't go that far back");
+                event.getChannel().sendMessage("User's recent history doesn't go that far back").queue();
                 return;
             }
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(recent.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("`" + name + "` was not found or no recent plays");
+            event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
         }
         OsuBeatmap map;
@@ -99,7 +99,7 @@ public class cmdRecent implements INumberedCommand {
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(recent.getBeatmapID()).setLimit(1).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap id `" + recent.getBeatmapID() + "`");
+                event.getChannel().sendMessage("Could not retrieve beatmap id `" + recent.getBeatmapID() + "`").queue();
                 return;
             }
             try {
@@ -115,7 +115,7 @@ public class cmdRecent implements INumberedCommand {
             topPlays = user.getTopScores(100).get();
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
         } catch (OsuAPIException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve top scores");
+            event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
         new BotMessage(event.getChannel(), BotMessage.MessageType.RECENT)

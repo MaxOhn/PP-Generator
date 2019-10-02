@@ -34,7 +34,7 @@ public class cmdScores implements INumberedCommand {
     public boolean called(String[] args, MessageReceivedEvent event) {
         number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return false;
         }
         return true;
@@ -42,16 +42,13 @@ public class cmdScores implements INumberedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 50) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
+            event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
-
         List<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
-
         String mapID = "-1";
         if (argList.size() > 0) {
             mapID = utilOsu.getIdFromString(args[0]);
@@ -79,27 +76,25 @@ public class cmdScores implements INumberedCommand {
                     }
                 }
                 if (--counter == 0) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
+                    event.getChannel().sendMessage("Could not find last score embed, must be too old").queue();
                     return;
                 }
             }
         }
-
         String name = argList.size() > 0
                 ? String.join(" ", argList)
                 : Main.discLink.getOsu(event.getAuthor().getId());
         if (name == null) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(1));
+            event.getChannel().sendMessage(help(1)).queue();
             return;
         }
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The mentioned user is not linked, I don't know who you mean");
+                event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
             }
         }
-
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -111,7 +106,7 @@ public class cmdScores implements INumberedCommand {
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
+                event.getChannel().sendMessage("Could not retrieve beatmap").queue();
                 return;
             }
             try {
@@ -121,7 +116,7 @@ public class cmdScores implements INumberedCommand {
                 e1.printStackTrace();
             }
         } catch (IndexOutOfBoundsException e1) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
+            event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
             return;
         }
 
@@ -129,7 +124,7 @@ public class cmdScores implements INumberedCommand {
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(map.getMode()).build());
         } catch (Exception e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find osu user `" + name + "`");
+            event.getChannel().sendMessage("Could not find osu user `" + name + "`").queue();
             return;
         }
 
@@ -139,12 +134,11 @@ public class cmdScores implements INumberedCommand {
                     new EndpointScores.ArgumentsBuilder(Integer.parseInt(mapID)).setUserName(name).setMode(map.getMode()).build()
             );
         } catch (OsuAPIException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve scores");
+            event.getChannel().sendMessage("Could not retrieve scores").queue();
             return;
         }
         if (scores.size() == 0) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find any scores of `" + name
-                    + "` on beatmap id `" + mapID + "`");
+            event.getChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" + mapID + "`").queue();
             return;
         }
         new BotMessage(event.getChannel(), BotMessage.MessageType.SCORES).user(user).map(map).osuscores(scores).mode(map.getMode()).buildAndSend();

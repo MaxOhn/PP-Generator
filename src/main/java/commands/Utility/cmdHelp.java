@@ -37,7 +37,7 @@ public class cmdHelp implements ICommand {
                     .collect(Collectors.joining(", "));
             eb.addField("__**" + c.getName() + "**__", fieldString, false);
         }
-        new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(mb.build(), eb.build());
+        event.getChannel().sendMessage(mb.build()).embed(eb.build()).queue();
     }
 
     @Override

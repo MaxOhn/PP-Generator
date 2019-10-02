@@ -36,9 +36,8 @@ public abstract class cmdSong implements ICommand {
                 return false;
             }
         } catch (ClassNotFoundException | SQLException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Something went wrong, ping bade or smth xd");
-            Logger logger = Logger.getLogger(this.getClass());
-            logger.error("Error while interacting with lyrics database: " + e);
+            event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+            Logger.getLogger(this.getClass()).error("Error while interacting with lyrics database:", e);
             return false;
         }
         return !Main.runningLyrics.contains(busyID);
@@ -52,7 +51,7 @@ public abstract class cmdSong implements ICommand {
         final Thread t = new Thread(() -> {
             for (String lyric: lyrics) {
                 try {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("♫ " + lyric + " ♫");
+                    event.getChannel().sendMessage("♫ " + lyric + " ♫").queue();
                     Thread.sleep(delay);
                 } catch (InterruptedException ignored) {}
             }

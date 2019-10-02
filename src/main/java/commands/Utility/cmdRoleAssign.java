@@ -37,14 +37,14 @@ public class cmdRoleAssign extends PrivilegedCommand {
         if (channel == null || channel.startsWith("<#"))
             channel = m.group(4);
         if (channel == null) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(3));
+            event.getChannel().sendMessage(help(3)).queue();
             return;
         }
         String message;
         try {
             message = Long.parseLong(args[1]) + "";
         } catch (NumberFormatException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(4));
+            event.getChannel().sendMessage(help(4)).queue();
             return;
         }
         String role = null;
@@ -56,12 +56,12 @@ public class cmdRoleAssign extends PrivilegedCommand {
                 role = m.group(4);
         }
         if (role == null) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(5));
+            event.getChannel().sendMessage(help(5)).queue();
             return;
         }
         Role r = event.getGuild().getRoleById(role);
         if (r == null) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(6));
+            event.getChannel().sendMessage(help(6)).queue();
             return;
         }
         Main.reactionHandler.addRoleAssign((guild + channel + message).hashCode(), role);
@@ -70,7 +70,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
             String response = "Who ever reacts on the message in " + c.getAsMention()
                     + "\n`" +msg.getContentDisplay() + "`\n"
                     + " will be assigned the `" + r.getName() + "` role!";
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(response);
+            event.getChannel().sendMessage(response).queue();
         });
     }
 

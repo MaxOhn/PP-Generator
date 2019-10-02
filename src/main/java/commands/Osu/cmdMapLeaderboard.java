@@ -36,7 +36,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
     public boolean called(String[] args, MessageReceivedEvent event) {
         number = 1;
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send(help(0));
+            event.getChannel().sendMessage(help(0)).queue();
             return false;
         }
         return true;
@@ -46,7 +46,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
     public void action(String[] args, MessageReceivedEvent event) {
 
         if (number > 50) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("The number must be between 1 and 50");
+            event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
 
@@ -105,10 +105,10 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                         new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
                 ).get(0);
             } catch (OsuAPIException e1) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve beatmap");
+                event.getChannel().sendMessage("Could not retrieve beatmap").queue();
                 return;
             } catch (IndexOutOfBoundsException e1) {
-                new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find beatmap. Did you give a mapset id instead of a map id?");
+                event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
                 return;
             }
             try {
@@ -127,7 +127,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                     .filter(this::isValidScore)
                     .collect(Collectors.toList());
         } catch (IOException e) {
-            new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not retrieve scores of the beatmap, blame bade");
+            event.getChannel().sendMessage("Could not retrieve scores of the beatmap, blame bade").queue();
             e.printStackTrace();
             return;
         }
@@ -187,7 +187,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                     }
                 }
                 if (--counter == 0) {
-                    new BotMessage(event.getChannel(), BotMessage.MessageType.TEXT).send("Could not find last score embed, must be too old");
+                    event.getChannel().sendMessage("Could not find last score embed, must be too old").queue();
                     return "-1";
                 }
             }

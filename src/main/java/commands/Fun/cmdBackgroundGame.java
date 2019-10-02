@@ -13,6 +13,7 @@ import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.ChannelType;
+import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -92,8 +93,32 @@ public class cmdBackgroundGame implements ICommand {
                 break;
             case "-stats":
                 HashMap<String, Double> stats;
+                long userID = event.getAuthor().getIdLong();
+                if (args.length > 1) {
+                    // check if args[1] is a number, if so check if its the id of a user
+                    if (args[1].startsWith("<@") && args[1].endsWith(">")) {
+                        userID = Long.parseLong(args[1].substring(2, args[1].length()-1));
+                    } else {
+                        String name = String.join(" ", Arrays.asList(args).subList(1, args.length));
+                        List<Member> members = event.getGuild().getMembersByEffectiveName(name, true);
+                        if (members.size() > 1) {
+                            event.getChannel().sendMessage("Found multiple members with this name so I'm not sure who you mean. Maybe try it with a mention.").queue();
+                            return;
+                        } else if (members.size() == 0) {
+                            members = event.getGuild().getMembersByNickname(name, true);
+                            if (members.size() > 1) {
+                                event.getChannel().sendMessage("Found multiple members with this name so I'm not sure who you mean. Maybe try it with a mention.").queue();
+                                return;
+                            } else if (members.size() == 0) {
+                                event.getChannel().sendMessage("Could not find anyone in this server with that name. Maybe try it with a mention.").queue();
+                                return;
+                            }
+                        }
+                        userID = members.get(0).getUser().getIdLong();
+                    }
+                }
                 try {
-                    stats = DBProvider.getBgPlayerStats(event.getAuthor().getIdLong());
+                    stats = DBProvider.getBgPlayerStats(userID);
                 } catch (ClassNotFoundException | SQLException e) {
                     logger.error("Could not retrieve stats for id " + event.getAuthor().getId(), e);
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
@@ -121,7 +146,7 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
                     return;
                 }
-                topScores.keySet().removeIf(userID -> event.getGuild().getMemberById(userID) == null);
+                topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null);
                 EmbedBuilder eb = new EmbedBuilder()
                         .setColor(Color.green)
                         .setAuthor("Top " + (wantScore ? "scores" : "ratings") + " in the background game:");
