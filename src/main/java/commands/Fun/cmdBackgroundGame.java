@@ -40,8 +40,8 @@ public class cmdBackgroundGame implements ICommand {
     private HashMap<Long, HashMap<Long, Pair<Long, BgGameRanking>>> activePlayers = new HashMap<>();
     private Queue<Integer> previous = new LinkedList<>();
     private File[] files = new File(getSourcePath()).listFiles();
-    private final int checkInterval = 1500;
-    private GameInfo gameInfo = new GameInfo(1500, 500, 240, 10, 0.1);
+    private GameInfo gameInfo = new GameInfo(25.0D, 8.333333333333334D, 4.166666666666667D, 0.08333333333333333D, 0D);
+    private int TIMEOUT_MINUTES = 2;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -69,6 +69,7 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
+                runningGames.get(event.getChannel().getIdLong()).resetTimeout();
                 runningGames.get(event.getChannel().getIdLong()).increaseRadius();
                 event.getChannel().sendFile(
                         runningGames.get(event.getChannel().getIdLong()).getResult(),
@@ -90,6 +91,7 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
+                runningGames.get(event.getChannel().getIdLong()).resetTimeout();
                 event.getChannel().sendMessage(runningGames.get(event.getChannel().getIdLong()).getHint()).queue();
                 break;
             case "stop":
@@ -336,7 +338,7 @@ public class cmdBackgroundGame implements ICommand {
             mapsetid = mapset.getBeatmapSetID();
             titleSplit = title.split(" ");
             players = new HashSet<>();
-            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), 5, TimeUnit.MINUTES);
+            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), TIMEOUT_MINUTES, TimeUnit.MINUTES);
             chatReader = new ChatReader(channel.getIdLong(), mapsetid);
             Main.jda.addEventListener(chatReader);
         }
@@ -409,6 +411,11 @@ public class cmdBackgroundGame implements ICommand {
 
         void increaseRadius() {
             radius += 75;
+        }
+
+        void resetTimeout() {
+            timeLeft.cancel(false);
+            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), TIMEOUT_MINUTES, TimeUnit.MINUTES);
         }
 
         void dispose() {
