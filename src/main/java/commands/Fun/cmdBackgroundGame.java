@@ -322,7 +322,9 @@ public class cmdBackgroundGame implements ICommand {
         private String[] titleSplit;
         private boolean artistGuessed;
         private int hintDepth;
-        private HashSet<Long> players;
+        private String hintTitle;
+        private HashSet<Long> players = new HashSet<>();
+        private List<Integer> hintIndices = new ArrayList<>();
         private ChatReader chatReader;
 
         BackgroundGame(MessageChannel channel, BufferedImage origin, OsuBeatmapSet mapset) {
@@ -335,9 +337,19 @@ public class cmdBackgroundGame implements ICommand {
             y = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
             artist = removeParenthesis(mapset.getArtist().toLowerCase());
             title = removeParenthesis(mapset.getTitle().toLowerCase());
-            mapsetid = mapset.getBeatmapSetID();
+            char[] titleArray = title.toCharArray();
+            for (int i = 1; i < titleArray.length; i++) {
+                if (titleArray[i] != ' ') {
+                    hintIndices.add(i);
+                }
+            }
             titleSplit = title.split(" ");
-            players = new HashSet<>();
+            String[] titleCpy = new String[titleSplit.length];
+            titleCpy[0] = title.substring(0, 1) + StringUtils.repeat("▢", titleSplit[0].length() - 1);
+            for (int i = 1; i < titleSplit.length; i++)
+                titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
+            hintTitle = String.join(" ", titleCpy);
+            mapsetid = mapset.getBeatmapSetID();
             timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), TIMEOUT_MINUTES, TimeUnit.MINUTES);
             chatReader = new ChatReader(channel.getIdLong(), mapsetid);
             Main.jda.addEventListener(chatReader);
@@ -354,26 +366,28 @@ public class cmdBackgroundGame implements ICommand {
                     return hint;
                 case 1:
                     if (!artistGuessed) {
-                        hint = "Here's my second hint: The artist is called `" + artist + "`";
+                        hint = "Here's my second hint: The artist looks like `";
+                        String[] artistSplit = artist.split(" ");
+                        String[] artistCpy = new String[artistSplit.length];
+                        artistCpy[0] = artist.substring(0, 1) + StringUtils.repeat("▢", artistSplit[0].length() - 1);
+                        for (int i = 1; i < artistSplit.length; i++)
+                            artistCpy[i] = StringUtils.repeat("▢", artistSplit[i].length());
                         artistGuessed = true;
-                        return hint;
+                        return hint + String.join(" ", artistCpy) + "`";
                     }
-                case 2: {
-                    hint = "My last hint for you: The title looks like this `";
-                    String[] titleCpy = new String[titleSplit.length];
-                    titleCpy[0] = title.substring(0, 1) + StringUtils.repeat("▢", titleSplit[0].length() - 1);
-                    for (int i = 1; i < titleSplit.length; i++)
-                        titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
-                    return hint + String.join(" ", titleCpy) + "`";
-                }
-                default: {
-                    hint = "All the hints I give you: The artist is `" + artist + "` and the title looks like `";
-                    String[] titleCpy = new String[titleSplit.length];
-                    titleCpy[0] = title.substring(0, 1) + StringUtils.repeat("▢", titleSplit[0].length() - 1);
-                    for (int i = 1; i < titleSplit.length; i++)
-                        titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
-                    return hint + String.join(" ", titleCpy) + "`";
-                }
+                case 2:
+                    return "Slowly constructing the title: `" + hintTitle + "`";
+                default:
+                    if (hintIndices.size() > 0) {
+                        hint = "Slowly constructing the title: `";
+                        int rndIdx = ThreadLocalRandom.current().nextInt(hintIndices.size());
+                        int titleIdx = hintIndices.get(rndIdx);
+                        hintTitle = hintTitle.substring(0, titleIdx)
+                                + title.substring(titleIdx, titleIdx + 1)
+                                + (titleIdx < title.length() - 1 ? hintTitle.substring(titleIdx + 1) : "");
+                        hintIndices.remove(rndIdx);
+                        return hint + hintTitle + "`";
+                    } else return "Bruh the title is literally `" + title + "` xd";
             }
         }
 
