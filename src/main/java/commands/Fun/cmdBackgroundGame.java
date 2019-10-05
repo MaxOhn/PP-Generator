@@ -4,7 +4,6 @@ import com.auth0.jwt.internal.org.apache.commons.lang3.StringUtils;
 import com.oopsjpeg.osu4j.OsuBeatmapSet;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmapSet;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
-import de.gesundkrank.jskills.*;
 import main.java.commands.ICommand;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -26,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Queue;
 import java.util.*;
@@ -37,11 +37,13 @@ public class cmdBackgroundGame implements ICommand {
     private Logger logger = Logger.getLogger(cmdBackgroundGame.class);
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
-    private HashMap<Long, HashMap<Long, Pair<Long, BgGameRanking>>> activePlayers = new HashMap<>();
+    private HashMap<Long, HashMap<Long, PlayerInfo>> activePlayers = new HashMap<>();
     private Queue<Integer> previous = new LinkedList<>();
     private File[] files = new File(getSourcePath()).listFiles();
-    private GameInfo gameInfo = new GameInfo(25.0D, 8.333333333333334D, 4.166666666666667D, 0.08333333333333333D, 0D);
     private int TIMEOUT_MINUTES = 2;
+    private int TIME_TILL_INACTIVE = 60_000;
+    private int ROUNDS_TILL_INACTIVE = 5;
+    private static final DecimalFormat df = new DecimalFormat("0.00");
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -83,7 +85,7 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage(help(1)).queue();
                     return;
                 }
-                resolveGame(event.getChannel(), "", 0, true, 0);
+                resolveGame(event.getChannel(), false, true);
                 break;
             case "hint":
             case "h":
@@ -100,6 +102,10 @@ public class cmdBackgroundGame implements ICommand {
                     return;
                 }
                 runningGames.get(event.getChannel().getIdLong()).dispose();
+                activePlayers.get(event.getChannel().getIdLong()).values().forEach(player -> player.roundsInactive = ROUNDS_TILL_INACTIVE);
+                runningGames.get(event.getChannel().getIdLong()).players.clear();
+                if (secrets.WITH_DB)
+                    updateRankingOfInactive(event.getChannel().getIdLong());
                 runningGames.remove(event.getChannel().getIdLong());
                 event.getChannel().sendMessage("End of game, see you next time o/").queue();
                 break;
@@ -112,8 +118,8 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
                     return;
                 }
-                event.getChannel().sendMessage("`" + event.getAuthor().getName() + "` has guessed `" + stats.get("score").intValue()
-                + "` correctly and has a rating of `" + stats.get("rating") + "`").queue();
+                event.getChannel().sendMessage("`" + event.getAuthor().getName() + "` has guessed `" + stats.get("Score").intValue()
+                + "` correctly and has a rating of `" + df.format(stats.get("Rating")) + "`").queue();
                 break;
             case "-score":
             case "-rank":
@@ -127,14 +133,16 @@ public class cmdBackgroundGame implements ICommand {
                 HashMap<Long, Double> topScores;
                 try {
                     topScores = wantScore
-                            ? DBProvider.getBgTopScores(15)
-                            : DBProvider.getBgTopRatings(15);
+                            ? DBProvider.getBgTopScores()
+                            : DBProvider.getBgTopRatings();
                 } catch (ClassNotFoundException | SQLException e) {
                     logger.error("Could not retrieve top " + (wantScore ? "scores" : "ratings"), e);
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
                     return;
                 }
                 topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null);
+                if (topScores.size() > 15)
+                    topScores.keySet().retainAll(topScores.keySet().stream().limit(15).collect(Collectors.toCollection(HashSet::new)));
                 EmbedBuilder eb = new EmbedBuilder()
                         .setColor(Color.green)
                         .setAuthor("Top " + (wantScore ? "scores" : "ratings") + " in the background game:");
@@ -167,7 +175,7 @@ public class cmdBackgroundGame implements ICommand {
             msg.append(names.get(entry.getKey()));
             msg.append(StringUtils.repeat(" ", longestNameLength - names.get(entry.getKey()).length() + 2));
             msg.append("=> ");
-            msg.append(entry.getValue());
+            msg.append(df.format(entry.getValue()));
             msg.append("\n");
         }
         return msg.append("```").toString();
@@ -207,59 +215,76 @@ public class cmdBackgroundGame implements ICommand {
         runningGames.put(channel.getIdLong(), bgGame);
     }
 
-    private void resolveGame(MessageChannel channel, String winner, double similarity, boolean autostart, long winnerID) {
+    private void resolveGame(MessageChannel channel, boolean exact, boolean autostart) {
         BackgroundGame game = runningGames.get(channel.getIdLong());
         if (game == null) return;
+        game.dispose();
         String text = "Full background: https://osu.ppy.sh/beatmapsets/";
-        if (!winner.isEmpty()) {
-            text = (similarity == 1
-                    ? "Gratz `" + winner + "`, you guessed it"
-                    : "You were close enough `" + winner + "`, gratz")
+        if (!game.winnerName.isEmpty()) {
+            text = (exact
+                    ? "Gratz `" + game.winnerName + "`, you guessed it"
+                    : "You were close enough `" + game.winnerName + "`, gratz")
                     + " :)\nMapset: https://osu.ppy.sh/beatmapsets/";
             if (secrets.WITH_DB) {
                 updateRankingOfInactive(channel.getIdLong());
-                updateRankingOfActive(channel.getIdLong(), winnerID);
+                updateRankingOfActive(channel.getIdLong());
             }
         }
         channel.sendMessage(text + game.mapsetid).addFile(game.getReveal(), "Guess the background.png").queue();
-        game.dispose();
         runningGames.remove(channel.getIdLong());
         if (autostart)
             startGame(channel);
     }
 
     private void updateRankingOfInactive(long channel) {
+        BackgroundGame game = runningGames.get(channel);
+        for (PlayerInfo player : activePlayers.get(channel).values()) {
+            if (game.players.contains(player.rating.getDiscordUser()))
+                player.roundsInactive = 0;
+            else
+                player.roundsInactive++;
+        }
         HashSet<Long> inactivePlayers = activePlayers.get(channel).values().stream()
-                .filter(pair -> System.currentTimeMillis() - pair.time > 15000
-                        && !runningGames.get(channel).players.contains(pair.rating.getDiscordUser()))
+                .filter(player -> (System.currentTimeMillis() - player.lastSeen > TIME_TILL_INACTIVE || player.roundsInactive >= ROUNDS_TILL_INACTIVE)
+                        && !runningGames.get(channel).players.contains(player.rating.getDiscordUser()))
                 .map(pair -> pair.rating.getDiscordUser())
                 .collect(Collectors.toCollection(HashSet::new));
-        if (inactivePlayers.size() > 0)
+        if (inactivePlayers.size() > 0) {
+            try {
+                HashSet<BgGameRanking> result = inactivePlayers.stream()
+                        .map(playerID -> activePlayers.get(channel).get(playerID).rating)
+                        .collect(Collectors.toCollection(HashSet::new));
+                DBProvider.updateBgPlayerRanking(result
+                );
+            } catch (ClassNotFoundException | SQLException e) {
+                logger.error("Could not update player rankings", e);
+            }
             activePlayers.get(channel).keySet().removeIf(inactivePlayers::contains);
-        try {
-            DBProvider.updateBgPlayerRanking(inactivePlayers.stream()
-                    .map(playerID -> activePlayers.get(channel).get(playerID).rating)
-                    .collect(Collectors.toCollection(HashSet::new))
-            );
-        } catch (ClassNotFoundException | SQLException e) {
-            logger.error("Could not update player rankings", e);
         }
     }
 
-    private void updateRankingOfActive(long channel, long winner) {
-        if (activePlayers.get(channel).size() > 1) {
-            List<ITeam> teams = new ArrayList<>(activePlayers.get(channel).values().size());
-            int[] teamRanks = new int[activePlayers.get(channel).values().size()];
-            int idx = -1;
-            for (Pair<Long, BgGameRanking> pair : activePlayers.get(channel).values()) {
-                teams.add(++idx, new Team(new Player<>(pair.rating.getDiscordUser()), pair.rating.getRating()));
-                teamRanks[idx] = pair.rating.getDiscordUser() == winner ? 1 : 2;
+    private void updateRankingOfActive(long channel) {
+        BackgroundGame game = runningGames.get(channel);
+        int numPlayers = activePlayers.get(channel).size();
+        if (numPlayers > 1) {
+            double ratingValue = getRatingValue(numPlayers) / (1 - numPlayers);
+            activePlayers.get(channel).get(game.winner).rating.uptate(ratingValue * (1 - numPlayers));
+            System.out.println("User " + game.winner + " won: " + (ratingValue * (1 - numPlayers)));
+            for (PlayerInfo player : activePlayers.get(channel).values()) {
+                if (player.rating.getDiscordUser() == game.winner) continue;
+                player.rating.uptate(ratingValue);
+                System.out.println("User " + player.rating.getDiscordUser() + " lost: " + ratingValue);
             }
-            Map<IPlayer, Rating> newRatings = TrueSkillCalculator.calculateNewRatings(gameInfo, teams, teamRanks);
-            for (IPlayer player : newRatings.keySet())
-                activePlayers.get(channel).get(Long.parseLong(player.toString())).rating.uptate(newRatings.get(player));
+            for (long player : game.correctButTooLate) {
+                activePlayers.get(channel).get(player).rating.uptate(ratingValue * (1 - numPlayers) / 10);
+                System.out.println("User " + player + " close: " + ratingValue * (1 - numPlayers) / 10);
+            }
         }
-        activePlayers.get(channel).get(winner).rating.incrementScore();
+        activePlayers.get(channel).get(game.winner).rating.incrementScore();
+    }
+
+    private double getRatingValue(int numPlayers) {
+        return 1D/(Math.pow(0.9, numPlayers + 5)) - 2;
     }
 
     @Override
@@ -311,28 +336,29 @@ public class cmdBackgroundGame implements ICommand {
 
     private class BackgroundGame {
         private BufferedImage origin;
+        private MessageChannel channel;
         private int x;
         private int y;
-        private int radius;
         private ScheduledFuture<?> timeLeft;
-        private MessageChannel channel;
         private String artist;
         private String title;
         private long mapsetid;
         private String[] titleSplit;
-        private boolean artistGuessed;
-        private int hintDepth;
         private String hintTitle;
+        private ChatReader chatReader;
+
+        private boolean artistGuessed = false;
+        private int hintDepth = 0;
+        private int radius = 100;
         private HashSet<Long> players = new HashSet<>();
         private List<Integer> hintIndices = new ArrayList<>();
-        private ChatReader chatReader;
+        private String winnerName = "";
+        private long winner = 0;
+        private HashSet<Long> correctButTooLate = new HashSet<>();
 
         BackgroundGame(MessageChannel channel, BufferedImage origin, OsuBeatmapSet mapset) {
             this.channel = channel;
             this.origin = origin;
-            artistGuessed = false;
-            hintDepth = 0;
-            radius = 100;
             x = ThreadLocalRandom.current().nextInt(radius, origin.getWidth() - radius);
             y = ThreadLocalRandom.current().nextInt(radius, origin.getHeight() - radius);
             artist = removeParenthesis(mapset.getArtist().toLowerCase());
@@ -350,7 +376,7 @@ public class cmdBackgroundGame implements ICommand {
                 titleCpy[i] = StringUtils.repeat("▢", titleSplit[i].length());
             hintTitle = String.join(" ", titleCpy);
             mapsetid = mapset.getBeatmapSetID();
-            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            timeLeft = scheduler.schedule(() -> resolveGame(channel, false, false), TIMEOUT_MINUTES, TimeUnit.MINUTES);
             chatReader = new ChatReader(channel.getIdLong(), mapsetid);
             Main.jda.addEventListener(chatReader);
         }
@@ -429,7 +455,7 @@ public class cmdBackgroundGame implements ICommand {
 
         void resetTimeout() {
             timeLeft.cancel(false);
-            timeLeft = scheduler.schedule(() -> resolveGame(channel, "", 0, false, 0), TIMEOUT_MINUTES, TimeUnit.MINUTES);
+            timeLeft = scheduler.schedule(() -> resolveGame(channel, false, false), TIMEOUT_MINUTES, TimeUnit.MINUTES);
         }
 
         void dispose() {
@@ -438,13 +464,16 @@ public class cmdBackgroundGame implements ICommand {
         }
     }
 
-    private static class Pair<Long, BgGameRanking> {
-        private Long time;
+    private static class PlayerInfo {
+
+        private Long lastSeen;
+        private int roundsInactive;
         private BgGameRanking rating;
 
-        Pair(Long time, BgGameRanking rating) {
-            this.time = time;
+        PlayerInfo(Long lastSeen, BgGameRanking rating) {
+            this.lastSeen = lastSeen;
             this.rating = rating;
+            this.roundsInactive = 0;
         }
     }
 
@@ -452,36 +481,39 @@ public class cmdBackgroundGame implements ICommand {
 
         long channelID;
         long mapsetID;
+        boolean foundWinner;
 
         private ChatReader(long channelID, long mapsetID) {
             super();
             this.channelID = channelID;
             this.mapsetID = mapsetID;
+            this.foundWinner = false;
         }
 
         public void onMessageReceived(MessageReceivedEvent event) {
             long channel = event.getChannel().getIdLong();
             BackgroundGame game = runningGames.get(channel);
-            if (channel != channelID || event.getAuthor().isBot() || game == null || game.mapsetid != mapsetID)
+            if (channel != channelID || event.getAuthor().isBot() || game == null || game.mapsetid != mapsetID || (foundWinner && event.getMessage().getAuthor().getIdLong() == game.winner))
                 return;
             Message msg = event.getMessage();
             if (secrets.WITH_DB) {
                 game.players.add(msg.getAuthor().getIdLong());
                 if (!activePlayers.get(channel).containsKey(msg.getAuthor().getIdLong())) {
-                    try {
-                        activePlayers.get(channel).put(
-                                msg.getAuthor().getIdLong(),
-                                new Pair<>(System.currentTimeMillis(), DBProvider.getBgPlayerRanking(msg.getAuthor().getIdLong()))
-                        );
-                    } catch (SQLException | ClassNotFoundException e) {
-                        logger.error("Could not retrieve player rating", e);
-                    }
+                    activePlayers.get(channel).put(
+                            msg.getAuthor().getIdLong(),
+                            new PlayerInfo(System.currentTimeMillis(), new BgGameRanking(msg.getAuthor().getIdLong(), 0)));
                 } else
-                    activePlayers.get(channel).get(msg.getAuthor().getIdLong()).time = System.currentTimeMillis();
+                    activePlayers.get(channel).get(msg.getAuthor().getIdLong()).lastSeen = System.currentTimeMillis();
             }
             String content = msg.getContentRaw().toLowerCase();
             if (game.title.equals(content)) {
-                resolveGame(game.channel, msg.getAuthor().getName(), 1, true, msg.getAuthor().getIdLong());
+                if (!foundWinner) {
+                    foundWinner = true;
+                    game.winnerName = msg.getAuthor().getName();
+                    game.winner = msg.getAuthor().getIdLong();
+                    scheduler.schedule(() -> resolveGame(game.channel, true, true), 500, TimeUnit.MILLISECONDS);
+                    return;
+                } else game.correctButTooLate.add(msg.getAuthor().getIdLong());
                 return;
             }
             if (game.titleSplit.length > 0) {
@@ -491,8 +523,13 @@ public class cmdBackgroundGame implements ICommand {
                     for (String t : game.titleSplit) {
                         if (c.equals(t)) {
                             if ((hit += c.length()) > 8) {
-                                resolveGame(game.channel, msg.getAuthor().getName(), 0.9, true, msg.getAuthor().getIdLong());
-                                return;
+                                if (!foundWinner) {
+                                    foundWinner = true;
+                                    game.winnerName = msg.getAuthor().getName();
+                                    game.winner = msg.getAuthor().getIdLong();
+                                    scheduler.schedule(() -> resolveGame(game.channel, false, true), 500, TimeUnit.MILLISECONDS);
+                                    return;
+                                } else game.correctButTooLate.add(msg.getAuthor().getIdLong());
                             }
                         }
                     }
@@ -500,7 +537,13 @@ public class cmdBackgroundGame implements ICommand {
             }
             double similarity = utilGeneral.similarity(game.title, content);
             if (similarity > 0.5) {
-                resolveGame(game.channel, msg.getAuthor().getName(), similarity, true, msg.getAuthor().getIdLong());
+                if (!foundWinner) {
+                    foundWinner = true;
+                    game.winnerName = msg.getAuthor().getName();
+                    game.winner = msg.getAuthor().getIdLong();
+                    scheduler.schedule(() -> resolveGame(game.channel, false, true), 500, TimeUnit.MILLISECONDS);
+                    return;
+                } else game.correctButTooLate.add(msg.getAuthor().getIdLong());
                 return;
             }
             if (!game.artistGuessed) {

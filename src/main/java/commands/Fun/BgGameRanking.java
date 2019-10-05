@@ -1,16 +1,14 @@
 package main.java.commands.Fun;
 
-import de.gesundkrank.jskills.Rating;
-
 public class BgGameRanking {
     private long discordUser;
     private int score;
-    private Rating rating;
+    private double rating;
 
-    public BgGameRanking(long discordUser, int score, double mu, double sigma) {
+    public BgGameRanking(long discordUser, int score) {
         this.discordUser = discordUser;
         this.score = score;
-        this.rating = new Rating(mu, sigma);
+        this.rating = 0;
     }
 
     public long getDiscordUser() {
@@ -21,20 +19,15 @@ public class BgGameRanking {
         return score;
     }
 
-    public Rating getRating() {
+    public double getRating() {
         return rating;
     }
 
-    public void update(int score, Rating rating) {
-        this.score = score;
-        this.rating = rating;
+    public void uptate(double rating) {
+        this.rating += rating;
     }
 
-    public void uptate(Rating rating) {
-        this.rating = rating;
-    }
-
-    public void incrementScore() {
+    void incrementScore() {
         this.score++;
     }
 }

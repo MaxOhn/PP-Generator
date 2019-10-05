@@ -32,42 +32,31 @@ public class DBProvider {
     public static void updateBgPlayerRanking(HashSet<BgGameRanking> rankings) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        PreparedStatement stmnt = c.prepareStatement("update bgGame set score=? , mu=? , sigma=? , rating=? where discord=?");
+        PreparedStatement stmnt = c.prepareStatement("update bgGame set score=score+? , rating=rating+? where discord=?");
         for (BgGameRanking ranking : rankings) {
             stmnt.setInt(1, ranking.getScore());
-            stmnt.setDouble(2, ranking.getRating().getMean());
-            stmnt.setDouble(3, ranking.getRating().getStandardDeviation());
-            stmnt.setDouble(4, ranking.getRating().getConservativeRating());
-            stmnt.setLong(5, ranking.getDiscordUser());
+            stmnt.setDouble(2, ranking.getRating());
+            stmnt.setLong(3, ranking.getDiscordUser());
             stmnt.addBatch();
         }
-        stmnt.executeBatch();
-        stmnt.close();
-        c.close();
-    }
-
-    public static BgGameRanking getBgPlayerRanking(long discord) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select * from bgGame where discord=" + discord);
-        int score; double mu, sigma;
-        if (rs.next()) {
-            score = rs.getInt("score");
-            mu = rs.getDouble("mu");
-            sigma = rs.getDouble("sigma");
-        } else {
-            stmnt = c.createStatement();
-            stmnt.executeQuery("insert into bgGame (discord, score, mu, sigma, rating) values (" +
-                    discord + ", 0, 1500, 500, 0)");
-            score = 0; mu = 1500; sigma = 500;
+        int[] results = stmnt.executeBatch();
+        Iterator<BgGameRanking> it = rankings.iterator();
+        for (int result : results) {
+            BgGameRanking current = it.next();
+            if (result == 0) {
+                Statement stmntNew = c.createStatement();
+                stmntNew.executeQuery("insert into bgGame (discord, score, rating) values (" +
+                        current.getDiscordUser() + ", " + current.getScore() + ", " + current.getRating() + ")");
+                stmntNew.close();
+            }
         }
         stmnt.close();
         c.close();
-        return new BgGameRanking(discord, score, mu, sigma);
     }
 
     public static HashMap<String, Double> getBgPlayerStats(long discord) throws ClassNotFoundException, SQLException {
+        double minRating = getMinRating();
+        minRating = minRating < 0 ? minRating * -1 : 0;
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
@@ -75,12 +64,12 @@ public class DBProvider {
         double score, rating;
         if (rs.next()) {
             score = rs.getInt("score");
-            rating = rs.getDouble("rating");
+            rating = rs.getDouble("rating") + minRating;
         } else {
             stmnt = c.createStatement();
-            stmnt.executeQuery("insert into bgGame (discord, score, mu, sigma, rating) values (" +
-                    discord + ", 0, 1500, 500, 0)");
-            score = 0; rating = 0;
+            stmnt.executeQuery("insert into bgGame (discord, score, rating) values (" +
+                    discord + ", 0, 0)");
+            score = rating = 0;
         }
         stmnt.close();
         c.close();
@@ -90,25 +79,27 @@ public class DBProvider {
         return stats;
     }
 
-    public static HashMap<Long, Double> getBgTopRatings(int amount) throws ClassNotFoundException, SQLException {
+    public static HashMap<Long, Double> getBgTopRatings() throws ClassNotFoundException, SQLException {
+        double minRating = getMinRating();
+        minRating = minRating < 0 ? minRating * -1 : 0;
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select discord, rating from bgGame order by rating desc limit " + amount);
+        ResultSet rs = stmnt.executeQuery("select discord, rating from bgGame order by rating desc");
         HashMap<Long, Double> topRatings = new HashMap<>();
         while (rs.next()) {
-            topRatings.put(rs.getLong("discord"), rs.getDouble("rating"));
+            topRatings.put(rs.getLong("discord"), rs.getDouble("rating") + minRating);
         }
         stmnt.close();
         c.close();
         return topRatings;
     }
 
-    public static HashMap<Long, Double> getBgTopScores(int amount) throws ClassNotFoundException, SQLException {
+    public static HashMap<Long, Double> getBgTopScores() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
-        ResultSet rs = stmnt.executeQuery("select discord, score from bgGame order by score desc limit " + amount);
+        ResultSet rs = stmnt.executeQuery("select discord, score from bgGame order by score desc");
         HashMap<Long, Double> topScores = new HashMap<>();
         while (rs.next()) {
             topScores.put(rs.getLong("discord"), (double)rs.getInt("score"));
@@ -116,6 +107,18 @@ public class DBProvider {
         stmnt.close();
         c.close();
         return topScores;
+    }
+
+    private static double getMinRating() throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select min(rating) from bgGame");
+        rs.next();
+        double result = rs.getDouble(1);
+        stmnt.close();
+        c.close();
+        return result;
     }
 
     /*
