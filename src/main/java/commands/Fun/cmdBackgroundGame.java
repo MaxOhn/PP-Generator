@@ -140,7 +140,14 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
                     return;
                 }
-                topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null);
+                double tmpMinRating = -1;
+                try {
+                    tmpMinRating = DBProvider.getMinRating();
+                } catch (ClassNotFoundException | SQLException e) {
+                    logger.info("Could not retrieve min rating:", e);
+                }
+                double minRating = tmpMinRating;
+                topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null || topScores.get(id) == minRating);
                 if (topScores.size() > 15)
                     topScores.keySet().retainAll(topScores.keySet().stream().limit(15).collect(Collectors.toCollection(HashSet::new)));
                 EmbedBuilder eb = new EmbedBuilder()
@@ -168,7 +175,7 @@ public class cmdBackgroundGame implements ICommand {
             if (idx <= symbols.length)
                 msg.append(symbols[idx - 1]);
             else
-                msg.append(" ");
+                msg.append("  ");
             if (ranking.size() > 10 && idx < 10)
                 msg.append(" ");
             msg.append(" # ");
@@ -251,10 +258,9 @@ public class cmdBackgroundGame implements ICommand {
                 .collect(Collectors.toCollection(HashSet::new));
         if (inactivePlayers.size() > 0) {
             try {
-                HashSet<BgGameRanking> result = inactivePlayers.stream()
+                DBProvider.updateBgPlayerRanking(inactivePlayers.stream()
                         .map(playerID -> activePlayers.get(channel).get(playerID).rating)
-                        .collect(Collectors.toCollection(HashSet::new));
-                DBProvider.updateBgPlayerRanking(result
+                        .collect(Collectors.toCollection(HashSet::new))
                 );
             } catch (ClassNotFoundException | SQLException e) {
                 logger.error("Could not update player rankings", e);
@@ -269,16 +275,12 @@ public class cmdBackgroundGame implements ICommand {
         if (numPlayers > 1) {
             double ratingValue = getRatingValue(numPlayers) / (1 - numPlayers);
             activePlayers.get(channel).get(game.winner).rating.uptate(ratingValue * (1 - numPlayers));
-            System.out.println("User " + game.winner + " won: " + (ratingValue * (1 - numPlayers)));
             for (PlayerInfo player : activePlayers.get(channel).values()) {
                 if (player.rating.getDiscordUser() == game.winner) continue;
                 player.rating.uptate(ratingValue);
-                System.out.println("User " + player.rating.getDiscordUser() + " lost: " + ratingValue);
             }
-            for (long player : game.correctButTooLate) {
+            for (long player : game.correctButTooLate)
                 activePlayers.get(channel).get(player).rating.uptate(ratingValue * (1 - numPlayers) / 10);
-                System.out.println("User " + player + " close: " + ratingValue * (1 - numPlayers) / 10);
-            }
         }
         activePlayers.get(channel).get(game.winner).rating.incrementScore();
     }

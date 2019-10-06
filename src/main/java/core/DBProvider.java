@@ -109,7 +109,7 @@ public class DBProvider {
         return topScores;
     }
 
-    private static double getMinRating() throws ClassNotFoundException, SQLException {
+    public static double getMinRating() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
