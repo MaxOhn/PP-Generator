@@ -140,16 +140,21 @@ public class cmdBackgroundGame implements ICommand {
                     event.getChannel().sendMessage("Something went wrong, blame bade").queue();
                     return;
                 }
-                double tmpMinRating = -1;
-                try {
-                    tmpMinRating = DBProvider.getMinRating();
-                } catch (ClassNotFoundException | SQLException e) {
-                    logger.info("Could not retrieve min rating:", e);
-                }
-                double minRating = tmpMinRating;
-                topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null || topScores.get(id) == minRating);
+                topScores.keySet().removeIf(id -> event.getGuild().getMemberById(id) == null || topScores.get(id) == 0);
                 if (topScores.size() > 15)
                     topScores.keySet().retainAll(topScores.keySet().stream().limit(15).collect(Collectors.toCollection(HashSet::new)));
+                if (!wantScore) {
+                    double minRating;
+                    try {
+                        minRating = DBProvider.getMinRating();
+                    } catch (ClassNotFoundException | SQLException e) {
+                        logger.error("Could not retrieve min rating:", e);
+                        event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                        return;
+                    }
+                    if (minRating < 0)
+                        topScores.replaceAll((k, v) -> v - minRating);
+                }
                 EmbedBuilder eb = new EmbedBuilder()
                         .setColor(Color.green)
                         .setAuthor("Top " + (wantScore ? "scores" : "ratings") + " in the background game:");

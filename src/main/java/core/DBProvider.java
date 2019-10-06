@@ -30,6 +30,7 @@ public class DBProvider {
      */
 
     public static void updateBgPlayerRanking(HashSet<BgGameRanking> rankings) throws ClassNotFoundException, SQLException {
+        if (rankings.isEmpty()) return;
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         PreparedStatement stmnt = c.prepareStatement("update bgGame set score=score+? , rating=rating+? where discord=?");
@@ -80,15 +81,13 @@ public class DBProvider {
     }
 
     public static HashMap<Long, Double> getBgTopRatings() throws ClassNotFoundException, SQLException {
-        double minRating = getMinRating();
-        minRating = minRating < 0 ? minRating * -1 : 0;
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select discord, rating from bgGame order by rating desc");
         HashMap<Long, Double> topRatings = new HashMap<>();
         while (rs.next()) {
-            topRatings.put(rs.getLong("discord"), rs.getDouble("rating") + minRating);
+            topRatings.put(rs.getLong("discord"), rs.getDouble("rating"));
         }
         stmnt.close();
         c.close();
