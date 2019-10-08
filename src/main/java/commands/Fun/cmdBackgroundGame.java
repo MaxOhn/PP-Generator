@@ -291,7 +291,7 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     private double getRatingValue(int numPlayers) {
-        return 1D/(Math.pow(0.9, numPlayers + 5)) - 2;
+        return 1D/(Math.pow(0.95, numPlayers * 5)) - 1;
     }
 
     @Override

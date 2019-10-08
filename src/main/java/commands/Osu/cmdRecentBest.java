@@ -68,16 +68,6 @@ public class cmdRecentBest implements INumberedCommand {
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
-        int delIndex = Math.max(argList.indexOf("-n"), argList.indexOf("-number"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
-        }
-        delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
-        }
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -153,15 +143,13 @@ public class cmdRecentBest implements INumberedCommand {
         String help = " (`" + statics.prefix + "recentbest -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "recentbest[number] [-n <number 1-100>] [-m <s/t/c/m for mode>] [osu name]` "
+                return "Enter `" + statics.prefix + "recentbest[number] [-m <s/t/c/m for mode>] [osu name]` "
                         + "to make me respond with the users selected best recent performance."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + "rb8`, I will skip the most recent 8-1 top scores "
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + "rb8`, I will skip the most recent 7 top scores "
                         + "and show the 8-th score, defaults to 1."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 3:
-                return "Specify a number after '-n'" + help;
             case 4:
                 return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
             case 5:
