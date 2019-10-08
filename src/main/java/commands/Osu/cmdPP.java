@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public class cmdWhatIf implements ICommand {
-
+public class cmdPP implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length == 0 || args[0].equals("-h") || args[0].equals("-help")) {
@@ -71,13 +70,6 @@ public class cmdWhatIf implements ICommand {
             event.getChannel().sendMessage("No osu! user `" + name + "` was found").queue();
             return;
         }
-        List<OsuScore> topPlays;
-        try {
-            topPlays = user.getTopScores(100).get();
-        } catch (OsuAPIException e) {
-            event.getChannel().sendMessage("Could not retrieve top scores").queue();
-            return;
-        }
         EmbedBuilder eb = new EmbedBuilder();
         eb.setThumbnail("https://a.ppy.sh/" + user.getID());
         eb.setAuthor(user.getUsername() + ": "
@@ -87,35 +79,38 @@ public class cmdWhatIf implements ICommand {
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
                 "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        eb.setTitle("What if " + user.getUsername() + " got a new " + pp + "pp score?");
+        eb.setTitle("What score is missing for " + user.getUsername() + " to reach " + pp + "pp?");
         StringBuilder description = new StringBuilder();
-        if (pp < topPlays.get(topPlays.size() - 1).getPp()) {
-            description.append("A ").append(pp).append("pp play wouldn't even be in ").append(user.getUsername())
-                    .append("'s top 100 plays.\nThere would not be any significant pp change.");
+
+        if (user.getPPRaw() > pp) {
+            description.append(user.getUsername()).append(" already has ").append(user.getPPRaw()).append("pp which is more than ")
+                    .append(pp).append("pp.\nNo more scores are required.");
         } else {
-            double actual = 0, factor = 1;
-            for (OsuScore score : topPlays) {
-                actual += score.getPp() * factor;
-                factor *= 0.95;
+            List<OsuScore> topPlays;
+            try {
+                topPlays = user.getTopScores(100).get();
+            } catch (OsuAPIException e) {
+                event.getChannel().sendMessage("Could not retrieve top scores").queue();
+                return;
             }
-            double bonus = user.getPPRaw() - actual, potential = 0;
-            boolean used = false;
-            int newPos = -1;
-            factor = 1;
-            for (int i = 0; i < topPlays.size() - 1; i++) {
-                if (!used && topPlays.get(i).getPp() < pp) {
-                    used = true;
-                    potential += pp * factor;
-                    factor *= 0.95;
-                    newPos = i + 1;
-                }
-                potential += topPlays.get(i).getPp() * factor;
-                factor *= 0.95;
+            double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
+            int size = topPP.length, idx = size - 1;
+            double factor = Math.pow(0.95, idx), top = user.getPPRaw(), bot = 0, current = topPP[idx];
+            for (; top + bot < pp; idx--) {
+                top -= current * factor;
+                if (idx == 0)
+                    break;
+                current = topPP[idx - 1];
+                bot += current * factor;
+                factor /= 0.95;
             }
-            description.append("A ").append(pp).append("pp play would be ").append(user.getUsername()).append("'s #")
-                    .append(newPos).append(" best play.\nTheir pp would change by **+")
-                    .append(round(potential + bonus - user.getPPRaw())).append("** to **")
-                    .append(round(potential + bonus)).append("pp**.");
+            double required = pp - top - bot;
+            if (top + bot >= pp)
+                required = (required + (factor *= 0.95) * topPP[idx++]) / factor;
+            if (size < 100)
+                required -= topPP[size - 1] * Math.pow(0.95, size - 1);
+            description.append("To reach ").append(pp).append("pp with one additional score, ").append(user.getUsername()).append(" needs to perform a **")
+                    .append(round(required)).append("pp** score which would be the top #").append(++idx).append(".");
         }
         eb.setDescription(description);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
@@ -127,11 +122,11 @@ public class cmdWhatIf implements ICommand {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "whatif" + getName() + " -h` for more help)";
+        String help = " (`" + statics.prefix + "pp" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "whatif" + getName() + " [number] [osu name]` to make me calculate the total pp if "
-                        + "the player would have an additional score of <number> pp.\n"
+                return "Enter `" + statics.prefix + "pp" + getName() + " [number] [osu name]` to make me calculate what score "
+                        + "is required for the player to have <number> total pp.\n"
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "The first argument must be of the form `+<number>` e.g. `+321.45`, afterwards you can specify the name" + help;

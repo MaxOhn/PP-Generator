@@ -65,6 +65,7 @@ public class cmdBackgroundGame implements ICommand {
             case "s":
                 startGame(event.getChannel());
                 break;
+            case "enhance":
             case "bigger":
             case "b":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {

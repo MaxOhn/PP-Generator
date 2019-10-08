@@ -75,6 +75,7 @@ public class Main {
         commandHandler.commands.put("sr", new cmdSimulateRecent());
         commandHandler.commands.put("wi", new cmdWhatIf());
         commandHandler.commands.put("whatif", new cmdWhatIf());
+        commandHandler.commands.put("pp", new cmdPP());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
@@ -88,6 +89,8 @@ public class Main {
         commandHandler.commands.put("st", new cmdSimulateTaiko());
         commandHandler.commands.put("wit", new cmdWhatIfTaiko());
         commandHandler.commands.put("whatiftaiko", new cmdWhatIfTaiko());
+        commandHandler.commands.put("ppt", new cmdPPTaiko());
+        commandHandler.commands.put("pptaiko", new cmdPPTaiko());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
@@ -101,6 +104,8 @@ public class Main {
         commandHandler.commands.put("sm", new cmdSimulateMania());
         commandHandler.commands.put("wim", new cmdWhatIfMania());
         commandHandler.commands.put("whatifmania", new cmdWhatIfMania());
+        commandHandler.commands.put("ppm", new cmdPPMania());
+        commandHandler.commands.put("ppmania", new cmdPPMania());
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());
