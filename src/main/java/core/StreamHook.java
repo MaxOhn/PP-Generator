@@ -1,9 +1,9 @@
 package main.java.core;
 
-import com.google.common.util.concurrent.RateLimiter;
-import com.mb3364.twitch.api.Twitch;
-import com.mb3364.twitch.api.handlers.StreamResponseHandler;
-import com.mb3364.twitch.api.models.Stream;
+import com.github.twitch4j.TwitchClient;
+import com.github.twitch4j.TwitchClientBuilder;
+import com.github.twitch4j.common.events.channel.ChannelGoLiveEvent;
+import com.github.twitch4j.common.events.channel.ChannelGoOfflineEvent;
 import com.mixer.api.MixerAPI;
 import main.java.util.secrets;
 import org.slf4j.Logger;
@@ -13,24 +13,35 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
-import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class StreamHook {
 
-    private Twitch twitch;
+    private TwitchClient twitch;
     private MixerAPI mixer;
     private static HashMap<String, ArrayList<String>> twitchStreamers;
     private static HashMap<String, ArrayList<String>> mixerStreamers;
     private static ArrayList<String> isOnline = new ArrayList<>();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
-    private RateLimiter limiter = RateLimiter.create(2.5);
+    //private RateLimiter limiter = RateLimiter.create(2.5);
 
     public StreamHook() {
-        twitch = new Twitch();
-        twitch.setClientId(secrets.twitchClientID);
+        twitch = TwitchClientBuilder.builder()
+                .withEnableHelix(true)
+                .withClientId(secrets.twitchClientID)
+                .withClientSecret(secrets.twitchSecret)
+                .build();
+        twitch.getEventManager().onEvent(ChannelGoLiveEvent.class).subscribe(event -> {
+            for (String channelID : twitchStreamers.get(event.getChannel().getName())) {
+                Main.jda.getTextChannelById(channelID).sendMessage("`" + event.getChannel().getName()
+                        + "` now online on https://www.twitch.tv/" + event.getChannel().getName() + "\nTitle: `" + event.getTitle() + "`").queue();
+                logger.info("Twitch user " + event.getChannel().getName() + " just went online");
+                isOnline.add(event.getChannel().getName());
+            }
+        });
+        twitch.getEventManager().onEvent(ChannelGoOfflineEvent.class).subscribe(event -> {
+            logger.info("Twitch user " + event.getChannel().getName() + " now offline again");
+            isOnline.remove(event.getChannel().getName());
+        });
         mixer = new MixerAPI(secrets.mixerClientID);
         loadStreamers();
         trackStreamers();
@@ -72,54 +83,11 @@ public class StreamHook {
     }
 
     private void trackStreamers() {
-        int trackDelay = 10;
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        final Runnable twitchIterator = this::streamerCheckIteration;
-        scheduler.scheduleAtFixedRate(twitchIterator, trackDelay, trackDelay, MINUTES);
-    }
-
-    public void streamerCheckIteration() {
-        final Thread t = new Thread(() -> {
-            for (String streamer : twitchStreamers.keySet()) {
-                limiter.acquire();
-                twitch.streams().get(streamer, new StreamResponseHandler() {
-                    @Override
-                    public void onSuccess(Stream stream) {
-                        if (stream != null && stream.isOnline()) {
-                            if (!isOnline.contains(streamer)) {
-                                isOnline.add(streamer);
-                                logger.info(stream.getChannel().getName() + " now playing: " + stream.getGame());
-                                for (String channelID : twitchStreamers.get(streamer)) {
-                                    streamMessage(stream, channelID, "twitch");
-                                }
-                            }
-                        } else isOnline.remove(streamer);
-                    }
-
-                    @Override
-                    public void onFailure(int i, String s, String s1) {}
-
-                    @Override
-                    public void onFailure(Throwable throwable) {}
-                });
-            }
-            /* // TODO
-            for (String streamer : mixerStreamers.keySet()) {
-                try {
-                    MixerChannel mc = mixer.use(ChannelsService.class).findOneByToken(streamer).get();
-                    MixerUser mu;
-                    if (mc.online) {
-                        for (String channelID : twitchStreamers.get(streamer)) {
-                            streamMessage(mc., channelID, "mixer");
-                        }
-                    }
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-            /*/
-        });
-        t.start();
+        for (String twitchName: twitchStreamers.keySet())
+            twitch.getClientHelper().enableStreamEventListener(twitchName);
+        for (String mixerName: mixerStreamers.keySet()) {
+            // TODO
+        }
     }
 
     public boolean addStreamer(String streamer, String channelID, String platform) {
@@ -130,8 +98,10 @@ public class StreamHook {
             if (platform.equals("twitch")) {
                 if (twitchStreamers.containsKey(streamerLower))
                     twitchStreamers.get(streamerLower).add(channelID);
-                else
+                else {
+                    twitch.getClientHelper().enableStreamEventListener(streamerLower);
                     twitchStreamers.put(streamerLower, new ArrayList<>(Collections.singletonList(channelID)));
+                }
             } else if (platform.equals("mixer")) {
                 if (mixerStreamers.containsKey(streamerLower))
                     mixerStreamers.get(streamerLower).add(channelID);
@@ -195,13 +165,5 @@ public class StreamHook {
     public boolean isTracked(String streamer, String channelID) {
         return twitchStreamers.containsKey(streamer) && twitchStreamers.get(streamer).contains(channelID)
                 || mixerStreamers.containsKey(streamer) && mixerStreamers.get(streamer).contains(channelID);
-    }
-
-    private void streamMessage(Stream stream, String channelID, String platform) {
-        String name = stream.getChannel().getName();
-        String game = stream.getGame();
-        String filler = !game.equals("")? " is playing " + game: " now live";
-        String url = stream.getChannel().getUrl();
-        Main.jda.getTextChannelById(channelID).sendMessage("[Now online]: `" + name + "`" + filler + " on " + url).queue();
     }
 }

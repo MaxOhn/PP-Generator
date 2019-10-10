@@ -27,6 +27,7 @@ public class secretsButPublic {
 
     // Provided by twitch
     public static final String twitchClientID = "";
+    public static final String twitchSecret = "";
 
     // Provided by mixer (streaming)
     public static final String mixerClientID = "";

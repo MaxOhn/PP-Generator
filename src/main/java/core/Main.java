@@ -18,7 +18,6 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
 import net.dv8tion.jda.core.OnlineStatus;
 import net.dv8tion.jda.core.entities.Game;
-import org.apache.log4j.PropertyConfigurator;
 
 import javax.security.auth.login.LoginException;
 
@@ -34,7 +33,6 @@ public class Main {
     public static ReactionHandler reactionHandler;
 
     public static void main(String[] args) throws LoginException, InterruptedException {
-        PropertyConfigurator.configure(statics.log4jPath);
         builder = new JDABuilder((AccountType.BOT));
         login();
         addListeners();

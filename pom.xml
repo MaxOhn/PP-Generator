@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bade</groupId>
     <artifactId>ppgenerator</artifactId>
-    <version>5.3.2</version>
+    <version>5.3.3</version>
 
     <name>PP-Generator</name>
     <description>discord bot with osu! functionalities</description>
@@ -63,6 +63,9 @@
                 <filtering>true</filtering>
                 <directory>${basedir}/</directory>
             </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
         </resources>
     </build>
 
@@ -88,6 +91,10 @@
             <id>beam-snapshots</id>
             <url>https://maven.mixer.com/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <id>jcenter-snapshot</id>
+            <url>https://oss.jfrog.org/artifactory/libs-release/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -112,9 +119,9 @@
             <version>3.8.3_464</version>
         </dependency>
         <dependency>
-            <groupId>com.mb3364</groupId>
-            <artifactId>twitch-api-wrapper</artifactId>
-            <version>0.3</version>
+            <groupId>com.github.twitch4j</groupId>
+            <artifactId>twitch4j</artifactId>
+            <version>1.0.0-alpha.13</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
