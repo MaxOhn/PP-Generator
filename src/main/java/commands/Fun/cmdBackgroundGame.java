@@ -39,12 +39,13 @@ public class cmdBackgroundGame implements ICommand {
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
     private HashMap<Long, HashMap<Long, PlayerInfo>> activePlayers = new HashMap<>();
-    private Queue<Integer> previous = new LinkedList<>();
-    private File[] files = new File(getSourcePath()).listFiles();
-    private int TIMEOUT_MINUTES = 2;
-    private int TIME_TILL_INACTIVE = 60_000;
-    private int ROUNDS_TILL_INACTIVE = 5;
-    private static final DecimalFormat df = new DecimalFormat("0.00");
+    private Queue<File> previous = new LinkedList<>();
+    private HashSet<File> files = new HashSet<>(Arrays.asList(Objects.requireNonNull(new File(getSourcePath()).listFiles())));
+
+    private final int TIMEOUT_MINUTES = 3;
+    private final int TIME_TILL_INACTIVE = 60_000;
+    private final int ROUNDS_TILL_INACTIVE = 5;
+    private final DecimalFormat df = new DecimalFormat("0.00");
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -196,15 +197,18 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     private void startGame(MessageChannel channel) {
+        runningGames.get(channel.getIdLong()).dispose();
         runningGames.remove(channel.getIdLong());
         if (!activePlayers.containsKey(channel.getIdLong()))
             activePlayers.put(channel.getIdLong(), new HashMap<>());
         File image;
         BufferedImage origin;
         while (true) {
-            image = files[ThreadLocalRandom.current().nextInt(files.length)];
+            Iterator<File> it = files.iterator();
+            for (int i = 0, limit = ThreadLocalRandom.current().nextInt(files.size()); i < limit; i++) it.next();
+            image = it.next();
             try {
-                if (!previous.contains(image.hashCode()) && image.isFile()) {
+                if (image.isFile()) {
                     origin = ImageIO.read(image);
                     break;
                 }
@@ -212,9 +216,10 @@ public class cmdBackgroundGame implements ICommand {
                 logger.warn("Error while selecting file: " + image.getName(), e);
             }
         }
-        previous.add(image.hashCode());
-        if (previous.size() > files.length / 2)
-            previous.remove();
+        previous.add(image);
+        files.remove(image);
+        if (previous.size() >= files.size())
+            files.add(previous.remove());
         OsuBeatmapSet mapset;
         try {
             mapset = Main.osu.beatmapSets.query(new EndpointBeatmapSet
@@ -259,8 +264,7 @@ public class cmdBackgroundGame implements ICommand {
                 player.roundsInactive++;
         }
         HashSet<Long> inactivePlayers = activePlayers.get(channel).values().stream()
-                .filter(player -> (System.currentTimeMillis() - player.lastSeen > TIME_TILL_INACTIVE || player.roundsInactive >= ROUNDS_TILL_INACTIVE)
-                        && !runningGames.get(channel).players.contains(player.rating.getDiscordUser()))
+                .filter(player -> !player.isActive() && !runningGames.get(channel).players.contains(player.rating.getDiscordUser()))
                 .map(pair -> pair.rating.getDiscordUser())
                 .collect(Collectors.toCollection(HashSet::new));
         if (inactivePlayers.size() > 0) {
@@ -473,7 +477,7 @@ public class cmdBackgroundGame implements ICommand {
         }
     }
 
-    private static class PlayerInfo {
+    private class PlayerInfo {
 
         private Long lastSeen;
         private int roundsInactive;
@@ -483,6 +487,10 @@ public class cmdBackgroundGame implements ICommand {
             this.lastSeen = lastSeen;
             this.rating = rating;
             this.roundsInactive = 0;
+        }
+
+        boolean isActive() {
+            return roundsInactive < ROUNDS_TILL_INACTIVE && lastSeen < TIME_TILL_INACTIVE;
         }
     }
 

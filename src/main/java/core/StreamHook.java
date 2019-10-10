@@ -39,11 +39,13 @@ public class StreamHook {
     public HashMap<String, ArrayList<String>> getStreamers() {
         HashMap<String, ArrayList<String>> allStreamers = new HashMap<>();
         for (String streamer : twitchStreamers.keySet()) {
-            allStreamers.get(streamer).addAll(twitchStreamers.get(streamer));
+            allStreamers.put(streamer, twitchStreamers.get(streamer));
         }
         for (String streamer : mixerStreamers.keySet()) {
             if (allStreamers.containsKey(streamer))
                 allStreamers.get(streamer).addAll(mixerStreamers.get(streamer));
+            else
+                allStreamers.put(streamer, mixerStreamers.get(streamer));
         }
         return allStreamers;
     }
