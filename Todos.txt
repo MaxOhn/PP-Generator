@@ -3,8 +3,6 @@
 add mirror mod for mania
 check if pp calculation has an update
 extend StreamerHook with mixer
-rewrite cmdSong
-accept all titles of maps with the bg for <bg
 fix <bg timeLeft when <bg s used twice
 
 --- BUGS ---
@@ -15,6 +13,5 @@ fix FileInteractor.offsetOfNode NullPointerExceptions
 
 --- IDEAS ---
 page scrap to get last ranked/loved/... maps
-add <snipeprogress command
 command showing average max combo, maybe weighted
 command to show all scores of mapset

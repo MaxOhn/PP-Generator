@@ -1,9 +1,7 @@
 package main.java.commands.Fun;
 
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
 import main.java.core.DBProvider;
-import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -12,9 +10,11 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.apache.log4j.Logger;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 
 public abstract class cmdSong implements ICommand {
 
+    private static HashSet<String> runningLyrics = new HashSet<>();
     private String busyID;
 
     abstract String[] getLyrics();
@@ -28,7 +28,7 @@ public abstract class cmdSong implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         boolean privateMsg = event.isFromType(ChannelType.PRIVATE);
-        busyID = privateMsg ? event.getChannel().getId() : event.getGuild().getId();
+        busyID = event.getChannel().getId();
         try {
             if (!privateMsg && secrets.WITH_DB && !DBProvider.getLyricsState(busyID)) {
                 event.getTextChannel().sendMessage("The server's big boys have disabled song commands. " +
@@ -40,29 +40,27 @@ public abstract class cmdSong implements ICommand {
             Logger.getLogger(this.getClass()).error("Error while interacting with lyrics database:", e);
             return false;
         }
-        return !Main.runningLyrics.contains(busyID);
+        return !runningLyrics.contains(busyID);
     }
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Main.runningLyrics.add(busyID);
+        runningLyrics.add(busyID);
         String[] lyrics = getLyrics();
-        int delay = getDelay();
-        final Thread t = new Thread(() -> {
+        new Thread(() -> {
             for (String lyric: lyrics) {
                 try {
                     event.getChannel().sendMessage("♫ " + lyric + " ♫").queue();
-                    Thread.sleep(delay);
+                    Thread.sleep(getDelay());
                 } catch (InterruptedException ignored) {}
             }
             try {
                 Thread.sleep(getCooldown());
             } catch (InterruptedException ignored) {
             } finally {
-                Main.runningLyrics.remove(busyID);
+                runningLyrics.remove(busyID);
             }
-        });
-        t.start();
+        }).start();
     }
 
     @Override

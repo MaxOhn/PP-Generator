@@ -2,9 +2,9 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
-import main.java.commands.Osu.*;
 import main.java.commands.Osu.Mania.*;
 import main.java.commands.Osu.Taiko.*;
+import main.java.commands.Osu.*;
 import main.java.commands.Twitch.cmdAddStream;
 import main.java.commands.Twitch.cmdAllStreamers;
 import main.java.commands.Twitch.cmdRemoveStream;
@@ -21,7 +21,6 @@ import net.dv8tion.jda.core.entities.Game;
 import org.apache.log4j.PropertyConfigurator;
 
 import javax.security.auth.login.LoginException;
-import java.util.HashSet;
 
 public class Main {
 
@@ -31,7 +30,6 @@ public class Main {
     public static CustomOsu customOsu;
     public static StreamHook streamHook;
     public static DiscordLink discLink;
-    public static HashSet<String> runningLyrics;
     public static MemberHandler memberHandler;
     public static ReactionHandler reactionHandler;
 

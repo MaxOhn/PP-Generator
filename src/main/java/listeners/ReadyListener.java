@@ -7,8 +7,6 @@ import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.apache.log4j.Logger;
 
-import java.util.HashSet;
-
 public class ReadyListener extends ListenerAdapter {
 
     public void onReady(ReadyEvent event) {
@@ -19,7 +17,6 @@ public class ReadyListener extends ListenerAdapter {
         if (secrets.RELEASE)
             Main.streamHook = new StreamHook();
         Main.discLink = new DiscordLink();
-        Main.runningLyrics = new HashSet<>();
         Main.memberHandler = new MemberHandler();
         Main.reactionHandler = new ReactionHandler();
     }
