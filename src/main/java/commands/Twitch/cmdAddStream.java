@@ -34,7 +34,7 @@ public class cmdAddStream extends PrivilegedCommand {
             return;
         }
         if (Main.streamHook.addStreamer(name, event.getTextChannel().getId(), args[0]))
-            event.getTextChannel().sendMessage("I'm now tracking `" + name + "`'s twitch stream.").queue();
+            event.getTextChannel().sendMessage("I'm now tracking `" + name + "`'s " + args[0] + " stream.").queue();
         else {
             MessageBuilder builder = new MessageBuilder("Could not track `" + name + "`'s stream for some reason, blame bade");
             event.getTextChannel().sendMessage(builder.build()).queue();
