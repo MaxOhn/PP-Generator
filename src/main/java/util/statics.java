@@ -12,7 +12,7 @@ public class statics {
 
     public static final String log4jPath = secrets.RELEASE
             ? raspResources + "log4j.properties"
-            : ".\\src\\main\\resources\\log4j.properties";
+            : "./src/main/resources/log4j.properties";
 
     public static final String gameName = secrets.RELEASE
             ? ("osu! slave (" + prefix + "help)")
@@ -26,7 +26,7 @@ public class statics {
 
     public static final String flagPath = secrets.RELEASE
             ? raspResources + "flags/"
-            : "../PPGenerator-Resources/flags/";
+            : "./src/main/resources/flags/";
 
     public static final String getBgGamePathMania = secrets.bgGamePath + "mania/";
 }
