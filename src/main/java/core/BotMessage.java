@@ -83,8 +83,8 @@ public class BotMessage {
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
-                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(statics.thumbPath + "bgNotFound.png");
+                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(secrets.thumbPath + "bgNotFound.png");
                 date = score.getDate();
                 timestamp = date.toInstant();
                 switch (p.getMode()) {
@@ -136,8 +136,8 @@ public class BotMessage {
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 thumbFile = filesPrepared
-                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(statics.thumbPath + "bgNotFound.png");
+                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setTitle(p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                         + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                 List<OsuScore> orderedScores = new ArrayList<>(scores);
@@ -259,8 +259,8 @@ public class BotMessage {
                 } else
                     iconURL = "https://a.ppy.sh/" + scores.get(0).getUserID();
                 thumbFile = filesPrepared
-                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(statics.thumbPath + "bgNotFound.png");
+                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 if (iconURL.isEmpty()) {
                     eb.setAuthor(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle()
@@ -378,8 +378,8 @@ public class BotMessage {
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 mb.append("Simulated score:");
                 thumbFile = filesPrepared
-                        ? new File(statics.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
-                        : new File(statics.thumbPath + "bgNotFound.png");
+                        ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
+                        : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 osuscore(scores.get(0));
                 switch (p.getMode()) {

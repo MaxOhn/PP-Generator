@@ -155,11 +155,11 @@ public class cmdRecent implements INumberedCommand {
         return this;
     }
 
-    GameMode getMode() {
+    public GameMode getMode() {
         return GameMode.STANDARD;
     }
 
-    String getName() {
+    public String getName() {
         return "recent";
     }
 }

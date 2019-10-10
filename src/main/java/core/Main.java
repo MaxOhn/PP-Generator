@@ -3,6 +3,8 @@ package main.java.core;
 import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
 import main.java.commands.Osu.*;
+import main.java.commands.Osu.Mania.*;
+import main.java.commands.Osu.Taiko.*;
 import main.java.commands.Twitch.cmdAddStream;
 import main.java.commands.Twitch.cmdAllStreamers;
 import main.java.commands.Twitch.cmdRemoveStream;

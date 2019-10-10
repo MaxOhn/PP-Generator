@@ -51,4 +51,11 @@ public class secretsButPublic {
     // Path to the directory that contains all the .osu beatmap files
     // Can be an empty folder in which all requested maps will be saved
     public static final String mapPath = "";
+
+    // Path to the directory that contains the thumbnail views of maps i.e. their mini backgrounds
+    public static final String thumbPath = "";
+
+    // Path to the directory that contains all the background files for the <bg game
+    // File names must be the mapset id, file type doesn't matter
+    public static final String bgGamePath = "";
 }

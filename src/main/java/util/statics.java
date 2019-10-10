@@ -14,11 +14,6 @@ public class statics {
             ? raspResources + "log4j.properties"
             : ".\\src\\main\\resources\\log4j.properties";
 
-    public static final String thumbPath = secrets.RELEASE
-            ? raspResources + "mapThumb/"
-            //: ".\\src\\main\\resources\\mapThumb\\";
-            : "../PPGenerator-Resources/mapThumb/";
-
     public static final String gameName = secrets.RELEASE
             ? ("osu! slave (" + prefix + "help)")
             : "in developement";
@@ -31,13 +26,7 @@ public class statics {
 
     public static final String flagPath = secrets.RELEASE
             ? raspResources + "flags/"
-            //: "./src/main/resources/flags/";
             : "../PPGenerator-Resources/flags/";
 
-    public static final String bgGamePath = secrets.RELEASE
-            ? raspResources + "bgGame/"
-            //: "./src/main/resources/bgGame/";
-            : "../PPGenerator-Resources/bgGame/";
-
-    public static final String getBgGamePathMania = bgGamePath + "mania/";
+    public static final String getBgGamePathMania = secrets.bgGamePath + "mania/";
 }

@@ -324,7 +324,7 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     public String getSourcePath() {
-        return statics.bgGamePath;
+        return secrets.bgGamePath;
     }
 
     public String getName() {

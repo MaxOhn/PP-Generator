@@ -2,7 +2,6 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.util.secrets;
-import main.java.util.statics;
 import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -25,7 +24,7 @@ public class FileInteractor {
     public static boolean downloadMapThumb(int mapID) {
         try {
             InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + "l.jpg").openStream();
-            Files.copy(in, Paths.get(statics.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
+            Files.copy(in, Paths.get(secrets.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
             Logger.getLogger(FileInteractor.class).info("Downloaded thumbnail of mapset " + mapID + " successfully");
             return true;
         } catch (IOException e) {
@@ -37,7 +36,7 @@ public class FileInteractor {
 
     public static File saveImage(BufferedImage img, String name) {
         try {
-            File imgFile = new File(statics.thumbPath + name);
+            File imgFile = new File(secrets.thumbPath + name);
             ImageIO.write(img, "png", imgFile);
             return imgFile;
         } catch (IOException e) {
@@ -48,7 +47,7 @@ public class FileInteractor {
     }
 
     public static void deleteImage(String name) {
-        deleteFile(statics.thumbPath + name);
+        deleteFile(secrets.thumbPath + name);
     }
 
     public static boolean downloadMap(int mapID) {
@@ -149,7 +148,7 @@ public class FileInteractor {
 
     public static boolean prepareFiles(OsuBeatmap map) {
         boolean success = true;
-        if (!new File(statics.thumbPath + map.getBeatmapSetID() + "l.jpg").isFile())
+        if (!new File(secrets.thumbPath + map.getBeatmapSetID() + "l.jpg").isFile())
             success = downloadMapThumb(map.getBeatmapSetID());
         if (!new File(secrets.mapPath + map.getID() + ".osu").isFile())
             success &= downloadMap(map.getID());

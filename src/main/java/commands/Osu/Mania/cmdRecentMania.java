@@ -1,8 +1,9 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Mania;
 
 import com.oopsjpeg.osu4j.GameMode;
+import main.java.commands.Osu.cmdRecent;
 
-public class cmdWhatIfMania extends cmdWhatIf {
+public class cmdRecentMania extends cmdRecent {
 
     @Override
     public GameMode getMode() {
@@ -11,6 +12,6 @@ public class cmdWhatIfMania extends cmdWhatIf {
 
     @Override
     public String getName() {
-        return "mania";
+        return "recentmania";
     }
 }
