@@ -5,14 +5,15 @@ import main.java.util.secrets;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 
 public class ServerJoinListener extends ListenerAdapter {
 
     public void onGuildJoin(GuildJoinEvent event) {
-        Logger logger = Logger.getLogger(this.getClass());
+        Logger logger = LoggerFactory.getLogger(this.getClass());
         logger.info("Joined a new server: " + event.getGuild().getName());
         try {
             if (secrets.WITH_DB) {

@@ -5,7 +5,8 @@ import main.java.core.Main;
 import main.java.util.secrets;
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
@@ -13,7 +14,7 @@ import java.time.ZonedDateTime;
 public class MemberJoinListener extends ListenerAdapter {
 
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
-        Logger logger = Logger.getLogger(this.getClass());
+        Logger logger = LoggerFactory.getLogger(this.getClass());
         logger.info("User " + event.getUser().getName() + " joined server " + event.getGuild().getName());
         if (!secrets.RELEASE || event.getGuild().getId().equals(secrets.mainGuildID)) {
             try {

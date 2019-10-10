@@ -16,7 +16,8 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
 
 public class cmdBackgroundGame implements ICommand {
 
-    private Logger logger = Logger.getLogger(cmdBackgroundGame.class);
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private HashMap<Long, BackgroundGame> runningGames = new HashMap<>();
     private HashMap<Long, HashMap<Long, PlayerInfo>> activePlayers = new HashMap<>();

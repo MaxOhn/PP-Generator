@@ -7,9 +7,11 @@ import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.MessageBuilder;
-import net.dv8tion.jda.core.entities.*;
+import net.dv8tion.jda.core.entities.MessageChannel;
+import net.dv8tion.jda.core.entities.MessageEmbed;
+import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -500,7 +502,7 @@ public class BotMessage {
                     throw new IllegalStateException(Error.TYPEM.getMsg());
             }
         } catch (Exception e) {
-            Logger.getLogger(this.getClass()).error("Caught error while sending message:");
+            LoggerFactory.getLogger(this.getClass()).error("Caught error while sending message:");
             e.printStackTrace();
         }
         if (runnable != null) runnable.run();

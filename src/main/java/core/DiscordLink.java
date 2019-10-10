@@ -1,7 +1,8 @@
 package main.java.core;
 
 import main.java.util.secrets;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -9,7 +10,7 @@ import java.util.HashMap;
 public class DiscordLink {
 
     private HashMap<String, String> link;
-    private static Logger logger = Logger.getLogger("DiscordLink");
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public DiscordLink() {
         try {

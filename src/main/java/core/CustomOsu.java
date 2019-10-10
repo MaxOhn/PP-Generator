@@ -15,11 +15,12 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -36,7 +37,7 @@ public class CustomOsu {
 
     private HttpClient client;
     private RateLimiter limiter;
-    private Logger logger = Logger.getLogger(CustomOsu.class);
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public CustomOsu() {
         this.limiter = RateLimiter.create(0.60);

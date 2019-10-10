@@ -2,7 +2,8 @@ package main.java.commands;
 
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 
@@ -10,7 +11,7 @@ import static main.java.util.utilGeneral.isAuthority;
 
 public abstract class PrivilegedCommand implements ICommand {
 
-    protected Logger logger = Logger.getLogger(this.getClass());
+    protected Logger logger = LoggerFactory.getLogger(this.getClass());
     protected String serverID;
 
     @Override

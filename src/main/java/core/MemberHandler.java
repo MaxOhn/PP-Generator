@@ -7,7 +7,8 @@ import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.managers.GuildController;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -24,7 +25,7 @@ import static java.util.concurrent.TimeUnit.DAYS;
 
 public class MemberHandler {
 
-    private Logger logger = Logger.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private HashMap<String, ZonedDateTime> uncheckedUsers = new HashMap<>();
     private final int uncheckedKickDelay = 10;
 

@@ -6,7 +6,8 @@ import com.mb3364.twitch.api.handlers.StreamResponseHandler;
 import com.mb3364.twitch.api.models.Stream;
 import com.mixer.api.MixerAPI;
 import main.java.util.secrets;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public class StreamHook {
     private static HashMap<String, ArrayList<String>> twitchStreamers;
     private static HashMap<String, ArrayList<String>> mixerStreamers;
     private static ArrayList<String> isOnline = new ArrayList<>();
-    private static Logger logger = Logger.getLogger("TwitchHook");
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
     private RateLimiter limiter = RateLimiter.create(2.5);
 
     public StreamHook() {

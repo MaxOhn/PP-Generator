@@ -13,9 +13,9 @@ import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
-import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ public class cmdNoChoke implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Logger logger = Logger.getLogger(this.getClass());
+        Logger logger = LoggerFactory.getLogger(this.getClass());
         String name;
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());

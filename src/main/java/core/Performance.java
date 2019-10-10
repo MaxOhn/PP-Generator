@@ -7,7 +7,8 @@ import com.oopsjpeg.osu4j.OsuScore;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilOsu;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -36,7 +37,7 @@ public class Performance {
     private Set<GameMod> mods;
     private GameMode mode;
 
-    private Logger logger = Logger.getLogger(this.getClass());
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private static final Set<GameMod> starModifier = new HashSet<>(Arrays.asList(GameMod.EASY, GameMod.HALF_TIME,
             GameMod.NIGHTCORE, GameMod.DOUBLE_TIME, GameMod.HARD_ROCK));

@@ -2,7 +2,7 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import main.java.util.secrets;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,18 +18,17 @@ public class FileInteractor {
     public static void deleteFile(String filePath) {
         File f = new File(filePath);
         if (!f.delete())
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while deleting a file: " + f.getName());
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while deleting a file: " + f.getName());
     }
 
     public static boolean downloadMapThumb(int mapID) {
         try {
             InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + "l.jpg").openStream();
             Files.copy(in, Paths.get(secrets.thumbPath + mapID + "l.jpg"), REPLACE_EXISTING);
-            Logger.getLogger(FileInteractor.class).info("Downloaded thumbnail of mapset " + mapID + " successfully");
+            LoggerFactory.getLogger(FileInteractor.class).info("Downloaded thumbnail of mapset " + mapID + " successfully");
             return true;
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while downloading the thumbnail of a mapset: ");
-            //e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while downloading the thumbnail of a mapset:", e);
             return false;
         }
     }
@@ -40,8 +39,7 @@ public class FileInteractor {
             ImageIO.write(img, "png", imgFile);
             return imgFile;
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while saving an image:");
-            e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while saving an image:", e);
             return null;
         }
     }
@@ -62,10 +60,9 @@ public class FileInteractor {
             BufferedReader bReader = new BufferedReader(new FileReader(map));
             while (bReader.readLine() != null) lines++;
             bReader.close();
-            Logger.getLogger(FileInteractor.class).info("Downloaded map " + mapID + " successfully");
+            LoggerFactory.getLogger(FileInteractor.class).info("Downloaded map " + mapID + " successfully");
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while downloading a map: ");
-            e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while downloading a map:", e);
             deleteFile(file_name);
             return false;
         }
@@ -89,13 +86,11 @@ public class FileInteractor {
             String[] splitted = line.split(",");
             return Integer.parseInt(splitted[2]);
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while calculating the offset of a note: ");
-            e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while calculating the offset of a note:", e);
             return 0;
         } catch (Exception e) {
-            Logger.getLogger(FileInteractor.class).error("Unexpected error while calculating offset of note");
+            LoggerFactory.getLogger(FileInteractor.class).error("Unexpected error while calculating offset of note", e);
             System.out.println("mapID: " + mapID + "\nnoteIndex: " + noteIndex + "\nlineNum: " + lineNum);
-            e.printStackTrace();
             return 0;
         }
     }
@@ -112,8 +107,7 @@ public class FileInteractor {
             }
             return nobjects;
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while counting the objects of a map: ");
-            e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while counting the objects of a map:", e);
             return 0;
         }
     }
@@ -141,8 +135,7 @@ public class FileInteractor {
             writer.close();
             reader.close();
         } catch (IOException e) {
-            Logger.getLogger(FileInteractor.class).error("Something went wrong while creating a sub-map: ");
-            e.printStackTrace();
+            LoggerFactory.getLogger(FileInteractor.class).error("Something went wrong while creating a sub-map:", e);
         }
     }
 

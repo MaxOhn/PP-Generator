@@ -7,7 +7,7 @@ import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.apache.log4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -37,7 +37,7 @@ public abstract class cmdSong implements ICommand {
             }
         } catch (ClassNotFoundException | SQLException e) {
             event.getChannel().sendMessage("Something went wrong, blame bade").queue();
-            Logger.getLogger(this.getClass()).error("Error while interacting with lyrics database:", e);
+            LoggerFactory.getLogger(this.getClass()).error("Error while interacting with lyrics database:", e);
             return false;
         }
         return !runningLyrics.contains(busyID);

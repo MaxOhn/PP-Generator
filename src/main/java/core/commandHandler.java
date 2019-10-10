@@ -4,7 +4,8 @@ import main.java.commands.ICommand;
 import main.java.commands.INumberedCommand;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class commandHandler {
         if(commands.containsKey(invoke)) {
             // Check if called conditions are satisfied
             boolean safe = commands.get(invoke).called(cmd.args, cmd.event);
-            Logger logger = Logger.getLogger(commands.get(invoke).getClass());
+            Logger logger = LoggerFactory.getLogger(commands.get(invoke).getClass());
             try {
                 // If so, perform the action in new thread
                 if (safe) {
