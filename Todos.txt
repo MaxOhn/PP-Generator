@@ -2,8 +2,6 @@
 --- GENERAL ---
 add mirror mod for mania
 check if pp calculation has an update
-extend StreamerHook with mixer
-fix <bg timeLeft when <bg s used twice
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions

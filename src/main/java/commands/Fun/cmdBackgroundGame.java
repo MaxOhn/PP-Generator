@@ -197,8 +197,10 @@ public class cmdBackgroundGame implements ICommand {
     }
 
     private void startGame(MessageChannel channel) {
-        runningGames.get(channel.getIdLong()).dispose();
-        runningGames.remove(channel.getIdLong());
+        if (runningGames.containsKey(channel.getIdLong())) {
+            runningGames.get(channel.getIdLong()).dispose();
+            runningGames.remove(channel.getIdLong());
+        }
         if (!activePlayers.containsKey(channel.getIdLong()))
             activePlayers.put(channel.getIdLong(), new HashMap<>());
         File image;
@@ -317,7 +319,7 @@ public class cmdBackgroundGame implements ICommand {
             case 1:
                 return "You must first start a new round via `" + statics.prefix + getName() + " start`" + help;
             case 2:
-                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, `resolve`, `-score`, `-rating`, or `-stats`" + help;
+                return "This command requires exactly one argument which must either be `start`, `bigger`, `hint`, `resolve`, `stop`, `-score`, `-rating`, or `-stats`" + help;
             default:
                 return help(0);
         }
@@ -413,7 +415,7 @@ public class cmdBackgroundGame implements ICommand {
                             artistCpy[i] = StringUtils.repeat("▢", artistSplit[i].length());
                         artistGuessed = true;
                         return hint + String.join(" ", artistCpy) + "`";
-                    }
+                    } else hintDepth++;
                 case 2:
                     return "Slowly constructing the title: `" + hintTitle + "`";
                 default:

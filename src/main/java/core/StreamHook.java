@@ -2,20 +2,25 @@ package main.java.core;
 
 import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
-import com.github.twitch4j.common.events.channel.ChannelGoLiveEvent;
-import com.github.twitch4j.common.events.channel.ChannelGoOfflineEvent;
+import com.github.twitch4j.helix.domain.Stream;
+import com.github.twitch4j.helix.domain.StreamList;
+import com.github.twitch4j.helix.domain.User;
+import com.github.twitch4j.helix.domain.UserList;
 import com.google.common.util.concurrent.RateLimiter;
 import com.mixer.api.MixerAPI;
 import com.mixer.api.resource.channel.MixerChannel;
 import com.mixer.api.services.impl.ChannelsService;
+import com.netflix.hystrix.HystrixCommand;
 import main.java.util.secrets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,8 +32,9 @@ public class StreamHook {
     private TwitchClient twitch;
     private MixerAPI mixer;
     private static HashMap<String, ArrayList<String>> twitchStreamers;
+    private static HashMap<Long, User> twitchUsers = new HashMap<>();
     private static HashMap<String, ArrayList<String>> mixerStreamers;
-    private static ArrayList<String> isOnline = new ArrayList<>();
+    private static HashSet<String> isOnline = new HashSet<>();
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     private RateLimiter limiter = RateLimiter.create(2.5);
 
@@ -38,19 +44,6 @@ public class StreamHook {
                 .withClientId(secrets.twitchClientID)
                 .withClientSecret(secrets.twitchSecret)
                 .build();
-        twitch.getEventManager().onEvent(ChannelGoLiveEvent.class).subscribe(event -> {
-            for (String channelID : twitchStreamers.get(event.getChannel().getName())) {
-                Main.jda.getTextChannelById(channelID).sendMessage("`" + event.getChannel().getName()
-                        + "` now online on https://www.twitch.tv/" + event.getChannel().getName() + "\nTitle: `"
-                        + event.getTitle().trim().replaceAll("\\s+"," ") + "`").queue();
-            }
-            logger.info("Twitch user " + event.getChannel().getName() + " just went online");
-            isOnline.add(event.getChannel().getName());
-        });
-        twitch.getEventManager().onEvent(ChannelGoOfflineEvent.class).subscribe(event -> {
-            logger.info("Twitch user " + event.getChannel().getName() + " now offline again");
-            isOnline.remove(event.getChannel().getName());
-        });
         mixer = new MixerAPI(secrets.mixerClientID);
         loadStreamers();
         trackStreamers();
@@ -70,7 +63,7 @@ public class StreamHook {
         return allStreamers;
     }
 
-    public ArrayList<String> getIsOnline() {
+    public HashSet<String> getIsOnline() {
         return isOnline;
     }
 
@@ -89,6 +82,11 @@ public class StreamHook {
             twitchStreamers = new HashMap<>();
             mixerStreamers = new HashMap<>();
         }
+        UserList users = twitch.getHelix().getUsers(null, null, new ArrayList<>(twitchStreamers.keySet())).execute();
+        users.getUsers().forEach(user -> {
+            if (!twitchUsers.containsKey(user.getId()))
+                twitchUsers.put(user.getId(), user);
+        });
     }
 
     private void trackStreamers() {
@@ -96,34 +94,83 @@ public class StreamHook {
             twitch.getClientHelper().enableStreamEventListener(twitchName);
         int trackDelay = 10;
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        final Runnable twitchIterator = this::mixerCheckIteration;
+        final Runnable twitchIterator = this::streamerCheckIteration;
         scheduler.scheduleAtFixedRate(twitchIterator, trackDelay, trackDelay, MINUTES);
     }
 
-    private void mixerCheckIteration() {
+    public void streamerCheckIteration() {
         new Thread(() -> {
-            for (String streamer : mixerStreamers.keySet()) {
-                limiter.acquire();
-                try {
-                    MixerChannel channel = mixer.use(ChannelsService.class).findOneByToken(streamer).get();
-                    if (channel.online) {
-                        if (!isOnline.contains(streamer)) {
-                            for (String channelID : mixerStreamers.get(streamer)) {
-                                Main.jda.getTextChannelById(channelID).sendMessage("`" + channel.token
-                                        + "` now online on https://www.mixer.com/" + channel.token + "\nTitle: `" + channel.name + "`").queue();
+
+            // Handling twitch
+            if (platformIsAvailable("twitch")) {
+                HystrixCommand hystrixGetAllStreams = twitch.getHelix().getStreams(null,null, null, twitchStreamers.size(),
+                        null, null, null, null, new ArrayList<>(twitchStreamers.keySet()));
+                List<Stream> streams = ((StreamList)hystrixGetAllStreams.execute()).getStreams();
+                twitchUsers.values().forEach(user -> {
+                    Optional<Stream> stream = streams.stream().filter(s -> s.getUserId().equals(user.getId())).findFirst();
+                    if (stream.isPresent()) {
+                        if (!isOnline.contains(user.getDisplayName())) {
+                            for (String channelID : twitchStreamers.get(user.getDisplayName().toLowerCase())) {
+                                Main.jda.getTextChannelById(channelID).sendMessage("`" + user.getDisplayName()
+                                        + "` now online on https://www.twitch.tv/" + user.getDisplayName() + "\nTitle: `"
+                                        + stream.get().getTitle().trim() + "`").queue();
                             }
-                            logger.info("Mixer user " + streamer + " just went online");
-                            isOnline.add(streamer);
+                            logger.info("Twitch user " + user.getDisplayName() + " just went online");
+                            isOnline.add(user.getDisplayName());
                         }
-                    } else if (isOnline.contains(streamer)) {
-                        logger.info("Mixer user " + streamer + " now offline again");
-                        isOnline.remove(streamer);
+                    } else {
+                        if (isOnline.contains(user.getDisplayName())) {
+                            isOnline.remove(user.getDisplayName());
+                            logger.info("Twitch user " + user.getDisplayName() + " now offline again");
+                        }
                     }
-                } catch (InterruptedException | ExecutionException e) {
-                    logger.warn("Exception while getting channel of mixer user " + streamer + ":", e);
+                });
+            } else logger.warn("Could not reach twitch.tv, internet down?");
+
+            // Handling mixer
+            if (platformIsAvailable("mixer")) {
+                for (String streamer : mixerStreamers.keySet()) {
+                    limiter.acquire();
+                    try {
+                        MixerChannel channel = mixer.use(ChannelsService.class).findOneByToken(streamer).get();
+                        if (channel.online) {
+                            if (!isOnline.contains(streamer)) {
+                                for (String channelID : mixerStreamers.get(streamer)) {
+                                    Main.jda.getTextChannelById(channelID).sendMessage("`" + channel.token
+                                            + "` now online on https://www.mixer.com/" + channel.token + "\nTitle: `" + channel.name.trim() + "`").queue();
+                                }
+                                logger.info("Mixer user " + streamer + " just went online");
+                                isOnline.add(streamer);
+                            }
+                        } else if (isOnline.contains(streamer)) {
+                            logger.info("Mixer user " + streamer + " now offline again");
+                            isOnline.remove(streamer);
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        logger.warn("Exception while getting channel of mixer user " + streamer + ", internet down?");
+                    }
                 }
-            }
+            } else logger.warn("Could not reach mixer.com, internet down?");
         }).start();
+    }
+
+    private static boolean platformIsAvailable(String platform) {
+        try {
+            final URL url;
+            switch (platform) {
+                case "twitch": url = new URL("https://www.twitch.tv"); break;
+                case "mixer": url = new URL("http://www.mixer.com"); break;
+                default: throw new RuntimeException("Platform must be 'twitch' or 'mixer'");
+            }
+            final URLConnection conn = url.openConnection();
+            conn.connect();
+            conn.getInputStream().close();
+            return true;
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     public boolean addStreamer(String streamer, String channelID, String platform) {

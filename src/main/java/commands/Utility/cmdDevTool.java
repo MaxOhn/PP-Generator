@@ -112,6 +112,13 @@ public class cmdDevTool implements ICommand {
                     }
                 }
                 break;
+            case "checkstreamer":
+            case "cs":
+            case "checkstreams":
+            case "checkstream":
+                event.getTextChannel().sendMessage("Checking for online streamers...").queue();
+                Main.streamHook.streamerCheckIteration();
+                break;
             case "streamonline":
             case "onlines":
             case "onlinestream":
