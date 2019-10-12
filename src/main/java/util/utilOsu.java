@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class utilOsu {
 
-    public static String mods_str(int mods) {
+    public static String mods_intToStr(int mods) {
         StringBuilder sb = new StringBuilder();
         if ((mods & 1) != 0)
             sb.append("NF");
@@ -39,10 +39,12 @@ public class utilOsu {
             sb.append("SD");
         if ((mods & 1048576) != 0)
             sb.append("FI");
+        if ((mods & 1073741824) != 0)
+            sb.append("MR");
         return sb.toString();
     }
 
-    public static int mods_flag(String mods) {
+    public static int mods_strToInt(String mods) {
         int flag = 0;
         String[] modArr = mods.split("(?<=\\G..)");
         for (String s: modArr) {
@@ -60,13 +62,14 @@ public class utilOsu {
                 case "SO": flag += 4096; break;
                 case "PF": flag += 16416; break;
                 case "FI": flag += 1048576; break;
+                case "MR": flag += 1073741824; break;
                 default: break;
             }
         }
         return flag;
     }
 
-    public static String key_mods_str(int mods) {
+    public static String keys_intToStr(int mods) {
         if ((mods & 67108864) != 0)
             return "1K";
         if ((mods & 268435456) != 0)
@@ -88,15 +91,15 @@ public class utilOsu {
         return "";
     }
 
-    public static String abbrvModSet(GameMod[] mods) {
-        return mods_str(createSum(mods));
+    public static String mods_arrToStr(GameMod[] mods) {
+        return mods_intToStr(mods_arrToInt(mods));
     }
 
-    public static String abbrvModSet(Set<GameMod> mods) {
-        return mods_str(createSum(mods.toArray(new GameMod[0])));
+    public static String mods_setToStr(Set<GameMod> mods) {
+        return mods_intToStr(mods_arrToInt(mods.toArray(new GameMod[0])));
     }
 
-    public static int createSum(GameMod[] mods) {
+    public static int mods_arrToInt(GameMod[] mods) {
         int sum = 0;
         for(int i = 0; i < mods.length; sum |= mods[i++].getBit());
         return sum;
@@ -160,8 +163,7 @@ public class utilOsu {
     }
 
     public static String getIdFromString(String idString) {
-        Pattern p = Pattern.compile("((.*)\\/([0-9]{1,8})($|(&|\\?)m=[0-3]))|([0-9]{1,8})");
-
+        Pattern p = Pattern.compile("((.*)/([0-9]{1,8})($|([&?])m=[0-3]))|([0-9]{1,8})");
         String id = "-1";
         Matcher m = p.matcher(idString);
         if (m.find())
@@ -228,7 +230,7 @@ public class utilOsu {
         switch (mode) {
             case STANDARD:
                 if (n50 > 0 || n100 > 0)
-                        n300 = nTotal - (n100 > 0 ? n100 : 0) - (n50 > 0 ? n50 : 0) - nM;
+                        n300 = nTotal - Math.max(n100, 0) - Math.max(n50, 0) - nM;
                 else {
                     int targetTotal = (int) Math.round(acc * nTotal * 6);
                     int delta = targetTotal - (nTotal - nM);

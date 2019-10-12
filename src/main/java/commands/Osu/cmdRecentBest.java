@@ -68,6 +68,11 @@ public class cmdRecentBest implements INumberedCommand {
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
+        int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
+        if (delIndex > -1) {
+            argList.remove(delIndex + 1);
+            argList.remove(delIndex);
+        }
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());

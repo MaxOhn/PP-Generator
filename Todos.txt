@@ -1,6 +1,5 @@
 
 --- GENERAL ---
-add mirror mod for mania
 check if pp calculation has an update
 
 --- BUGS ---

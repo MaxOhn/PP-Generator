@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static main.java.util.utilOsu.mods_flag;
+import static main.java.util.utilOsu.mods_strToInt;
 
 public class cmdTopScores extends cmdModdedCommand implements ICommand {
     @Override
@@ -89,7 +89,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                 status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_strToInt(word.toUpperCase()));
             argList.remove(mIdx);
         }
         p = Pattern.compile("-[^!]*!");
@@ -103,7 +103,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         if (mIdx != -1) {
             String word = argList.get(mIdx);
             word = word.substring(1, word.length()-1);
-            excludedMods.addAll(Arrays.asList(GameMod.get(mods_flag(word.toUpperCase()))));
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_strToInt(word.toUpperCase()))));
             if (word.contains("nm"))
                 excludeNM = true;
             argList.remove(mIdx);

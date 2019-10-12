@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static main.java.util.utilOsu.mods_flag;
+import static main.java.util.utilOsu.mods_strToInt;
 
 public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand {
 
@@ -80,7 +80,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
                 word = word.substring(1);
             }
-            includedMods = GameMod.get(mods_flag(word.toUpperCase()));
+            includedMods = GameMod.get(mods_strToInt(word.toUpperCase()));
             noMods =  false;
             argList.remove(mIdx);
         }

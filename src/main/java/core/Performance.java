@@ -18,8 +18,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static main.java.util.utilOsu.abbrvModSet;
-import static main.java.util.utilOsu.mods_str;
+import static main.java.util.utilOsu.mods_intToStr;
 
 
 public class Performance {
@@ -120,12 +119,12 @@ public class Performance {
         try {
             if (!secrets.WITH_DB)
                 throw new IllegalArgumentException();
-            this.ppMax = DBProvider.getPpRating(map.getID(), abbrvModSet(mods));
+            this.ppMax = DBProvider.getPpRating(map.getID(), utilOsu.mods_setToStr(mods));
         } catch (IllegalAccessException e) {    // pp rating not yet calculated
             calculateMaxPp();
             try {
                 if (secrets.WITH_DB)
-                    DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
+                    DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
                 e1.printStackTrace();
@@ -135,7 +134,7 @@ public class Performance {
                 calculateMaxPp();
                 if (secrets.WITH_DB) {
                     DBProvider.addMapPp(map.getID());
-                    DBProvider.addModsPp(map.getID(), abbrvModSet(mods), this.ppMax);
+                    DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
                 }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
@@ -163,7 +162,7 @@ public class Performance {
             StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " simulate " + modeStr +
                     " " + secrets.mapPath + map.getID() + ".osu");
             for (GameMod mod: mods)
-                cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
+                cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
             if (mode == GameMode.MANIA) {
                 int max = 1000000;
                 if (mods.contains(GameMod.NO_FAIL)) max *= 0.5;
@@ -238,7 +237,7 @@ public class Performance {
                 cmdLineString.append(" -s ").append(score.getScore());
             }
             for (GameMod mod: mods)
-                cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
+                cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
@@ -246,9 +245,9 @@ public class Performance {
             String line;
             while ((line = input.readLine()) != null) {
                 String[] splitLine = line.split(" ");
-                switch (splitLine[0]) {
-                    case "pp": score.setPp(Float.parseFloat(splitLine[splitLine.length-1])); break;
-                    default: break;
+                if ("pp".equals(splitLine[0])) {
+                    score.setPp(Float.parseFloat(splitLine[splitLine.length - 1]));
+                    break;
                 }
             }
             //while ((line = errors.readLine()) != null)
@@ -333,12 +332,12 @@ public class Performance {
         try {
             if (!secrets.WITH_DB)
                 throw new IllegalArgumentException();
-            this.starRating = DBProvider.getStarRating(map.getID(), abbrvModSet(modsImportant));
+            this.starRating = DBProvider.getStarRating(map.getID(), utilOsu.mods_setToStr(modsImportant));
         } catch (IllegalAccessException e) {    // star rating not yet calculated
             calculateStarRating(modsImportant);
             try {
                 if (secrets.WITH_DB)
-                    DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
+                    DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();
@@ -348,7 +347,7 @@ public class Performance {
                 calculateStarRating(modsImportant);
                 if (secrets.WITH_DB) {
                     DBProvider.addMapStars(map.getID());
-                    DBProvider.addModsStars(map.getID(), abbrvModSet(modsImportant), this.starRating);
+                    DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
                 }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
@@ -371,7 +370,7 @@ public class Performance {
         StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " difficulty "
                 + secrets.mapPath + map.getID() + ".osu");
         for (GameMod mod: m)
-            cmdLineString.append(" -m ").append(mods_str((int)mod.getBit()));
+            cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
         try {
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());

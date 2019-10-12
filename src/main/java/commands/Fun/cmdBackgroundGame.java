@@ -239,7 +239,7 @@ public class cmdBackgroundGame implements ICommand {
     private void resolveGame(MessageChannel channel, boolean exact, boolean autostart) {
         BackgroundGame game = runningGames.get(channel.getIdLong());
         if (game == null) return;
-        game.dispose();
+        runningGames.get(channel.getIdLong()).dispose();
         String text = "Full background: https://osu.ppy.sh/beatmapsets/";
         if (!game.winnerName.isEmpty()) {
             text = (exact
@@ -286,14 +286,14 @@ public class cmdBackgroundGame implements ICommand {
         BackgroundGame game = runningGames.get(channel);
         int numPlayers = activePlayers.get(channel).size();
         if (numPlayers > 1) {
-            double ratingValue = getRatingValue(numPlayers) / (1 - numPlayers);
-            activePlayers.get(channel).get(game.winner).rating.uptate(ratingValue * (1 - numPlayers));
+            double ratingValue = -1 * getRatingValue(numPlayers) / numPlayers;
+            activePlayers.get(channel).get(game.winner).rating.uptate(ratingValue * numPlayers * -1);
             for (PlayerInfo player : activePlayers.get(channel).values()) {
                 if (player.rating.getDiscordUser() == game.winner) continue;
                 player.rating.uptate(ratingValue);
             }
             for (long player : game.correctButTooLate)
-                activePlayers.get(channel).get(player).rating.uptate(ratingValue * (1 - numPlayers) / 10);
+                activePlayers.get(channel).get(player).rating.uptate(ratingValue * numPlayers * -0.1);
         }
         activePlayers.get(channel).get(game.winner).rating.incrementScore();
     }

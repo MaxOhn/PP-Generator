@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
-import static main.java.util.utilOsu.abbrvModSet;
 
 public class BotMessage {
 
@@ -438,7 +437,7 @@ public class BotMessage {
                         String ppStr;
                         if (s.getPp() == 0) {
                             try {
-                                ppStr = new DecimalFormat("0.00").format(DBProvider.getPpRating(p.getMap().getID(), utilOsu.abbrvModSet(s.getEnabledMods())));
+                                ppStr = new DecimalFormat("0.00").format(DBProvider.getPpRating(p.getMap().getID(), utilOsu.mods_arrToStr(s.getEnabledMods())));
                             } catch (Exception e) {
                                 ppStr = p.getPp();
                             }
@@ -588,7 +587,7 @@ public class BotMessage {
     }
 
     private String getModString() {
-        String out = abbrvModSet(score.getEnabledMods());
+        String out = utilOsu.mods_arrToStr(score.getEnabledMods());
         if (!out.equals(""))
             out = " +" + out;
         return out;

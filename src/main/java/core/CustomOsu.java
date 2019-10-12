@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static main.java.util.utilOsu.mods_flag;
-import static main.java.util.utilOsu.mods_str;
+import static main.java.util.utilOsu.mods_strToInt;
+import static main.java.util.utilOsu.mods_intToStr;
 
 public class CustomOsu {
 
@@ -86,7 +86,7 @@ public class CustomOsu {
                 url.append("&mods[]=NM");
             else
                 for (GameMod mod : mods)
-                    url.append("&mods[]=").append(mods_str((int) mod.getBit()));
+                    url.append("&mods[]=").append(mods_intToStr((int) mod.getBit()));
         }
         HttpGet getRequest = new HttpGet(url.toString());
         HttpResponse response = client.execute(getRequest);
@@ -117,7 +117,7 @@ public class CustomOsu {
             s.setDate(ZonedDateTime.parse(o.getString("created_at")));
             s.setRank(o.getString("rank"));
             s.setPp(o.isNull("pp") ? 0 : (float)o.getDouble("pp"));
-            s.setEnabledMods(GameMod.get(mods_flag(o.getJSONArray("mods").join("")
+            s.setEnabledMods(GameMod.get(mods_strToInt(o.getJSONArray("mods").join("")
                     .replace("\"", ""))));
             s.setUser(Main.osu.users.getAsQuery(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).asLazilyLoaded());
             s.setBeatmap(Main.osu.beatmaps.getAsQuery(new EndpointBeatmaps.ArgumentsBuilder()
