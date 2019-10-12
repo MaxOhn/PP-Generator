@@ -1,7 +1,6 @@
 package main.java.commands.Utility;
 
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
 import main.java.core.commandHandler;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -23,7 +22,7 @@ public class cmdHelp implements ICommand {
     public void action(String[] args, MessageReceivedEvent event) {
         MessageBuilder mb = new MessageBuilder("Prefix: `" + statics.prefix + "`")
                 .append("\nTo get help for a specific command, type `" + statics.prefix + "[command] -h`")
-                .append("\nCommands can also be used in private messages to me")
+                .append("\nCommands can also be used in private messages to me, no need for any prefix in pm's")
                 .append("\nFurther help on the spreadsheet: http://bit.ly/badecoms");
         EmbedBuilder eb = new EmbedBuilder()
                 .setColor(Color.green)

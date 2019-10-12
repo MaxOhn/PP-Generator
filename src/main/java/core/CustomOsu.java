@@ -19,19 +19,17 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static main.java.util.utilOsu.mods_strToInt;
 import static main.java.util.utilOsu.mods_intToStr;
+import static main.java.util.utilOsu.mods_strToInt;
 
 public class CustomOsu {
 
@@ -126,5 +124,38 @@ public class CustomOsu {
             scores.add(s);
         }
         return scores;
+    }
+
+    public double getPpOfRank(int rank, GameMode mode) throws IOException {
+        if (rank > 10000)
+            throw new IllegalArgumentException("Rank must be smaller equal 10000");
+        limiter.acquire();
+        String modeString = "";
+        switch (mode) {
+            case STANDARD: modeString = "osu"; break;
+            case MANIA: modeString = "mania"; break;
+            case TAIKO: modeString = "taiko"; break;
+            case CATCH_THE_BEAT: modeString = "fruits"; break;
+        }
+        String url = "https://osu.ppy.sh/rankings/" + modeString + "/performance?page=" + (1 - (rank % 50 == 0 ? 1 : 0) + rank / 50) + "#scores";
+        HttpGet getRequest = new HttpGet(url);
+        HttpResponse response = client.execute(getRequest);
+        if (response.getStatusLine().getStatusCode() != 200) {
+            throw new IOException("No valid response from server:\n" + response.getEntity().toString());
+        }
+        String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Document doc = Jsoup.parse(responseStr);
+        try {
+            Optional<Element> elem = doc.select(".ranking-page-table").first()
+                    .getElementsByTag("tbody").first().children().stream()
+                    .skip(rank % 50 == 0 ? 49 : (rank % 50) - 1).findFirst();
+            if (elem.isPresent()) {
+                return Double.parseDouble(elem.get().child(4).text().replace(",", ""));
+            } else
+                throw new IllegalStateException("Could not find row " + ((rank % 50) - 1) + " of response html");
+        } catch (Exception e) {
+            logger.warn("Error while scraping rankings page to get pp for rank");
+            throw e;
+        }
     }
 }

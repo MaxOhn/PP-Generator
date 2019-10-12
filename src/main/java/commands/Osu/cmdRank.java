@@ -11,15 +11,17 @@ import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-public class cmdPP implements ICommand {
+public class cmdRank implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length == 0 || args[0].equals("-h") || args[0].equals("-help")) {
@@ -31,15 +33,18 @@ public class cmdPP implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        double pp;
+        int rank;
         try {
-            pp = Double.parseDouble(args[0]);
+            rank = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
             event.getChannel().sendMessage(help(1)).queue();
             return;
         }
-        if (pp < 0) {
+        if (rank < 0) {
             event.getChannel().sendMessage(help(2)).queue();
+            return;
+        } else if (rank > 10000) {
+            event.getChannel().sendMessage(help(3)).queue();
             return;
         }
         String name;
@@ -79,13 +84,21 @@ public class cmdPP implements ICommand {
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
                 "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        eb.setTitle("What score is missing for " + user.getUsername() + " to reach " + pp + "pp?");
+        eb.setTitle("How many pp is " + user.getUsername() + " missing to reach rank #" + NumberFormat.getNumberInstance(Locale.US).format(rank) + "?");
         StringBuilder description = new StringBuilder();
-
-        if (user.getPPRaw() > pp) {
-            description.append(user.getUsername()).append(" already has ").append(user.getPPRaw()).append("pp which is more than ")
-                    .append(pp).append("pp.\nNo more scores are required.");
+        if (user.getRank() <= rank) {
+            description.append(user.getUsername()).append(" already has rank #").append(NumberFormat.getNumberInstance(Locale.US).format(user.getRank()))
+                    .append(" and is thus already above rank #")
+                    .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".\nNo more pp are required.");
         } else {
+            double pp;
+            try {
+                pp = Main.customOsu.getPpOfRank(rank, getMode());
+            } catch (IOException e) {
+                LoggerFactory.getLogger(this.getClass()).error("Could not retrieve pp of rank", e);
+                event.getChannel().sendMessage("Some thing went wrong, blame bade").queue();
+                return;
+            }
             List<OsuScore> topPlays;
             try {
                 topPlays = user.getTopScores(100).get();
@@ -106,11 +119,13 @@ public class cmdPP implements ICommand {
             }
             double required = pp - top - bot;
             if (top + bot >= pp)
-                required = (required + (factor *= 0.95) * topPP[idx++]) / factor;
+                required = (required + (factor *= 0.95) * topPP[idx]) / factor;
             if (size < 100)
                 required -= topPP[size - 1] * Math.pow(0.95, size - 1);
-            description.append("To reach ").append(pp).append("pp with one additional score, ").append(user.getUsername()).append(" needs to perform a **")
-                    .append(round(required)).append("pp** score which would be the top #").append(++idx).append(".");
+            description.append("Rank #").append(NumberFormat.getNumberInstance(Locale.US).format(rank))
+                    .append(" currently requires **").append(pp).append("pp**, so ").append(user.getUsername())
+                    .append(" is missing **").append(round(pp - user.getPPRaw())).append("** raw pp, achievable by a single score worth **")
+                    .append(round(required)).append("pp**.");
         }
         eb.setDescription(description);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
@@ -122,16 +137,18 @@ public class cmdPP implements ICommand {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "pp" + getName() + " -h` for more help)";
+        String help = " (`" + statics.prefix + "rank" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "pp" + getName() + " [number] [osu name]` to make me calculate what score "
-                        + "is required for the player to have <number> total pp.\n"
+                return "Enter `" + statics.prefix + "rank" + getName() + " [number] [osu name]` to make me calculate how many more pp "
+                        + "are required for the player to reach rank <number>.\n"
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "The first argument must be of the form `<number>` e.g. `321.45`, afterwards you can specify the name" + help;
+                return "The first argument must be an integer of the form `<number>` e.g. `321`, afterwards you can specify the name" + help;
             case 2:
                 return "The number must be positive you clown :D" + help;
+            case 3:
+                return "I'm unfortunately only able to calculate the pp for ranks up to 10000 :(";
             default:
                 return help(0);
         }
