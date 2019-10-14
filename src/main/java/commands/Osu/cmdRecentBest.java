@@ -20,6 +20,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/*
+    Display a score of a users top score list that was recently made
+ */
 public class cmdRecentBest implements INumberedCommand {
 
     private int number = 1;
@@ -32,12 +35,11 @@ public class cmdRecentBest implements INumberedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 100) {
             event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
-
+        // Check for mode in arguments
         GameMode mode = GameMode.STANDARD;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
@@ -73,6 +75,7 @@ public class cmdRecentBest implements INumberedCommand {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);
         }
+        // Get name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -86,6 +89,7 @@ public class cmdRecentBest implements INumberedCommand {
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -93,6 +97,7 @@ public class cmdRecentBest implements INumberedCommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
@@ -100,6 +105,7 @@ public class cmdRecentBest implements INumberedCommand {
             event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
+        // Retrieve user's top scores
         Collection<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(100).get();
@@ -107,12 +113,15 @@ public class cmdRecentBest implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
+        // Sort scores by date
         ArrayList<OsuScore> topPlaysByDate = new ArrayList<>(topPlays);
         topPlaysByDate.sort(Comparator.comparing(OsuScore::getDate).reversed());
         final Iterator<OsuScore> itr = topPlaysByDate.iterator();
         OsuScore rbScore = itr.next();
+        // Get the appropriate score
         while(itr.hasNext() && --number > 0)
             rbScore = itr.next();
+        // Retrieve the score's map
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -132,6 +141,7 @@ public class cmdRecentBest implements INumberedCommand {
                 e1.printStackTrace();
             }
         }
+        // Retrieve the global leaderboard of the map
         Collection<OsuScore> globalPlays;
         try {
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
@@ -139,6 +149,7 @@ public class cmdRecentBest implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve global scores").queue();
             return;
         }
+        // Construct the message
         new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBEST).user(user).map(map).osuscore(rbScore).mode(mode)
                 .topplays(topPlays, globalPlays).buildAndSend();
     }

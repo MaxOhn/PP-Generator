@@ -2,6 +2,9 @@ package main.java.commands.Osu;
 
 import main.java.util.statics;
 
+/*
+    Display the global leaderboard of a map
+ */
 public class cmdGlobalLeaderboard extends cmdMapLeaderboard {
 
     @Override

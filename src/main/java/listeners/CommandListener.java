@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 public class CommandListener extends ListenerAdapter {
 
+    // Check all messages and whether they're a command call
     public void onMessageReceived(MessageReceivedEvent event) {
         if((event.getChannelType() == ChannelType.PRIVATE
                 || event.getMessage().getContentRaw().startsWith(statics.prefix)

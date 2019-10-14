@@ -1,7 +1,6 @@
 package main.java.commands.Utility;
 
 import main.java.commands.PrivilegedCommand;
-import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
 import main.java.util.secrets;
@@ -15,6 +14,10 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/*
+    Select a discord message and a role so that if someone reacts on that message they get the role
+    If they unreact again, they lose the role.
+ */
 public class cmdRoleAssign extends PrivilegedCommand {
 
     @Override
@@ -29,6 +32,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         String guild = event.getGuild().getId();
+        // Check for the channel
         String channel = null;
         Pattern p = Pattern.compile("^(([0-9]*)|(<#([0-9]*)>))$");
         Matcher m = p.matcher(args[0]);
@@ -40,6 +44,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
             event.getChannel().sendMessage(help(3)).queue();
             return;
         }
+        // Check for the message
         String message;
         try {
             message = Long.parseLong(args[1]) + "";
@@ -47,6 +52,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
             event.getChannel().sendMessage(help(4)).queue();
             return;
         }
+        // Check for the role
         String role = null;
         p = Pattern.compile("^(([0-9]*)|(<@&([0-9]*)>))$");
         m = p.matcher(args[2]);
@@ -64,6 +70,7 @@ public class cmdRoleAssign extends PrivilegedCommand {
             event.getChannel().sendMessage(help(6)).queue();
             return;
         }
+        // Add combination to database
         Main.reactionHandler.addRoleAssign((guild + channel + message).hashCode(), role);
         TextChannel c = Main.jda.getGuildById(guild).getTextChannelById(channel);
         Main.jda.getGuildById(guild).getTextChannelById(channel).getMessageById(message).queue(msg -> {

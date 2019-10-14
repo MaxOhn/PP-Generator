@@ -12,10 +12,7 @@ import main.java.core.*;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
-import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,6 +22,9 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+/*
+    Calculate the top 5 of a user if all scores of their top score list would be no-chokes i.e. remove misses and make them fullcombo
+ */
 public class cmdNoChoke implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -37,7 +37,7 @@ public class cmdNoChoke implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        Logger logger = LoggerFactory.getLogger(this.getClass());
+        // Parse name either from args or from database link
         String name;
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -51,6 +51,7 @@ public class cmdNoChoke implements ICommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -59,6 +60,7 @@ public class cmdNoChoke implements ICommand {
             }
         }
         final String oName = name;
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(
@@ -70,8 +72,9 @@ public class cmdNoChoke implements ICommand {
         }
         event.getChannel().sendMessage("Gathering data for `" + user.getUsername() + "`, I'll ping you once I'm done").queue(message -> {
             try {
-                int currScore = 0;
+                int currScore = 0;  // score index
                 double ppThreshold = 0;
+                // Retrieve top scores of user
                 ArrayList<OsuScore> scoresList = new ArrayList<>(Main.osu.userBests.query(
                         new EndpointUserBests.ArgumentsBuilder(oName).setMode(GameMode.STANDARD).setLimit(100).build()
                 ));
@@ -79,10 +82,13 @@ public class cmdNoChoke implements ICommand {
                 ArrayList<OsuBeatmap> maps = new ArrayList<>();
                 for (OsuScore score : scoresList) {
                     double progress = 100 * (double)currScore / scoresList.size();
+                    // Display progress
                     if (progress > 6 && ThreadLocalRandom.current().nextInt(0, 6) > 4)
                         message.editMessage("Gathering data for `" + user.getUsername() + "`: "
                                 + (int)progress + "%").queue();
+                    // ppThreshold equals 94% of the pp of the 5th score
                     if (++currScore == 5) ppThreshold = score.getPp() * 0.94;
+                    // Retrieve map of current score
                     OsuBeatmap map;
                     try {
                         if (!secrets.WITH_DB)
@@ -105,10 +111,13 @@ public class cmdNoChoke implements ICommand {
                         }
                     }
                     double comboRatio = (double)score.getMaxCombo()/map.getMaxCombo();
+                    // If the score comes after the 5th score, its combo is at least almost a fullcombo, and its pp is less than the threshold score, skip no-choke calculation
                     if (ppThreshold > 0 && score.getPp() < ppThreshold && comboRatio > 0.97) continue;
                     FileInteractor.prepareFiles(map);
+                    // Save map as potential top-5 candidate
                     maps.add(map);
                     p.map(map).osuscore(score);
+                    // Make it no-choke if required
                     if (p.getCombo() < p.getMaxCombo()) {
                         p.noChoke();
                         score.setCount300(p.getN300());
@@ -119,8 +128,10 @@ public class cmdNoChoke implements ICommand {
                         score.setRank(p.getRank());
                     }
                 }
+                // As pp values of the score list were modified, reorder them by pp value and take the top 5
                 scoresList.sort(Comparator.comparing(OsuScore::getPp).reversed());
                 List<OsuScore> scores = scoresList.subList(0, 5);
+                // Save the maps of the top 5 scores
                 ArrayList<OsuBeatmap> finalMaps = new ArrayList<>();
                 for (OsuScore s : scores) {
                     for (OsuBeatmap m : maps) {
@@ -131,15 +142,10 @@ public class cmdNoChoke implements ICommand {
                     }
                 }
                 maps = finalMaps;
+                // Create final message
                 message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%\nBuilding message...").queue();
                 new BotMessage(event.getChannel(), BotMessage.MessageType.NOCHOKESCORES).author(event.getAuthor()).user(user)
-                        .osuscores(scores).maps(maps).mode(GameMode.STANDARD).buildAndSend(() -> (message).delete().queue());
-                if (event.isFromType(ChannelType.TEXT)) {
-                    logger.info(String.format("[%s] %s: %s", event.getGuild().getName(),
-                            "Finished command: " + event.getAuthor().getName(), event.getMessage().getContentRaw()));
-                } else if (event.isFromType(ChannelType.PRIVATE)) {
-                    logger.info(String.format("[Private] %s: %s", event.getAuthor().getName(), event.getMessage().getContentRaw() + " (finished)"));
-                }
+                        .osuscores(scores).maps(maps).mode(GameMode.STANDARD).buildAndSend(() -> message.delete().queue());
             } catch (Exception e0) {
                 event.getChannel().sendMessage("There was some problem, you might wanna retry later again and maybe ping bade or smth :p").queue();
                 e0.printStackTrace();

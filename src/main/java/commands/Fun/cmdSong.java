@@ -12,9 +12,16 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.HashSet;
 
+/*
+    Making the bot sing some song
+    Only usable if the server authorities didn't disable it on the server
+ */
 public abstract class cmdSong implements ICommand {
-
+    // Check which channel has a song command running currently
     private static HashSet<String> runningLyrics = new HashSet<>();
+
+    // Either the id of the private channel to a user or the id of a guild so that at most one song command at a time
+    // can be used across all channels on a server
     private String busyID;
 
     abstract String[] getLyrics();
@@ -28,7 +35,7 @@ public abstract class cmdSong implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         boolean privateMsg = event.isFromType(ChannelType.PRIVATE);
-        busyID = event.getChannel().getId();
+        busyID = privateMsg ? event.getChannel().getId() : event.getGuild().getId();
         try {
             if (!privateMsg && secrets.WITH_DB && !DBProvider.getLyricsState(busyID)) {
                 event.getTextChannel().sendMessage("The server's big boys have disabled song commands. " +

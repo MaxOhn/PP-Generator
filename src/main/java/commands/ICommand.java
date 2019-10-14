@@ -14,5 +14,6 @@ public interface ICommand {
     // help explains the use of the command
     String help(int hCode);
 
+    // Category of a command to be displayed in the help command
     Category getCategory();
 }

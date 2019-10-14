@@ -4,7 +4,6 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
 import main.java.commands.INumberedCommand;
-import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -12,6 +11,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    Display the global leaderboard of a map that was recently played
+ */
 public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements INumberedCommand {
 
     private int number = 1;
@@ -24,12 +26,11 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
 
     @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
-
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return "-1";
         }
-
+        // Get name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -40,6 +41,7 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name was given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -47,7 +49,7 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
                 return "-1";
             }
         }
-
+        // Retrieve recent scores of user
         ArrayList<OsuScore> userRecents;
         OsuScore recent;
         try {
@@ -55,6 +57,7 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
                     new EndpointUserRecents.ArgumentsBuilder(name).setMode(getMode()).setLimit(50).build())
             );
             recent = userRecents.get(0);
+            // Skip until the appropriate score is found
             while (--number > 0 && userRecents.size() > 1) {
                 userRecents.remove(0);
                 recent = userRecents.get(0);
@@ -90,7 +93,7 @@ public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements 
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + getName() + "glb[number] [osu name]` to make me show the global top 10 scores on the beatmap of the user's last play."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "leaderboard8`, I will skip the most recent 7 scores "
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "glb8`, I will skip the most recent 7 scores "
                         + "and show the leaderboard of the 8-th recent score, defaults to 1."
                         + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
             case 1:

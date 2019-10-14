@@ -7,6 +7,9 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+/*
+    Keeping track of which discord user id is linked to which osu username
+ */
 public class DiscordLink {
 
     private HashMap<String, String> link;
@@ -16,8 +19,7 @@ public class DiscordLink {
         try {
             link = secrets.WITH_DB ? DBProvider.getDiscosu() : new HashMap<>();
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Could not load links:");
-            e.printStackTrace();
+            logger.error("Could not load links:", e);
             link = new HashMap<>();
         }
     }
@@ -26,6 +28,7 @@ public class DiscordLink {
         return link;
     }
 
+    // Add link to database
     public boolean addLink(String discordID, String osuname) {
         try {
             if (secrets.WITH_DB)
@@ -39,6 +42,7 @@ public class DiscordLink {
         return false;
     }
 
+    // Remove link from database
     public boolean removeLink(String discordID) {
         try {
             if (secrets.WITH_DB)
@@ -52,8 +56,8 @@ public class DiscordLink {
         return false;
     }
 
+    // Given discord user id, return osu username
     public String getOsu(String discordID) {
         return link.get(discordID);
     }
-
 }

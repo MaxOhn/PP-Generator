@@ -7,6 +7,9 @@ import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+/*
+    Displaying all streamer that are tracked in the current channel
+ */
 public class cmdTrackedStreams implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

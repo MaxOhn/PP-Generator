@@ -23,6 +23,10 @@ import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.DAYS;
 
+/*
+    - Automatically kicking unchecked users after some time
+    - Updating the Top-role distributation regularly
+ */
 public class MemberHandler {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -40,6 +44,7 @@ public class MemberHandler {
         runRegularChecks();
     }
 
+    // New user joined, put them in database
     public void addUncheckedUser(String discord, ZonedDateTime date) {
         uncheckedUsers.put(discord, date);
         try {
@@ -51,6 +56,7 @@ public class MemberHandler {
         }
     }
 
+    // User lost Unchecked-role, remove from database
     public void checkedUser(String discord) {
         uncheckedUsers.remove(discord);
         try {
@@ -62,10 +68,13 @@ public class MemberHandler {
         }
     }
 
+    // Kick a member of a server
     public void kickUser(String userID, String guildID) {
+        // Wait till Main's jda is ready
         while (Main.jda == null);
         try {
             uncheckedUsers.remove(userID);
+            // Try to remove user from database
             try {
                 if (secrets.WITH_DB)
                     DBProvider.removeUncheckedUser(userID);
@@ -73,6 +82,7 @@ public class MemberHandler {
                 logger.error("Could not remove kicked user from DB:");
                 e1.printStackTrace();
             }
+            // Kick member
             Main.jda.getGuildById(guildID).getController()
                     .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
                     .queue();
@@ -85,11 +95,13 @@ public class MemberHandler {
         }
     }
 
+    // Prepare the scheduler to execute tasks in regular time intervals
     private void runRegularChecks() {
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        final Runnable kickerIterator = this::regularIteration;
-        if (secrets.RELEASE)
+        if (secrets.RELEASE) {
+            ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+            final Runnable kickerIterator = this::regularIteration;
             scheduler.scheduleAtFixedRate(kickerIterator, 0, 1, DAYS);
+        }
     }
 
     private void regularIteration() {

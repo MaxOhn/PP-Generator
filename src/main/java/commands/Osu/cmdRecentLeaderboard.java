@@ -4,7 +4,6 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
 import main.java.commands.INumberedCommand;
-import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -12,6 +11,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    Display the leaderboard of a map that was recently played
+ */
 public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumberedCommand {
 
     private int number = 1;
@@ -24,12 +26,11 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
 
     @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
-
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return "-1";
         }
-
+        // Get name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -40,6 +41,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name was given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -47,7 +49,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
                 return "-1";
             }
         }
-
+        // Retrieve recent scores of user
         ArrayList<OsuScore> userRecents;
         OsuScore recent;
         try {
@@ -55,6 +57,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
                     new EndpointUserRecents.ArgumentsBuilder(name).setMode(getMode()).setLimit(50).build())
             );
             recent = userRecents.get(0);
+            // Skip until the appropriate score is found
             while (--number > 0 && userRecents.size() > 1) {
                 userRecents.remove(0);
                 recent = userRecents.get(0);

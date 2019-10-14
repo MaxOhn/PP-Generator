@@ -13,6 +13,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    Define which roles on a server count as authority roles, defaults to the ones in statics.authorities
+ */
 public class cmdSetAuthorityRoles extends PrivilegedCommand {
 
     @Override
@@ -21,6 +24,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
             event.getTextChannel().sendMessage("This command has no use without database").queue();
             return;
         }
+        // Set default
         if (args.length > 0 && (args[0].equals("-d") ||args[0].equals("-default"))) {
             try {
                 DBProvider.setAuthorityRoles(serverID, statics.authorities);
@@ -29,6 +33,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
                 logger.error("Error while setting authorityRoles: " + e);
                 event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             }
+        // Current
         } else if (args.length > 0 && (args[0].equals("-c") ||args[0].equals("-current"))) {
             try {
                 event.getTextChannel().sendMessage("Current authority roles: `[" + String.join(", ",
@@ -37,11 +42,13 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
                 logger.error("Error while retrieving authorityRoles: " + e);
                 event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
             }
+        // Set new
         } else {
             try {
                 List<String> argList = new ArrayList<>();
                 if (args.length > 0) {
                     int idx = 0;
+                    // Silly parsing of special symbols and whitespace in role names
                     while (idx < args.length) {
                         if (args[idx].startsWith('"' + "")) {
                             int startIdx = idx++;
@@ -60,6 +67,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
                             argList.add(args[idx++]);
                     }
                 }
+                // Author must remain authority
                 boolean remainsAuthority = utilGeneral.isDev(event.getAuthor());
                 for (Role r : event.getMember().getRoles()) {
                     remainsAuthority |= r.hasPermission(Permission.ADMINISTRATOR);
@@ -71,6 +79,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
                             + "administration permission, you must include at least one of your own roles as authority role.").queue();
                     return;
                 }
+                // Update authority roles for server in database
                 DBProvider.setAuthorityRoles(serverID, argList);
                 event.getTextChannel().sendMessage("Authority roles have been updated!").queue();
             } catch (SQLException | ClassNotFoundException e) {

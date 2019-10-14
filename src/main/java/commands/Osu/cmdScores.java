@@ -26,6 +26,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+    Display the best scores of all mod combinations of a user on a map
+ */
 public class cmdScores implements INumberedCommand {
 
     private int number = 1;
@@ -49,12 +52,14 @@ public class cmdScores implements INumberedCommand {
         List<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(LinkedList::new));
+        // Get the map id either from arguments
         String mapID = "-1";
         if (argList.size() > 0) {
             mapID = utilOsu.getIdFromString(args[0]);
             if (!mapID.equals("-1"))
                 argList.remove(0);
         }
+        // Couldn't get map id, get it from channel history then
         if (mapID.equals("-1")) {
             int counter = 100;
             for (Message msg : (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
@@ -71,7 +76,6 @@ public class cmdScores implements INumberedCommand {
                                 mapID = msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
                                 if (--number <= 0) break;
                             }
-
                         }
                     }
                 }
@@ -81,6 +85,7 @@ public class cmdScores implements INumberedCommand {
                 }
             }
         }
+        // Get name either from arguments or from database link
         String name = argList.size() > 0
                 ? String.join(" ", argList)
                 : Main.discLink.getOsu(event.getAuthor().getId());
@@ -88,6 +93,7 @@ public class cmdScores implements INumberedCommand {
             event.getChannel().sendMessage(help(1)).queue();
             return;
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -95,6 +101,7 @@ public class cmdScores implements INumberedCommand {
                 return;
             }
         }
+        // Retrieve map data
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -119,7 +126,7 @@ public class cmdScores implements INumberedCommand {
             event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
             return;
         }
-
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(map.getMode()).build());
@@ -127,7 +134,7 @@ public class cmdScores implements INumberedCommand {
             event.getChannel().sendMessage("Could not find osu user `" + name + "`").queue();
             return;
         }
-
+        // Retrieve scores of the user on the map
         List<OsuScore> scores;
         try {
             scores = Main.osu.scores.query(
@@ -141,6 +148,7 @@ public class cmdScores implements INumberedCommand {
             event.getChannel().sendMessage("Could not find any scores of `" + name + "` on beatmap id `" + mapID + "`").queue();
             return;
         }
+        // Create the message
         new BotMessage(event.getChannel(), BotMessage.MessageType.SCORES).user(user).map(map).osuscores(scores).mode(map.getMode()).buildAndSend();
     }
 

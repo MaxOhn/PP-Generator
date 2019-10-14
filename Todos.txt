@@ -1,6 +1,7 @@
 
 --- GENERAL ---
 check if pp calculation has an update
+add option for <topscores -pp <num> and -grade <grade> to count scores -acc <acc>
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions

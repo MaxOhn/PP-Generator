@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/*
+    Calculate how many pp a user is missing to achieve the given rank
+ */
 public class cmdRank implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -33,6 +36,7 @@ public class cmdRank implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // Parse rank from arguments
         int rank;
         try {
             rank = Integer.parseInt(args[0]);
@@ -40,13 +44,14 @@ public class cmdRank implements ICommand {
             event.getChannel().sendMessage(help(1)).queue();
             return;
         }
-        if (rank < 0) {
+        if (rank < 1) {
             event.getChannel().sendMessage(help(2)).queue();
             return;
         } else if (rank > 10000) {
             event.getChannel().sendMessage(help(3)).queue();
             return;
         }
+        // Get the name either from arguments or from database link
         String name;
         if (args.length == 1) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -61,6 +66,7 @@ public class cmdRank implements ICommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -68,6 +74,7 @@ public class cmdRank implements ICommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
@@ -75,6 +82,7 @@ public class cmdRank implements ICommand {
             event.getChannel().sendMessage("No osu! user `" + name + "` was found").queue();
             return;
         }
+        // Prepare the message
         EmbedBuilder eb = new EmbedBuilder();
         eb.setThumbnail("https://a.ppy.sh/" + user.getID());
         eb.setAuthor(user.getUsername() + ": "
@@ -91,6 +99,7 @@ public class cmdRank implements ICommand {
                     .append(" and is thus already above rank #")
                     .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".\nNo more pp are required.");
         } else {
+            // Retrieve the required pp
             double pp;
             try {
                 pp = Main.customOsu.getPpOfRank(rank, getMode());
@@ -99,6 +108,7 @@ public class cmdRank implements ICommand {
                 event.getChannel().sendMessage("Some thing went wrong, blame bade").queue();
                 return;
             }
+            // Retrieve the top plays of a osu user
             List<OsuScore> topPlays;
             try {
                 topPlays = user.getTopScores(100).get();
@@ -107,6 +117,7 @@ public class cmdRank implements ICommand {
                 return;
             }
             double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
+            // Calculate how the pp value of the required score
             int size = topPP.length, idx = size - 1;
             double factor = Math.pow(0.95, idx), top = user.getPPRaw(), bot = 0, current = topPP[idx];
             for (; top + bot < pp; idx--) {
@@ -131,6 +142,7 @@ public class cmdRank implements ICommand {
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
     }
 
+    // Auxiliary rounding function
     private double round(double num) {
         return Math.round(num * 100) / 100D;
     }

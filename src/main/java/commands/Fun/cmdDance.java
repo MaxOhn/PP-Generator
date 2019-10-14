@@ -6,6 +6,9 @@ import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+/*
+    Sending a gif into the channel of some emoji dances
+ */
 public class cmdDance implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

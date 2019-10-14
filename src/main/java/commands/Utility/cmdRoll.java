@@ -7,6 +7,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+/*
+    General roll command to get a random number
+ */
 public class cmdRoll implements ICommand {
 
     @Override

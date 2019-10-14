@@ -1,11 +1,13 @@
 package main.java.commands.Utility;
 
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+/*
+    General ping command to check whether the bot is available
+ */
 public class cmdPing implements ICommand {
 
     public boolean called(String[] args, MessageReceivedEvent event) {

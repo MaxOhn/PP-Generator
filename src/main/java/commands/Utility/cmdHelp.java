@@ -12,6 +12,9 @@ import java.awt.*;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/*
+    General help overview
+ */
 public class cmdHelp implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

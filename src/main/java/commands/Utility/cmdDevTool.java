@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+    Special functions, only to be used by devs
+ */
 public class cmdDevTool implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

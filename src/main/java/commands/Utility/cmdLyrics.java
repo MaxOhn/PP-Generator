@@ -9,6 +9,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 
+/*
+    Set whether the song commands can be used on a server or not
+ */
 public class cmdLyrics extends PrivilegedCommand {
 
     @Override
@@ -20,6 +23,7 @@ public class cmdLyrics extends PrivilegedCommand {
         try {
             if (args.length == 1) {
                 switch (args[0]) {
+                    // Toggle
                     case "-t":
                         if (DBProvider.getLyricsState(event.getGuild().getId())) {
                             DBProvider.setLyricsState(event.getGuild().getId(), false);
@@ -29,6 +33,7 @@ public class cmdLyrics extends PrivilegedCommand {
                             event.getTextChannel().sendMessage("Users can now use song commands!").queue();
                         }
                         break;
+                    // Current
                     case "-c":
                         if (DBProvider.getLyricsState(event.getGuild().getId()))
                             event.getTextChannel().sendMessage("Users are currently allowed to use song commands!").queue();
@@ -40,6 +45,7 @@ public class cmdLyrics extends PrivilegedCommand {
                         break;
                 }
             } else if (args.length == 2) {
+                // Set
                 if (args[0].equals("-s")) {
                     switch (args[1]) {
                         case "on":

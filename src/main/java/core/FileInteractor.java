@@ -14,6 +14,9 @@ import java.nio.file.Paths;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
+/*
+    Responible for interaction with file system i.e. read files, work with files, delete files, ...
+ */
 public class FileInteractor {
 
     private static Logger logger = LoggerFactory.getLogger(FileInteractor.class);
@@ -24,6 +27,7 @@ public class FileInteractor {
             logger.error("Something went wrong while deleting a file: " + f.getName());
     }
 
+    // Request the background of a map as thumbnail and save it locally
     public static boolean downloadMapThumb(int mapID) {
         try {
             InputStream in = new URL("https://b.ppy.sh/thumb/" + mapID + "l.jpg").openStream();
@@ -51,6 +55,7 @@ public class FileInteractor {
         deleteFile(secrets.thumbPath + name);
     }
 
+    // Request the map file for the given mapID and save it locally
     public static boolean downloadMap(int mapID) {
         String urlStr = "https://osu.ppy.sh/web/maps/" + mapID;
         String file_name = secrets.mapPath + mapID + ".osu";
@@ -60,6 +65,7 @@ public class FileInteractor {
             File map = new File(file_name);
             InputStream in = url.openStream();
             Files.copy(in, map.toPath(), REPLACE_EXISTING);
+            // Count the lines of the new file. Reportedly, there are issues if it's too long so delete it again
             BufferedReader bReader = new BufferedReader(new FileReader(map));
             while (bReader.readLine() != null) lines++;
             bReader.close();
@@ -75,6 +81,7 @@ public class FileInteractor {
         return true;
     }
 
+    // Given mapID and note index, return the timing offset of that note by reading the map's file
     public static int offsetOfNote(int noteIndex, int mapID) {
         int lineNum = 0;
         try {
@@ -98,6 +105,7 @@ public class FileInteractor {
         }
     }
 
+    // Read through a map's file and count all objects
     public static int countTotalObjects(int mapID) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
@@ -115,6 +123,7 @@ public class FileInteractor {
         }
     }
 
+    // Create a file with the given name which is a copy of the mapID's map file but only up to the given timing offset, the rest is cut
     public static void copyMapUntilOffset(String name, int mapID, int offsetLimit) {
         File submap = new File(name);
         try {
@@ -142,6 +151,7 @@ public class FileInteractor {
         }
     }
 
+    // Download both map thumbnail and map file and save them locally
     public static boolean prepareFiles(OsuBeatmap map) {
         boolean success = true;
         if (!new File(secrets.thumbPath + map.getBeatmapSetID() + "l.jpg").isFile())

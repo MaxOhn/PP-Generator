@@ -11,6 +11,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/*
+    Show all members of the channel that are currently streaming
+ */
 public class cmdAllStreamers implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

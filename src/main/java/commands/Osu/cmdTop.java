@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
+/*
+    Display a single top score of a user
+ */
 public class cmdTop implements INumberedCommand {
 
     private int number = 1;
@@ -35,12 +38,11 @@ public class cmdTop implements INumberedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 100) {
             event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
-
+        // Check for a mode in arguments
         GameMode mode = GameMode.STANDARD;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
@@ -76,6 +78,7 @@ public class cmdTop implements INumberedCommand {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);
         }
+        // Get the name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -89,6 +92,7 @@ public class cmdTop implements INumberedCommand {
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -96,6 +100,7 @@ public class cmdTop implements INumberedCommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
@@ -103,6 +108,7 @@ public class cmdTop implements INumberedCommand {
             event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
+        // Retrieve user's top scores
         Collection<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(number).get();
@@ -110,10 +116,12 @@ public class cmdTop implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
-        final Iterator<OsuScore> itr = topPlays.iterator();
-        OsuScore rbScore = itr.next();
-        while(itr.hasNext() && --number > 0)
-            rbScore = itr.next();
+        // Get the appropriate score
+        final Iterator<OsuScore> it = topPlays.iterator();
+        OsuScore rbScore = it.next();
+        while(it.hasNext() && --number > 0)
+            rbScore = it.next();
+        // Retrieve the score's map
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -133,6 +141,7 @@ public class cmdTop implements INumberedCommand {
                 e1.printStackTrace();
             }
         }
+        // Retrieve the global leaderboard of the map
         Collection<OsuScore> globalPlays;
         try {
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
@@ -140,6 +149,7 @@ public class cmdTop implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve global scores").queue();
             return;
         }
+        // Create the message
         new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)
                 .mode(mode).topplays(topPlays, globalPlays).buildAndSend();
     }

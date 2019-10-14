@@ -1,5 +1,8 @@
 package main.java.commands.Fun;
 
+/*
+    Data class used by cmdBackGroundGame and DBProvider
+ */
 public class BgGameRanking {
     private long discordUser;
     private int score;

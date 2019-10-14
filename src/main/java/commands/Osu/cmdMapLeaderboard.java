@@ -28,6 +28,9 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_strToInt;
 
+/*
+    Show the leaderboard of a map
+ */
 public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedCommand {
 
     private int number = 1;
@@ -44,16 +47,15 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
-
         List<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toList());
 
+        // Parse mod combination
         Pattern p = Pattern.compile("\\+[^!]*!?");
         setInitial();
         int mIdx = -1;
@@ -91,9 +93,10 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                 excludeNM = true;
             argList.remove(mIdx);
         }
-
+        // Retrieve map id
         String mapID = getMapId(event, argList);
         if (mapID.equals("-1")) return;
+        // Retrieve map data
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -118,7 +121,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                 e1.printStackTrace();
             }
         }
-
+        // Retrieve leaderboard of map
         List<OsuScore> scores;
         try {
             int limit = status != modStatus.WITHOUT ? 50 : 10;
@@ -167,21 +170,25 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         GLOBAL
     }
 
+    // Read the history of the channel and get the map id of the corresponding message
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
         if (argList.size() > 0)
             return utilOsu.getIdFromString(argList.get(0));
         else {
-            int counter = 100;
+            int counter = 100;  // go at most 100 msgs deep into the history
             for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
+                // Author must be this bot and there must be an embed
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                     MessageEmbed.AuthorInfo embedAuthor = msgEmbed.getAuthor();
                     List<MessageEmbed.Field> fields = msgEmbed.getFields();
+                    // Get id from embed fields
                     if (fields.size() > 0) {
                         if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
                                 || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
                             return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
                         }
+                    // Get id from embed author
                     } else if (embedAuthor != null && embedAuthor.getUrl().matches("https://osu.ppy.sh/b/.*")) {
                         return embedAuthor.getUrl().substring(embedAuthor.getUrl().lastIndexOf("/") + 1);
                     }

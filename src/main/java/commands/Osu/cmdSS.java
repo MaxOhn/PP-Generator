@@ -5,13 +5,18 @@ import com.oopsjpeg.osu4j.OsuScore;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 
+/*
+    Count amount of SS in users top scores
+ */
 public class cmdSS extends cmdTopScores {
 
+    // Check all top scores
     @Override
     int getAmount() {
         return 100;
     }
 
+    // The score must be an SS
     @Override
     boolean getScoreCondition(OsuScore s, GameMode mode) {
         if (s == null) return false;

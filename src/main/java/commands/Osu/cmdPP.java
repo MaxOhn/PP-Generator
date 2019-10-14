@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/*
+    Check what single score a user is missing to reach the given total pp
+ */
 public class cmdPP implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -31,6 +34,7 @@ public class cmdPP implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // Check if its the proper argument
         double pp;
         try {
             pp = Double.parseDouble(args[0]);
@@ -42,6 +46,7 @@ public class cmdPP implements ICommand {
             event.getChannel().sendMessage(help(2)).queue();
             return;
         }
+        // Get the name either from arguments or from database link
         String name;
         if (args.length == 1) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -56,6 +61,7 @@ public class cmdPP implements ICommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -63,6 +69,7 @@ public class cmdPP implements ICommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
@@ -70,6 +77,7 @@ public class cmdPP implements ICommand {
             event.getChannel().sendMessage("No osu! user `" + name + "` was found").queue();
             return;
         }
+        // Prepare the message
         EmbedBuilder eb = new EmbedBuilder();
         eb.setThumbnail("https://a.ppy.sh/" + user.getID());
         eb.setAuthor(user.getUsername() + ": "
@@ -81,11 +89,12 @@ public class cmdPP implements ICommand {
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
         eb.setTitle("What score is missing for " + user.getUsername() + " to reach " + pp + "pp?");
         StringBuilder description = new StringBuilder();
-
+        // pp too low
         if (user.getPPRaw() > pp) {
             description.append(user.getUsername()).append(" already has ").append(user.getPPRaw()).append("pp which is more than ")
                     .append(pp).append("pp.\nNo more scores are required.");
         } else {
+            // Retrieve the top plays of a osu user
             List<OsuScore> topPlays;
             try {
                 topPlays = user.getTopScores(100).get();
@@ -94,6 +103,7 @@ public class cmdPP implements ICommand {
                 return;
             }
             double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
+            // Calculate how the pp value of the required score
             int size = topPP.length, idx = size - 1;
             double factor = Math.pow(0.95, idx), top = user.getPPRaw(), bot = 0, current = topPP[idx];
             for (; top + bot < pp; idx--) {

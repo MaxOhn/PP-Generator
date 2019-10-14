@@ -17,6 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+    Provide stats about the ratios of a mania player's top scores
+ */
 public class cmdRatio implements INumberedCommand {
 
     private int number = 100;
@@ -33,18 +36,15 @@ public class cmdRatio implements INumberedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 100) {
             event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
-
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
-
         GameMode mode = GameMode.MANIA;
-
+        // Get name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -55,6 +55,7 @@ public class cmdRatio implements INumberedCommand {
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -62,6 +63,7 @@ public class cmdRatio implements INumberedCommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
@@ -69,6 +71,7 @@ public class cmdRatio implements INumberedCommand {
             event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
+        // Retrieve user top scores
         List<OsuScore> scores;
         try {
             scores = user.getTopScores(number).get();
@@ -76,11 +79,11 @@ public class cmdRatio implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve top scores,  blame bade").queue();
             return;
         }
-
         if (scores.size() == 0) {
             event.getChannel().sendMessage("Could not find any scores of `" + name + "` in " + mode.getName()).queue();
             return;
         }
+        // Create message
         new BotMessage(event.getChannel(), BotMessage.MessageType.RATIO).user(user).mode(mode).osuscores(scores).buildAndSend();
     }
 

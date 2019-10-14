@@ -28,6 +28,7 @@ public class utilGeneral {
         return String.format("%02d:%02d", secs/60, secs%60);
     }
 
+    // Returns a formated string announcing how long ago the given ZonedDateTime object was compared to now
     public static String howLongAgo(ZonedDateTime d) {
         OffsetDateTime date = OffsetDateTime.ofInstant(d.toInstant(), ZoneId.systemDefault());
         long factor = 60;
@@ -58,6 +59,7 @@ public class utilGeneral {
         return diffYears + " year" + (diffYears == 1 ? "" : "s") + " ago";
     }
 
+    // Check whether the given author has authority permissions on the given server
     public static boolean isAuthority(Member author, String serverID) throws SQLException, ClassNotFoundException {
         List<String> authorityRoles = secrets.WITH_DB
                 ? Arrays.asList(DBProvider.getAuthorityRoles(serverID))
@@ -69,6 +71,7 @@ public class utilGeneral {
         return isDev(author.getUser());
     }
 
+    // Command categories
     public enum Category {
         FUN("Fun"),
         OSU("osu!"),
@@ -83,6 +86,7 @@ public class utilGeneral {
         }
     }
 
+    // Given a bunch of url to images, combine those images horizontally and return the image
     public static BufferedImage combineImages(List<String> urls) {
         try {
             int w = 400, h = 400;
@@ -111,6 +115,7 @@ public class utilGeneral {
         }
     }
 
+    // Check whether all elements of one array are also contained in another array
     public  static boolean isSubarray(Object[] smaller, Object[] larger) {
         if (smaller.length == 0) return true;
         int i = 0, j = 0;
@@ -129,6 +134,7 @@ public class utilGeneral {
         return author.getId().equals(secrets.badewanne3ID);
     }
 
+    // Calculate the similarity score between two strings via levensthein distance
     public static double similarity(String s1, String s2) {
         String longer = s1, shorter = s2;
         if (s1.length() < s2.length()) {
@@ -138,6 +144,7 @@ public class utilGeneral {
         return longerLength == 0 ? 1 : (longerLength - editDistance(longer, shorter)) / (double)longerLength;
     }
 
+    // Function for levensthein distance
     public static int editDistance(String s1, String s2) {
         s1 = s1.toLowerCase(); s2 = s2.toLowerCase();
         int[] costs = new int[s2.length() + 1];
@@ -163,6 +170,7 @@ public class utilGeneral {
         return costs[s2.length()];
     }
 
+    // Return a sorted version of the given map
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
         List<Map.Entry<K, V>> list = new ArrayList<>(map.entrySet());
         list.sort(Map.Entry.comparingByValue((a, b) -> b.compareTo(a)));

@@ -10,6 +10,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 
+/*
+    Remove streamer - channel combination so that the bot longer notifies in the channel when the streamer comes online
+ */
 public class cmdRemoveStream extends PrivilegedCommand {
 
     @Override
@@ -23,6 +26,7 @@ public class cmdRemoveStream extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // Platform must be specified
         if (!args[0].equals("twitch") && !args[0].equals("mixer")) {
             event.getTextChannel().sendMessage(help(2)).queue();
             return;

@@ -16,10 +16,12 @@ public class commandHandler {
     // commands contains all invoke words with their corresponding action
     static HashMap<String, ICommand> commands = new HashMap<>();
 
+    // Return all commands
     public static Map<String, ICommand> getCommands() {
         return commands;
     }
 
+    // Return all commands of the given category
     public static Map<String, ICommand> getCommands(utilGeneral.Category c) {
         return commands.keySet()
                 .stream()
@@ -28,7 +30,6 @@ public class commandHandler {
     }
 
     public static void handleCommand(commandParser.commandContainer cmd) {
-
         String invoke = cmd.invoke.toLowerCase();
 
         // If the word following the prefix is an invoke word

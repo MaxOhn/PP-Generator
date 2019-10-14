@@ -44,11 +44,13 @@ public class StreamHook {
                 .withClientId(secrets.twitchClientID)
                 .withClientSecret(secrets.twitchSecret)
                 .build();
+        twitch.getErrorTrackingManager().setErrorTrackers(new HashSet<>()); // Who needs error msgs anyway
         mixer = new MixerAPI(secrets.mixerClientID);
         loadStreamers();
         trackStreamers();
     }
 
+    // Return a hashmap of all streamer names and the channels which are notified once the streamer comes online
     public HashMap<String, ArrayList<String>> getStreamers() {
         HashMap<String, ArrayList<String>> allStreamers = new HashMap<>();
         for (String streamer : twitchStreamers.keySet()) {
@@ -63,10 +65,12 @@ public class StreamHook {
         return allStreamers;
     }
 
+    // Returns hashset of streamer names who are currently online
     public HashSet<String> getIsOnline() {
         return isOnline;
     }
 
+    // Load all registered streamers from the database
     private void loadStreamers() {
         try {
             if (secrets.WITH_DB) {
@@ -89,9 +93,8 @@ public class StreamHook {
         });
     }
 
+    // Prepare the scheduler to check for changes in online-activity of all streamers in regular intervals
     private void trackStreamers() {
-        for (String twitchName: twitchStreamers.keySet())
-            twitch.getClientHelper().enableStreamEventListener(twitchName);
         int trackDelay = 10;
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         final Runnable twitchIterator = this::streamerCheckIteration;
@@ -154,6 +157,7 @@ public class StreamHook {
         }).start();
     }
 
+    // Simple check if the bot can connect to the internet / the platforms
     private static boolean platformIsAvailable(String platform) {
         try {
             final URL url;
@@ -173,6 +177,7 @@ public class StreamHook {
         }
     }
 
+    // Add new streamer / notification channel for streamer to the database
     public boolean addStreamer(String streamer, String channelID, String platform) {
         String streamerLower = streamer.toLowerCase();
         try {
@@ -199,6 +204,7 @@ public class StreamHook {
         return false;
     }
 
+    // Remove streamer-channel combo from database so that the channel is no longer notified when the streamer comes online
     public boolean removeStreamer(String streamer, String channelID, String platform) {
         String streamerLower = streamer.toLowerCase();
         boolean removedFromHashMap = false;
@@ -228,6 +234,7 @@ public class StreamHook {
         return false;
     }
 
+    // Returns a string of all streamer names tracked in the given channel
     public String trackedStreamers(String channelID) {
         ArrayList<String> output = new ArrayList<>();
         for (String streamer: twitchStreamers.keySet()) {
@@ -245,6 +252,7 @@ public class StreamHook {
         return outputStr + "Mixer: " + output.toString();
     }
 
+    // Check whether a given streamer is being tracked in a given channel
     public boolean isTracked(String streamer, String channelID) {
         return twitchStreamers.containsKey(streamer) && twitchStreamers.get(streamer).contains(channelID)
                 || mixerStreamers.containsKey(streamer) && mixerStreamers.get(streamer).contains(channelID);

@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_strToInt;
 
+/*
+    Display top scores of a user that satisfy conditions
+ */
 public class cmdTopScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -36,6 +39,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         GameMode mode = GameMode.STANDARD;
+        // Check for a mode in arguments
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
                 if (i+1 < args.length) {
@@ -70,7 +74,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);
         }
-
+        // Check for mods in arguments
         Pattern p = Pattern.compile("\\+[^!]*!?");
         setInitial();
         int mIdx = -1;
@@ -108,7 +112,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                 excludeNM = true;
             argList.remove(mIdx);
         }
-
+        // Get the name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -119,6 +123,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -126,6 +131,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
@@ -133,6 +139,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
         }
+        // Retrieve user's top scores
         List<OsuScore> scores;
         try {
             scores = user.getTopScores(status != modStatus.WITHOUT || excludeNM || excludedMods.size() > 0 ? 100 : getAmount()).get();
@@ -142,8 +149,10 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
         }
         ArrayList<OsuBeatmap> maps = new ArrayList<>();
         for (OsuScore score : scores) {
+            // Score must have the appropriate mods
             if (!isValidScore(score))
                 continue;
+            // Retrieve the score's map
             OsuBeatmap map;
             try {
                 if (!secrets.WITH_DB)
@@ -162,12 +171,12 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
                     e1.printStackTrace();
                 }
             }
+            // If both score and map condition are satisfied, add them
             if (getScoreCondition(score, mode) && getMapCondition(map)) {
                 FileInteractor.prepareFiles(map);
                 maps.add(map);
             }
         }
-
         // Check if filtering is necessary
         if (!getScoreCondition(null, null) || !getMapCondition(null)) {
             scores = scores.stream()
@@ -182,6 +191,7 @@ public class cmdTopScores extends cmdModdedCommand implements ICommand {
             event.getChannel().sendMessage(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM)).queue();
             return;
         }
+        // Build message
         new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
                 .maps(maps.stream().limit(5).collect(Collectors.toCollection(ArrayList::new)))
                 .mode(mode)

@@ -16,6 +16,7 @@ public class ReactionListener extends ListenerAdapter {
         Main.reactionHandler.removedReaction(event, getHash(event));
     }
 
+    // Combining guild + channel + msg for easier lookup in database
     private int getHash(GenericGuildMessageReactionEvent event) {
         return (event.getGuild().getId() + event.getChannel().getId() + event.getMessageId()).hashCode();
     }

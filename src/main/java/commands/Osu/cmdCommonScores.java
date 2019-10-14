@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_strToInt;
 
+/*
+    Compare the topscores of multiple players and show which maps appear in each top score list
+ */
 public class cmdCommonScores extends cmdModdedCommand implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

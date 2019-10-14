@@ -2,12 +2,14 @@ package main.java.commands.Osu;
 
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
-import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+/*
+    Link the authors discord id to a given osu username (or unlink)
+ */
 public class cmdLink implements ICommand {
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {

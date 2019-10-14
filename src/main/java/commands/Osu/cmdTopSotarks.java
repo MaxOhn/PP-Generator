@@ -6,13 +6,18 @@ import main.java.util.statics;
 
 import java.util.regex.Pattern;
 
+/*
+    Count amount of maps in users top scores that are from sotarks
+ */
 public class cmdTopSotarks extends cmdTopScores {
 
+    // Check all top scores
     @Override
     int getAmount() {
         return 100;
     }
 
+    // The map of the score must either have sotarks as creator or be a guest diff from sotarks
     @Override
     boolean getMapCondition(OsuBeatmap m) {
         if (m == null) return false;

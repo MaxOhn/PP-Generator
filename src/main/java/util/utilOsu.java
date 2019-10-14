@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 
 public class utilOsu {
 
+    // Given a mod int, return the corresponding string
     public static String mods_intToStr(int mods) {
         StringBuilder sb = new StringBuilder();
         if ((mods & 1) != 0)
@@ -44,6 +45,7 @@ public class utilOsu {
         return sb.toString();
     }
 
+    // Given a mod string, return the corresponding int
     public static int mods_strToInt(String mods) {
         int flag = 0;
         String[] modArr = mods.split("(?<=\\G..)");
@@ -69,6 +71,7 @@ public class utilOsu {
         return flag;
     }
 
+    // Given a mod int, return the corresponding string but only for key mods
     public static String keys_intToStr(int mods) {
         if ((mods & 67108864) != 0)
             return "1K";
@@ -91,20 +94,24 @@ public class utilOsu {
         return "";
     }
 
+    // Given a mod array, return the corresponding string
     public static String mods_arrToStr(GameMod[] mods) {
         return mods_intToStr(mods_arrToInt(mods));
     }
 
+    // Given a mod array, return the corresponding string
     public static String mods_setToStr(Set<GameMod> mods) {
         return mods_intToStr(mods_arrToInt(mods.toArray(new GameMod[0])));
     }
 
+    // Given a mod array, return the corresponding int
     public static int mods_arrToInt(GameMod[] mods) {
         int sum = 0;
         for(int i = 0; i < mods.length; sum |= mods[i++].getBit());
         return sum;
     }
 
+    // Given a rank as a string, return the corresponding rank as enum
     public static rankEmote getRankEmote(String rank) {
         switch (rank) {
             case "XH":
@@ -127,8 +134,8 @@ public class utilOsu {
         return rankEmote.F_;
     }
 
+    // Saving ranks as discord emotes
     public enum rankEmote {
-
         XH("515354675059621888"),
         X_("515354674929336320"),
         SH("515354675323600933"),
@@ -150,6 +157,7 @@ public class utilOsu {
         }
     }
 
+    // Calculate the index of a score in a score collection, return -1 if the score is not contained
     public static int indexInTopPlays(OsuScore score, Collection<OsuScore> topPlays) {
         int index = 0;
         for (OsuScore s: topPlays) {
@@ -162,6 +170,7 @@ public class utilOsu {
         return -1;
     }
 
+    // Given the url of osu beatmap, return the id of that map as a string
     public static String getIdFromString(String idString) {
         Pattern p = Pattern.compile("((.*)/([0-9]{1,8})($|([&?])m=[0-3]))|([0-9]{1,8})");
         String id = "-1";
@@ -173,6 +182,7 @@ public class utilOsu {
         return id;
     }
 
+    // First count the amount of total objects, then calculate the accuracy
     public static double getAcc(OsuScore score, GameMode mode) {
         int nTotal = score.getHit300() + score.getHit100() + score.getMisses();
         switch (mode) {
@@ -187,6 +197,7 @@ public class utilOsu {
         return getAcc(score, mode, nTotal);
     }
 
+    // Given a score, a mode and the amount of total hitobjects, return the accuracy of the score
     public static double getAcc(OsuScore score, GameMode mode, int nTotal) {
         double numerator = (double)score.getHit50() * 50.0D + (double)score.getHit100() * 100.0D + (double)score.getHit300() * 300.0D;
         if (mode == GameMode.MANIA)
@@ -200,9 +211,10 @@ public class utilOsu {
             denominator = nTotal;
         if (mode == GameMode.MANIA) denominator *= 300;
         double res = numerator / denominator;
-        return 100*Math.max(0.0D, Math.min(res, 1.0D));
+        return 100 * Math.max(0.0D, Math.min(res, 1.0D));
     }
 
+    // Given the accuracy, approximate the hitresults of the score
     public static HashMap<String, Integer> getHitResults(GameMode mode, double acc, OsuScore s) {
         int nTotal = 0;
         switch (mode) {
@@ -219,14 +231,12 @@ public class utilOsu {
         return getHitResults(mode, acc, nTotal, s.getGekis(), s.getHit300(), s.getKatus(), s.getHit100(), s.getHit50(), s.getMisses());
     }
 
+    // Given the accuracy, approximate the hitresults of the score
     public static HashMap<String, Integer> getHitResults(GameMode mode, double acc, int nTotal, int n320, int n300, int n200, int n100, int n50, int nM) {
-
         if (acc > 1)
             acc /= 100;
-
         HashMap<String, Integer> hitresults = new HashMap<>();
         hitresults.put("nTotal", nTotal);
-
         switch (mode) {
             case STANDARD:
                 if (n50 > 0 || n100 > 0)
@@ -259,6 +269,7 @@ public class utilOsu {
         return hitresults;
     }
 
+    // Calculate the rank as a string of a given score
     public static String getRank(GameMode mode, OsuScore score, int nObjects) {
         Set<GameMod> mods = new HashSet<>(Arrays.asList(score.getEnabledMods()));
         double ratio300;
@@ -302,13 +313,15 @@ public class utilOsu {
         return "D";
     }
 
+    // Remove all misses of a score and modify the combo to a fullcombo
     public static OsuScore unchokeScore(OsuScore score, int maxCombo, GameMode mode, int nObjects) {
         if (score.getMaxCombo() == maxCombo) return score;
         score.setMaxcombo(maxCombo);
         int missing = nObjects - (score.getHit300() + score.getHit100() + score.getHit50() + score.getMisses());
         if (missing > 0) score.setCount300(score.getHit300() + missing);
-        double ratio = (double)score.getHit300()/(score.getHit300() + score.getHit100() + score.getHit50());
+        double ratio = (double)score.getHit300() / (score.getHit300() + score.getHit100() + score.getHit50());
         for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {
+            // Depends partially on randomness
             if (ThreadLocalRandom.current().nextDouble(1) < ratio)
                 score.setCount100(score.getHit100() + 1);
             else

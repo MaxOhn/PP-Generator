@@ -47,6 +47,7 @@ public class Main {
         builder.setGame(Game.playing(statics.gameName));
     }
 
+    // Listeners for various events happening in discord
     private static void addListeners() {
         builder.addEventListener(new ReadyListener());
         builder.addEventListener(new ReconnectListener());

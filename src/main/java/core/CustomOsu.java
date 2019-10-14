@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 import static main.java.util.utilOsu.mods_intToStr;
 import static main.java.util.utilOsu.mods_strToInt;
 
+/*
+    Providing some functionality that the regular osu client does not provide
+ */
 public class CustomOsu {
 
     private HttpClient client;
@@ -49,8 +52,10 @@ public class CustomOsu {
                 .build();
     }
 
+    // Return all osu usernames in the top 50 pp leaderboard of the given mode and country
     public List<String> getRankings(GameMode mode, String countryShort) throws IOException {
         limiter.acquire();
+        // Prepare url and request data
         String modeStr;
         switch (mode) {
             case TAIKO: modeStr = "taiko"; break;
@@ -60,6 +65,7 @@ public class CustomOsu {
         }
         HttpGet getRequest = new HttpGet("http://osu.ppy.sh/rankings/" + modeStr + "/performance?country=" + countryShort);
         HttpResponse response = client.execute(getRequest);
+        // Parse response
         String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Document doc = Jsoup.parse(responseStr);
         try {
@@ -74,8 +80,10 @@ public class CustomOsu {
         }
     }
 
+    // Return all scores on the given map with the given mods, on either national or global leaderboard
     public Collection<OsuScore> getScores(String mapID, boolean national, Set<GameMod> mods) throws IOException {
         limiter.acquire();
+        // Prepare url and request data
         StringBuilder url = new StringBuilder("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?");
         if (national)
             url.append("type=country");
@@ -91,6 +99,7 @@ public class CustomOsu {
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new IOException("No valid response from server:\n" + response.getEntity().toString());
         }
+        // Parse response
         String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Collection<OsuScore> scores = new ArrayList<>();
         JSONArray rawScores = new JSONObject(responseStr).getJSONArray("scores");
@@ -126,10 +135,12 @@ public class CustomOsu {
         return scores;
     }
 
+    // Retrieve the pp of the user with the given global rank (works only if rank is <=10000)
     public double getPpOfRank(int rank, GameMode mode) throws IOException {
-        if (rank > 10000)
-            throw new IllegalArgumentException("Rank must be smaller equal 10000");
+        if (rank < 1 || rank > 10000)
+            throw new IllegalArgumentException("Rank must be between 1 and 10000");
         limiter.acquire();
+        // Prepare url and request data
         String modeString = "";
         switch (mode) {
             case STANDARD: modeString = "osu"; break;
@@ -143,6 +154,7 @@ public class CustomOsu {
         if (response.getStatusLine().getStatusCode() != 200) {
             throw new IOException("No valid response from server:\n" + response.getEntity().toString());
         }
+        // Parse response
         String responseStr = EntityUtils.toString(response.getEntity(), "UTF-8");
         Document doc = Jsoup.parse(responseStr);
         try {

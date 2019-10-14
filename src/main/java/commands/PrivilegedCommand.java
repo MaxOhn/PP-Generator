@@ -9,6 +9,9 @@ import java.sql.SQLException;
 
 import static main.java.util.utilGeneral.isAuthority;
 
+/*
+    Some commands can only be used by authorities i.e. members that have admin permitions or have certain authority roles
+ */
 public abstract class PrivilegedCommand implements ICommand {
 
     protected Logger logger = LoggerFactory.getLogger(this.getClass());

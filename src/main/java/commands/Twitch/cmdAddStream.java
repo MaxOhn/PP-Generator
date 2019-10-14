@@ -11,6 +11,10 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 
+/*
+    Add a streamer - channel combination to the database so that the bot sends a notification in that channel
+    if the streamer comes online
+ */
 public class cmdAddStream extends PrivilegedCommand {
 
     @Override
@@ -24,15 +28,18 @@ public class cmdAddStream extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // Must be specified whether the streamer is on twitch or mixer
         if (!args[0].equals("twitch") && !args[0].equals("mixer")) {
             event.getTextChannel().sendMessage(help(3)).queue();
             return;
         }
+        // Check if streamer - channel combination already in database
         String name = args[1];
         if (Main.streamHook.isTracked(name, event.getTextChannel().getId())) {
             event.getTextChannel().sendMessage(help(2)).queue();
             return;
         }
+        // Add streamer - channel combination to database
         if (Main.streamHook.addStreamer(name, event.getTextChannel().getId(), args[0]))
             event.getTextChannel().sendMessage("I'm now tracking `" + name + "`'s " + args[0] + " stream.").queue();
         else {

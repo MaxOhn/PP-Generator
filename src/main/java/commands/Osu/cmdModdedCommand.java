@@ -8,6 +8,9 @@ import main.java.util.utilGeneral;
 import java.util.Arrays;
 import java.util.HashSet;
 
+/*
+    Handle mods from arguments for a command
+ */
 public abstract class cmdModdedCommand implements ICommand {
 
     modStatus status = modStatus.WITHOUT;
@@ -16,6 +19,7 @@ public abstract class cmdModdedCommand implements ICommand {
     GameMod[] includedMods;
     HashSet<GameMod> excludedMods;
 
+    // If mods aren't given, choose WITHOUT, otherwise they must be either exact or a subset
     enum modStatus {
         WITHOUT,
         CONTAINS,
@@ -29,6 +33,7 @@ public abstract class cmdModdedCommand implements ICommand {
         excludeNM = false;
     }
 
+    // Check if given score satisfies mod condition
     boolean isValidScore(OsuScore score) {
         boolean response = excludedMods.size() == 0 || excludesMods(score);
         switch (status) {

@@ -3,7 +3,6 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
-import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -11,20 +10,23 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+    Simulate a no-choke play out of the recent score
+ */
 public class cmdSimulateRecent extends cmdSimulateMap {
 
     private OsuScore recent;
 
+
+    // Retrieve the map id
     @Override
     protected String getMapId(MessageReceivedEvent event, List<String> argList) {
-
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return "-1";
         }
-
         recent = null;
-
+        // Get the name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -35,6 +37,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         } else {
             name = String.join(" ", argList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -42,7 +45,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
                 return "-1";
             }
         }
-
+        // Retrieve recent scores of user
         ArrayList<OsuScore> userRecents;
         try {
             userRecents = new ArrayList<>(Main.osu.userRecents.query(

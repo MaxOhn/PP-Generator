@@ -12,6 +12,7 @@ import java.sql.SQLException;
 
 public class ServerJoinListener extends ListenerAdapter {
 
+    // Set basic properties to new server
     public void onGuildJoin(GuildJoinEvent event) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         logger.info("Joined a new server: " + event.getGuild().getName());

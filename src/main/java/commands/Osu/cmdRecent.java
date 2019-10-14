@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/*
+    Display a recently performed score of a user
+ */
 public class cmdRecent implements INumberedCommand {
 
     private int number = 1;
@@ -37,12 +40,11 @@ public class cmdRecent implements INumberedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
             return;
         }
-
+        // Get name either from arguments or from database link
         String name;
         if (args.length == 0) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -59,6 +61,7 @@ public class cmdRecent implements INumberedCommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -66,14 +69,15 @@ public class cmdRecent implements INumberedCommand {
                 return;
             }
         }
-
         ArrayList<OsuScore> userRecents;
         OsuScore recent;
         OsuUser user;
         try {
+            // Retrieve recent scores of user
             userRecents = new ArrayList<>(Main.osu.userRecents.query(
                     new EndpointUserRecents.ArgumentsBuilder(name).setMode(getMode()).setLimit(50).build())
             );
+            // Get the appropriate score
             recent = userRecents.get(0);
             while (--number > 0 && userRecents.size() > 1) {
                 userRecents.remove(0);
@@ -83,11 +87,13 @@ public class cmdRecent implements INumberedCommand {
                 event.getChannel().sendMessage("User's recent history doesn't go that far back").queue();
                 return;
             }
+            // Retrieve osu user data
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(recent.getUserID()).setMode(getMode()).build());
         } catch (Exception e) {
             event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
         }
+        // Retrieve the score's map
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -109,6 +115,7 @@ public class cmdRecent implements INumberedCommand {
                 e1.printStackTrace();
             }
         }
+        // Retrieve top plays of user and global leaderboard of map
         Collection<OsuScore> topPlays;
         Collection<OsuScore> globalPlays;
         try {
@@ -118,6 +125,7 @@ public class cmdRecent implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
+        // Build the message
         new BotMessage(event.getChannel(), BotMessage.MessageType.RECENT)
                 .user(user)
                 .map(map)

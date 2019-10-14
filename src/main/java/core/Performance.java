@@ -20,7 +20,9 @@ import java.util.Set;
 
 import static main.java.util.utilOsu.mods_intToStr;
 
-
+/*
+    Provides various info about a map, its pp value, its star rating, ...
+ */
 public class Performance {
 
     private OsuBeatmap map;
@@ -38,6 +40,7 @@ public class Performance {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    // Mods that modify the star rating
     private static final Set<GameMod> starModifier = new HashSet<>(Arrays.asList(GameMod.EASY, GameMod.HALF_TIME,
             GameMod.NIGHTCORE, GameMod.DOUBLE_TIME, GameMod.HARD_ROCK));
 
@@ -45,6 +48,7 @@ public class Performance {
 
     public Performance() {}
 
+    // Set a new map
     public Performance map(OsuBeatmap map) {
         this.map = map;
         this.mode = map.getMode();
@@ -53,6 +57,7 @@ public class Performance {
         return this;
     }
 
+     // Set a new score
     public Performance osuscore(OsuScore score) {
         this.score = score;
         this.nObjects = 0;
@@ -69,16 +74,19 @@ public class Performance {
         return this;
     }
 
+    // Set a new mode
     public void mode(GameMode mode) {
         this.mode = mode;
     }
 
+    // Set the current state as a no-choke i.e. remove misses and make it fullcombo
     public void noChoke() {
         if (mode != GameMode.STANDARD) return;
         utilOsu.unchokeScore(score, getMaxCombo(), mode, getNObjects());
         this.acc = 0;
     }
 
+    // Return the amount of passed hit objects (important for fails)
     public int getNPassedObjects() {
         if (nPassedObjects != 0) return nPassedObjects;
         switch (mode) {
@@ -93,35 +101,42 @@ public class Performance {
         }
     }
 
+    // Return the total amount of hitobjects
     public int getNObjects() {
         return nObjects == 0
                 ? (nObjects = FileInteractor.countTotalObjects(map.getID()))
                 : nObjects;
     }
 
+    // Return the rating of the score i.e. SS, XS, A, D, ...
     public String getRank() {
         if (score.getRank().equals(""))
             score.setRank(utilOsu.getRank(mode, score, getNObjects()));
         return score.getRank();
     }
 
+    // Return accuracy as a double
     public double getAccDouble() {
         if (acc != 0) return acc;
         return (acc = utilOsu.getAcc(score, mode, getNPassedObjects()));
     }
 
+    // Return accuracy as a string
     public String getAcc() {
         return df.format(getAccDouble());
     }
 
+    // Return the max pp of the current map as a double
     public double getPpMaxDouble() {
+        // If already calculated, return the precalculated value
         if (ppMax != 0) return ppMax;
+        // Retrieve pp from database
         try {
             if (!secrets.WITH_DB)
                 throw new IllegalArgumentException();
             this.ppMax = DBProvider.getPpRating(map.getID(), utilOsu.mods_setToStr(mods));
         } catch (IllegalAccessException e) {    // pp rating not yet calculated
-            calculateMaxPp();
+            calculateMaxPp();   // calculate it, then save it
             try {
                 if (secrets.WITH_DB)
                     DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
@@ -131,7 +146,7 @@ public class Performance {
             }
         } catch (SQLException e) {              // map not in database
             try {
-                calculateMaxPp();
+                calculateMaxPp();   // calculate it, then save it
                 if (secrets.WITH_DB) {
                     DBProvider.addMapPp(map.getID());
                     DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
@@ -141,7 +156,7 @@ public class Performance {
                 e1.printStackTrace();
             }
         } catch (IllegalArgumentException e) {  // mod combination not stored
-            calculateMaxPp();
+            calculateMaxPp();   // calculate it without saving
         } catch (ClassNotFoundException e) {    // won't happen
             logger.error("Something went wrong while setting the pp rating: ");
             e.printStackTrace();
@@ -149,8 +164,10 @@ public class Performance {
         return ppMax;
     }
 
+    // Calculate the max pp of the current map via osu-tool's PerformanceCalculator (no support for CtB)
     private void calculateMaxPp() {
         try {
+            // Prepare mode
             String modeStr;
             switch (mode) {
                 case STANDARD: modeStr = "osu"; break;
@@ -161,8 +178,10 @@ public class Performance {
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
             StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " simulate " + modeStr +
                     " " + secrets.mapPath + map.getID() + ".osu");
+            // Add mods
             for (GameMod mod: mods)
                 cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
+            // Modify score if mode is mania
             if (mode == GameMode.MANIA) {
                 int max = 1000000;
                 if (mods.contains(GameMod.NO_FAIL)) max *= 0.5;
@@ -173,8 +192,10 @@ public class Performance {
                     cmdLineString.append(" -s ").append(max);
                 }
             }
+            // Run command on terminal
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
+            // Parse response
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             //BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             String line;
@@ -203,11 +224,14 @@ public class Performance {
         }
     }
 
+    // Return the max pp of the current map as a string
     public String getPpMax() {
         return df.format(getPpMaxDouble());
     }
 
+    // Return the pp of the current score as a double
     public double getPpDouble() {
+        // If pp available for the score, return them
         if (score.getPp() > 0) return score.getPp();
         boolean failedPlay = score.getRank().equals("F");
         if (failedPlay && mode.getID() > 0) return score.getPp(); // Don't calculate failed scores of non-standard plays
@@ -216,9 +240,11 @@ public class Performance {
                 secrets.mapPath + map.getID() + ".osu";
         try {
             if (failedPlay) {
+                // Create new map file up to the failed note
                 int lastNoteTiming = FileInteractor.offsetOfNote(getNPassedObjects(), map.getID());
                 FileInteractor.copyMapUntilOffset(mapPath, map.getID(), lastNoteTiming);
             }
+            // Prepare mode
             String modeStr;
             switch (mode) {
                 case TAIKO: modeStr = "taiko"; break;
@@ -227,6 +253,7 @@ public class Performance {
             }
             StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath
                     + " simulate " + modeStr + " " + secrets.mapPath + map.getID() + ".osu");
+            // Set score results
             if (mode.getID() < 3) {
                 cmdLineString.append(" -a ").append(getAccDouble())
                         .append(" -c ").append(score.getMaxCombo())
@@ -236,10 +263,13 @@ public class Performance {
             } else { // mode == 3
                 cmdLineString.append(" -s ").append(score.getScore());
             }
+            // Set mods
             for (GameMod mod: mods)
                 cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
+            // Run command on terminal
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
+            // Parse response
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             //BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             String line;
@@ -255,6 +285,7 @@ public class Performance {
             input.close();
             //errors.close();
             pr.waitFor();
+            // Remove the temporarily created map file for failed scores
             if (failedPlay)
                 FileInteractor.deleteFile(mapPath);
         } catch(Exception e) {
@@ -272,6 +303,7 @@ public class Performance {
         return score;
     }
 
+    // Return the pp of the current score as a string
     public String getPp() {
         return df.format(getPpDouble());
     }
@@ -317,24 +349,29 @@ public class Performance {
         return score.getScore();
     }
 
+    // For failed scores, return the % of passed hitobjects
     public int getCompletion() {
         if (completion != 0) return completion;
         int hits = getNPassedObjects();
         return (completion = (int)((double)hits*100/(double)getNObjects()));
     }
 
+    // Return the star rating of the current map as a double
     public double getStarRatingDouble() {
+        // If already calculated, return that value
         if (starRating != 0) return starRating;
+        // Consider only those mods that modify the star rating
         HashSet<GameMod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(starModifier);
         if (modsImportant.isEmpty() && map.getDifficulty() != 0)
             return map.getDifficulty();
+        // Retrieve value from database
         try {
             if (!secrets.WITH_DB)
                 throw new IllegalArgumentException();
             this.starRating = DBProvider.getStarRating(map.getID(), utilOsu.mods_setToStr(modsImportant));
         } catch (IllegalAccessException e) {    // star rating not yet calculated
-            calculateStarRating(modsImportant);
+            calculateStarRating(modsImportant); // calculate it and save it
             try {
                 if (secrets.WITH_DB)
                     DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
@@ -344,7 +381,7 @@ public class Performance {
             }
         } catch (SQLException e) {              // map not in database
             try {
-                calculateStarRating(modsImportant);
+                calculateStarRating(modsImportant); // calculate it and save it
                 if (secrets.WITH_DB) {
                     DBProvider.addMapStars(map.getID());
                     DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
@@ -354,7 +391,7 @@ public class Performance {
                 e1.printStackTrace();
             }
         } catch (IllegalArgumentException e) {  // mod combination not stored
-            calculateStarRating(modsImportant);
+            calculateStarRating(modsImportant); // calculate it without saving
         } catch (ClassNotFoundException e) {    // won't happen
             logger.error("Something went wrong while setting the star rating: ");
             e.printStackTrace();
@@ -362,18 +399,22 @@ public class Performance {
         return starRating;
     }
 
+    // Return the star rating of the current map as a string
     public String getStarRating() {
         return df.format(getStarRatingDouble());
     }
 
+    // Calculate the star rating of the current map via osu-tool's PerformanceCalculator (no support for CtB)
     private void calculateStarRating(Set<GameMod> m) {
         StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " difficulty "
                 + secrets.mapPath + map.getID() + ".osu");
         for (GameMod mod: m)
             cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
         try {
+            // Run command on terminal
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
+            // Parse response
             BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             /* // debugging
             BufferedReader errors = new BufferedReader(new InputStreamReader(pr.getErrorStream()));

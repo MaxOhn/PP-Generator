@@ -9,6 +9,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
 
+/*
+    Deleting messages on a discord channel
+ */
 public class cmdPrune extends PrivilegedCommand {
 
     @Override
@@ -35,7 +38,6 @@ public class cmdPrune extends PrivilegedCommand {
         }
         final String response = "I deleted the last " + (Math.min(amount, 100)) + " messages";
         amount = Math.min(amount + 1, 100);
-
         event.getTextChannel().getIterableHistory().takeAsync(amount).thenApply(event.getTextChannel()::purgeMessages)
                 .thenAccept(arg -> event.getTextChannel().sendMessage(response).queue(message -> {
                     try {

@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+/*
+    - Listens for reactions
+    - Assigns / remove a preset role if a preset msg is being reacted on
+ */
 public class ReactionHandler {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -25,6 +29,7 @@ public class ReactionHandler {
         }
     }
 
+    // Define a new role to be handled for the given hash (guild, channel, msg combo)
     public void addRoleAssign(int hash, String roleID) {
         roleAssigns.put(hash, roleID);
         try {
@@ -36,6 +41,7 @@ public class ReactionHandler {
         }
     }
 
+    // Remove role assignment for the given hash
     public void removeRoleAssign(int hash) {
         roleAssigns.remove(hash);
         try {
@@ -47,6 +53,7 @@ public class ReactionHandler {
         }
     }
 
+    // Listens for added reactions
     public void addedReaction(GuildMessageReactionAddEvent event, int hash) {
         if (roleAssigns.containsKey(hash)) {
             Role role = event.getGuild().getRoleById(roleAssigns.get(hash));
@@ -57,6 +64,7 @@ public class ReactionHandler {
         }
     }
 
+    // Listens for removed reactions
     public void removedReaction(GuildMessageReactionRemoveEvent event, int hash) {
         if (roleAssigns.containsKey(hash)) {
             Role role = event.getGuild().getRoleById(roleAssigns.get(hash));

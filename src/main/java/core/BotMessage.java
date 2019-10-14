@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
 
+/*
+    Creates more complex messages like embeds
+ */
 public class BotMessage {
 
     private MessageChannel channel;
@@ -62,19 +65,24 @@ public class BotMessage {
         buildAndSend(null);
     }
 
+    // All data is set, time to create the message (absolutely disgusting function and I'm sorry for that)
     public void buildAndSend(Runnable runnable) {
-        File thumbFile = null;
-        int idx;
+        File thumbFile = null;  // File for either author image or thumbnail image
         String ppString = "**", hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
         ZonedDateTime date = ZonedDateTime.now();
+        // ------ BUILDING THE MESSAGE ------
         switch (typeM) {
+            // Naturally depends on message type
+            // Absence of "break;" enables nice statement reusability between message types
             case RECENT:
                 if (retries == 0) throw new IllegalStateException(Error.HISTORY.getMsg());
                 mb.append("Try #").append(String.valueOf(retries));
             case COMPARE:
             case RECENTBEST:
             case SINGLETOP: {
+                // Map needs to be set beforehand
+                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(u.getUsername() + ": "
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
@@ -82,7 +90,6 @@ public class BotMessage {
                                 + u.getCountry()
                                 + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
-                if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
@@ -127,6 +134,7 @@ public class BotMessage {
                 break;
             }
             case SCORES: {
+                // Map and scores need to be set beforehand
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
@@ -143,7 +151,7 @@ public class BotMessage {
                         + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                 List<OsuScore> orderedScores = new ArrayList<>(scores);
                 orderedScores.sort(Comparator.comparing(OsuScore::getPp).reversed());
-                idx = 1;
+                int idx = 1;
                 for (OsuScore s : orderedScores) {
                     osuscore(s);
                     String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
@@ -171,6 +179,7 @@ public class BotMessage {
                 break;
             }
             case NOCHOKESCORES:
+                // Author needs to be set beforehand
                 if (author == null) throw new IllegalStateException(Error.AUTHOR.getMsg());
                 mb.append(author.getAsMention()).append(" No-choke top scores for `").append(u.getUsername()).append("`:");
             case TOPSOTARKS:
@@ -193,6 +202,7 @@ public class BotMessage {
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
             case TOPSCORES: {
+                // Maps and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (mb.isEmpty() && scores.size() > 5) {
@@ -210,7 +220,7 @@ public class BotMessage {
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 String mods;
                 StringBuilder description = new StringBuilder();
-                idx = 1;
+                int idx = 1;
                 for (OsuScore s : scores) {
                     map(maps.get(idx - 1));
                     osuscore(s);
@@ -247,6 +257,7 @@ public class BotMessage {
                 break;
             }
             case LEADERBOARD: {
+                // Map and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 String iconURL = "";
@@ -274,7 +285,7 @@ public class BotMessage {
                 }
                 String comboDisplay;
                 StringBuilder description = new StringBuilder();
-                idx = 1;
+                int idx = 1;
                 for (OsuScore s : scores) {
                     osuscore(s);
                     comboDisplay = " [ " + p.getCombo() + "x/";
@@ -296,6 +307,7 @@ public class BotMessage {
                 break;
             }
             case COMMONSCORES: {
+                // Maps, users, and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (users == null) throw new IllegalStateException(Error.USER.getMsg());
                 if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
@@ -314,7 +326,7 @@ public class BotMessage {
                             .append(names.get(names.size() - 1)).append("` have no common scores in their top 100");
                 }
                 StringBuilder description = new StringBuilder();
-                idx = 1;
+                int idx = 1;
                 for (int i = 0; i < Math.min(scores.size(), 15 * names.size()); i += names.size()) {
                     p.osuscore(scores.get(i));
                     p.map(maps.get(i / names.size()));
@@ -335,11 +347,12 @@ public class BotMessage {
                 break;
             }
             case RATIO: {
+                // User and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (u == null) throw new IllegalStateException(Error.USER.getMsg());
                 mb.append("Average ratios of `").append(u.getUsername()).append("`'s top ")
                         .append(String.valueOf(scores.size())).append(" in ").append(p.getMode().getName()).append(":");
-                int[] accs = new int[]{0, 90, 95, 97, 99, 100};
+                int[] accs = new int[] {0, 90, 95, 97, 99, 100};
                 int[] nScores = new int[accs.length];
                 int[] nMisses = new int[accs.length];
                 int[] nTotal = new int[accs.length];
@@ -375,6 +388,7 @@ public class BotMessage {
                 break;
             }
             case SIMULATE: {
+                // Map and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 mb.append("Simulated score:");
@@ -463,12 +477,14 @@ public class BotMessage {
         MessageAction ma = thumbFile != null
                 ? channel.sendFile(thumbFile, "thumb.jpg", mb.build())
                 : channel.sendMessage(mb.build());
+        // ------ SENDING THE MESSAGE ------
         try {
             switch (typeM) {
                 case RECENT:
                 case COMPARE:
                 case RECENTBEST:
                 case SINGLETOP:
+                    // Send and later minimize the message
                     ma.queue(message -> {
                         try {
                             Thread.sleep(shortFormatDelay);
@@ -480,8 +496,7 @@ public class BotMessage {
                                             p.getMaxCombo() + "x ]\t " + hString, false));
                             eb.setTitle(eTitle, "https://osu.ppy.sh/b/" + p.getMap().getID());
                             message.editMessage(eb.build()).queue();
-                        } catch (InterruptedException ignored) {
-                        }
+                        } catch (InterruptedException ignored) { }
                     });
                     break;
                 case LEADERBOARD:
@@ -492,59 +507,68 @@ public class BotMessage {
                 case RATIO:
                 case NOCHOKESCORES:
                 case SIMULATE:
+                    // Just send
                     ma.queue();
                     break;
                 case COMMONSCORES:
+                    // Remove the temporarily created osu pfp combination image again
                     ma.queue(msg -> FileInteractor.deleteImage("avatar" + users.hashCode() + ".png"));
                     break;
                 default:
                     throw new IllegalStateException(Error.TYPEM.getMsg());
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(this.getClass()).error("Caught error while sending message:");
-            e.printStackTrace();
+            LoggerFactory.getLogger(this.getClass()).error("Caught error while sending message:", e);
         }
         if (runnable != null) runnable.run();
     }
 
+    // Set a single user for the message
     public BotMessage user(OsuUser user) {
         this.u = user;
         return this;
     }
 
+    // Set multiple users for the message
     public BotMessage users(List<OsuUser> users) {
         this.users = users;
         return this;
     }
 
+    // Set a single map for the message
     public BotMessage map(OsuBeatmap map) {
         this.p.map(map);
         this.filesPrepared = FileInteractor.prepareFiles(map);
         return this;
     }
 
+    // Set mulitple maps for the message
+    public BotMessage maps(ArrayList<OsuBeatmap> maps) {
+        this.maps = maps;
+        return this;
+    }
+
+    // Set the game mode
     public BotMessage mode(GameMode mode) {
         if (mode == GameMode.CATCH_THE_BEAT) throw new IllegalStateException(Error.MODE.getMsg());
         this.p.mode(mode);
         return this;
     }
 
+    // Set a single score for the message
     public BotMessage osuscore(OsuScore score) {
         this.score = score;
         this.p.osuscore(score);
         return this;
     }
 
+    // Set multiple scores for the message
     public BotMessage osuscores(List<OsuScore> scores) {
         this.scores = scores;
         return this;
     }
 
-    public BotMessage maps(ArrayList<OsuBeatmap> maps) {
-        this.maps = maps;
-        return this;
-    }
-
+    // Check whether the score is in the map's global leaderboard or in the user's personal best
     public BotMessage topplays(Collection<OsuScore> playsT, Collection<OsuScore> playsG) {
         int topPlayIdx = 0;
         int globalPlayIdx = 0;
@@ -562,6 +586,7 @@ public class BotMessage {
         return this;
     }
 
+    // Calculate the retry count via recent-history of user
     public BotMessage history(Collection<OsuScore> history) {
         int mapID = score.getBeatmapID();
         for (OsuScore game : history) {
@@ -574,11 +599,13 @@ public class BotMessage {
         return this;
     }
 
+    // Set the author of the event
     public BotMessage author(User author) {
         this.author = author;
         return this;
     }
 
+    // Return the rating of the score as emote and the completion % if the score is failed
     private String getRank() {
         String scoreRank = p.getRank();
         return Main.jda.getGuildById(secrets.devGuildID)
@@ -586,6 +613,7 @@ public class BotMessage {
             + (scoreRank.equals("F") ? " (" + p.getCompletion() + "%)" : "");
     }
 
+    // Return a formated string for the mod combination
     private String getModString() {
         String out = utilOsu.mods_arrToStr(score.getEnabledMods());
         if (!out.equals(""))
@@ -593,6 +621,7 @@ public class BotMessage {
         return out;
     }
 
+    // Return a string containing key info for mania maps
     private String getKeyString() {
         if (p.getMode() != GameMode.MANIA) return "";
         return "[" + (int)p.getMap().getSize() + "K" + "]";

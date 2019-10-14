@@ -13,12 +13,15 @@ import java.sql.*;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+/*
+    Responsible for all communication with the database
+ */
 public class DBProvider {
 
+    // Replacing / removing certain symbols so that they're more easily stored in the database
     private static String addReplacer(String str) {
         return str.replaceAll("'", "ö");
     }
-
     private static String removeReplacer(String str) {
         return str.replaceAll("ö", "'");
     }
@@ -29,6 +32,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Update score and rating of bg players
     public static void updateBgPlayerRanking(HashSet<BgGameRanking> rankings) throws ClassNotFoundException, SQLException {
         if (rankings.isEmpty()) return;
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -55,6 +59,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Return score and rating of a single bg player
     public static HashMap<String, Double> getBgPlayerStats(long discord) throws ClassNotFoundException, SQLException {
         double minRating = getMinRating();
         minRating = minRating < 0 ? minRating * -1 : 0;
@@ -80,12 +85,13 @@ public class DBProvider {
         return stats;
     }
 
-    public static HashMap<Long, Double> getBgTopRatings() throws ClassNotFoundException, SQLException {
+    // Return all ratings, sorted descendingly
+    public static TreeMap<Long, Double> getBgTopRatings() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select discord, rating from bgGame order by rating desc");
-        HashMap<Long, Double> topRatings = new HashMap<>();
+        TreeMap<Long, Double> topRatings = new TreeMap<>();
         while (rs.next()) {
             topRatings.put(rs.getLong("discord"), rs.getDouble("rating"));
         }
@@ -94,12 +100,13 @@ public class DBProvider {
         return topRatings;
     }
 
-    public static HashMap<Long, Double> getBgTopScores() throws ClassNotFoundException, SQLException {
+    // Return all scores, sorted desceningly
+    public static TreeMap<Long, Double> getBgTopScores() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select discord, score from bgGame order by score desc");
-        HashMap<Long, Double> topScores = new HashMap<>();
+        TreeMap<Long, Double> topScores = new TreeMap<>();
         while (rs.next()) {
             topScores.put(rs.getLong("discord"), (double)rs.getInt("score"));
         }
@@ -108,6 +115,7 @@ public class DBProvider {
         return topScores;
     }
 
+    // Return the minimal rating of all bg players
     public static double getMinRating() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -126,6 +134,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Return a hashmap of a guild-channel-msg hash mapped to a role id
     public static HashMap<Integer, String> getRoleAssigns() throws ClassNotFoundException, SQLException {
         HashMap<Integer, String> roleAssigns = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -140,6 +149,7 @@ public class DBProvider {
         return roleAssigns;
     }
 
+    // Add a new guild-channel-msg hash to a role id
     public static void addRoleAssign(int hash, String roleID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -151,6 +161,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Remove the given guild-channel-msg hash from the database
     public static void removeRoleAssign(int hash) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -166,6 +177,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Retrieve the ids of all unchecked users and the time when they joined
     public static HashMap<String, ZonedDateTime> getUncheckedUsers() throws ClassNotFoundException, SQLException {
         HashMap<String, ZonedDateTime> users = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -180,6 +192,7 @@ public class DBProvider {
         return users;
     }
 
+    // Add a new unchecked user
     public static void addUncheckedUser(String discordID, ZonedDateTime date) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -191,6 +204,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Remove an unchecked user i.e. the user left, was kicked, or got checked
     public static void removeUncheckedUser(String discordID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -200,12 +214,13 @@ public class DBProvider {
         c.close();
     }
 
-    /*
+    /* (inactive)
      * ------------------------
      *      snipe channels
      * ------------------------
      */
 
+    // Return channel ids of channels in which the bot notifies when snipes happened
     public static HashSet<String> getSnipeChannels() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -219,6 +234,7 @@ public class DBProvider {
         return channels;
     }
 
+    // Add a new snipe-notification channel to the database
     public static void addSnipeChannel(String channelID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -234,6 +250,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Retrieve all map id's for which national leaderboard data is saved
     public static TreeSet<Integer> getMapIds() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -247,6 +264,7 @@ public class DBProvider {
         return mapIDs;
     }
 
+    // Update the saved national leaderboard data of the given map
     public static void updateRanking(String mapID, String[] rankings) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -260,6 +278,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Retrieve the national leaderboard data for the given map
     public static String[] getRanking(String mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -277,6 +296,7 @@ public class DBProvider {
         return ranking.toArray(new String[0]);
     }
 
+    // Return the whole national leaderboard data
     public static TreeMap<Integer, String[]> getRankings() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -298,6 +318,7 @@ public class DBProvider {
         return rankings;
     }
 
+    // Add a new map to the national leaderboard data
     public static void addMaps(List<Integer> mapIDs) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -311,6 +332,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Add a new map and a ranking to the national leaderboard data
     public static void addMapWithRankings(Integer mapID, String[] rankings) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -329,6 +351,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Save data of a new beatmap
     public static void addBeatmap(OsuBeatmap map) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -360,6 +383,7 @@ public class DBProvider {
 
     }
 
+    // Retrieve data of the given mapID and return its map
     public static OsuBeatmap getBeatmap(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -407,20 +431,21 @@ public class DBProvider {
         return m;
     }
 
-    /*
+    /* (saves the following mod cominations: nm, hd, hr, dt, hdhr, hddt)
      * ------------------------
      *      pp ratings
      * ------------------------
      */
 
+    // Modify mod string so that database can handle it more easily
     private static String prepareMods(String mods) {
-        String newMods = mods.equals("") ? "NM" :
-                mods.replace("NC", "DT")
-                        .replace("SD", "")
-                        .replace("PF", "");
+        String newMods = mods.replace("NC", "DT")   // dt and nc are the same pp
+                        .replace("SD", "")          // sd doesn't influence pp
+                        .replace("PF", "");         // pf doesn't influence pp
         return newMods.equals("") ? "NM" : newMods;
     }
 
+    // Given a map and mods, return the maximal pp value
     public static double getPpRating(int mapID, String mods)
             throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
         try {
@@ -445,6 +470,7 @@ public class DBProvider {
         }
     }
 
+    // Return the amount of saved pp scores for the given mod combination
     public static int getAmount(String mods) throws ClassNotFoundException, SQLException {
         mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -454,7 +480,7 @@ public class DBProvider {
         rs.next();
         return rs.getInt(mods);
     }
-
+    // Return the average pp value for all maps with the given mod combination
     public static double getAverage(String mods) throws ClassNotFoundException, SQLException {
         mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -465,6 +491,7 @@ public class DBProvider {
         return rs.getDouble(mods);
     }
 
+    // Add a new map to the pp database
     public static void addMapPp(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -476,6 +503,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Add mod pp for a given map
     public static void  addModsPp(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
         mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -486,12 +514,13 @@ public class DBProvider {
         c.close();
     }
 
-    /*
+    /* (saves the following mod cominations: hr, dt)
      * ------------------------
      *      star ratings
      * ------------------------
      */
 
+    // Return the star rating for the given map and mod combination
     public static double getStarRating(int mapID, String mods)
             throws ClassNotFoundException, SQLException, IllegalAccessException, IllegalArgumentException {
         try {
@@ -514,6 +543,7 @@ public class DBProvider {
         }
     }
 
+    // Add a new map to star rating database
     public static void addMapStars(int mapID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -525,6 +555,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Add new star rating value for the given map and mod combination
     public static void addModsStars(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
         mods = prepareMods(mods);
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -541,6 +572,7 @@ public class DBProvider {
      * -------------------------
      */
 
+    // Return whether the song commands are activated on the given server
     public static boolean getLyricsState(String serverID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -550,6 +582,7 @@ public class DBProvider {
         return rs.getBoolean("lyricsAvailable");
     }
 
+    // Update permission to use song commands
     public static void setLyricsState(String serverID, boolean bool) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -557,6 +590,7 @@ public class DBProvider {
         stmnt.execute("update serverProperties set lyricsAvailable = " + bool + " where server='" + serverID + "'");
     }
 
+    // Return name of authority roles for the given server
     public static String[] getAuthorityRoles(String serverID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -566,16 +600,12 @@ public class DBProvider {
         return rs.getString("authorityRoles").split("##");
     }
 
+    // Update authority roles for given server
     public static void setAuthorityRoles(String serverID, String[] roles) throws ClassNotFoundException, SQLException {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
-        Statement stmnt = c.createStatement();
-        stmnt.execute("update serverProperties set authorityRoles = '" + String.join("##", roles) +
-                "' where server='" + serverID + "'");
-        stmnt.close();
-        c.close();
+        setAuthorityRoles(serverID, Arrays.asList(roles));
     }
 
+    // Update authority roles for given server
     public static void setAuthorityRoles(String serverID, List<String> roles) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -586,12 +616,13 @@ public class DBProvider {
         c.close();
     }
 
-    /*
+    /* (linking discord user ids to osu usernames manually)
      * ------------------------
      *       manual links
      * ------------------------
      */
 
+    // Get all manual links
     public static BiMap<String, String> getManualLinks() throws SQLException, ClassNotFoundException {
         BiMap<String, String> links = HashBiMap.create();
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -606,7 +637,7 @@ public class DBProvider {
         return links;
     }
 
-    /*
+    /* (linking discord user id to osu username)
      * ------------------------
      *         discosu
      * ------------------------
@@ -631,6 +662,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Return all links
     static HashMap<String, String> getDiscosu() throws SQLException, ClassNotFoundException {
         HashMap<String, String> links = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -651,6 +683,7 @@ public class DBProvider {
      * ------------------------
      */
 
+    // Remove streamer - channel combination from database
     static void removeStreamer(String streamer, String channelID, String platform) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -660,6 +693,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Add streamer - channel combination to database
     static void addStreamer(String streamer, String channelID, String platform) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
@@ -669,6 +703,7 @@ public class DBProvider {
         c.close();
     }
 
+    // Return all mixer streamer names and their notif-channels
     public static HashMap<String, ArrayList<String>> getMixer() throws SQLException, ClassNotFoundException {
         HashMap<String, ArrayList<String>> streamers = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -690,6 +725,7 @@ public class DBProvider {
         return streamers;
     }
 
+    // Return all twitch streamer names and their notif-channels
     public static HashMap<String, ArrayList<String>> getTwitch() throws SQLException, ClassNotFoundException {
         HashMap<String, ArrayList<String>> streamers = new HashMap<>();
         Class.forName("com.mysql.cj.jdbc.Driver");

@@ -30,6 +30,9 @@ import java.util.stream.Collectors;
 
 import static main.java.util.utilOsu.mods_strToInt;
 
+/*
+    Simulated a score on a map, be it the best possible score or with given hitresults / acc / ...
+ */
 public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand {
 
     protected int number = 1;
@@ -55,7 +58,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -84,7 +86,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             noMods =  false;
             argList.remove(mIdx);
         }
-
         // Retrieve hit object parameters from argument list
         double acc = -1;
         int combo = 0, nM = 0, score = 0, n320 = 0, n300 = 0, n200 = 0, n100 = 0, n50 = 0;
@@ -191,7 +192,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             event.getChannel().sendMessage("Invalid hit results. Acc must be between 0 and 100, everything else must be non-negative.").queue();
             return;
         }
-
         // Retrieve map
         String mapID = getMapId(event, argList);
         if (mapID.equals("-1")) {
@@ -221,7 +221,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 e1.printStackTrace();
             }
         }
-
         // Check parameter constrains
         int hitSum = 0;
         FileInteractor.prepareFiles(map);
@@ -253,7 +252,6 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         if (map.getMode() == GameMode.MANIA && score == 0) {
             score = 1000000;
         }
-
         // Create simulated score
         OsuScore osuscore = getScore();
         List<OsuScore> scores = new ArrayList<>();
@@ -302,7 +300,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             if (!noMods) osuscore.setEnabledMods(includedMods);
             scores.add(osuscore);
         }
-
+        // Create the message
         new BotMessage(event.getChannel(), BotMessage.MessageType.SIMULATE).map(map).osuscores(scores).buildAndSend();
     }
 

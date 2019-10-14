@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+/*
+    Check how much raw pp a player gains when performing the given pp score
+ */
 public class cmdWhatIf implements ICommand {
 
     @Override
@@ -32,6 +35,7 @@ public class cmdWhatIf implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // Check if its the proper argument
         double pp;
         try {
             pp = Double.parseDouble(args[0]);
@@ -43,6 +47,7 @@ public class cmdWhatIf implements ICommand {
             event.getChannel().sendMessage(help(2)).queue();
             return;
         }
+        // Get the name either from arguments or from database link
         String name;
         if (args.length == 1) {
             name = Main.discLink.getOsu(event.getAuthor().getId());
@@ -57,6 +62,7 @@ public class cmdWhatIf implements ICommand {
                     .collect(Collectors.toList());
             name = String.join(" ", argsList);
         }
+        // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
@@ -64,6 +70,7 @@ public class cmdWhatIf implements ICommand {
                 return;
             }
         }
+        // Retrieve osu user data
         OsuUser user;
         try {
             user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
@@ -71,6 +78,7 @@ public class cmdWhatIf implements ICommand {
             event.getChannel().sendMessage("No osu! user `" + name + "` was found").queue();
             return;
         }
+        // Retrieve the top plays of a osu user
         List<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(100).get();
@@ -78,6 +86,7 @@ public class cmdWhatIf implements ICommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
+        // Prepare the message
         EmbedBuilder eb = new EmbedBuilder();
         eb.setThumbnail("https://a.ppy.sh/" + user.getID());
         eb.setAuthor(user.getUsername() + ": "
@@ -89,19 +98,23 @@ public class cmdWhatIf implements ICommand {
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
         eb.setTitle("What if " + user.getUsername() + " got a new " + pp + "pp score?");
         StringBuilder description = new StringBuilder();
+        // pp too low
         if (pp < topPlays.get(topPlays.size() - 1).getPp()) {
             description.append("A ").append(pp).append("pp play wouldn't even be in ").append(user.getUsername())
                     .append("'s top 100 plays.\nThere would not be any significant pp change.");
         } else {
+            // Calculate the pp only coming from the users top scores
             double actual = 0, factor = 1;
             for (OsuScore score : topPlays) {
                 actual += score.getPp() * factor;
                 factor *= 0.95;
             }
+            // Bonus pp are the remaining difference
             double bonus = user.getPPRaw() - actual, potential = 0;
             boolean used = false;
             int newPos = -1;
             factor = 1;
+            // Check at what position the new score would be
             for (int i = 0; i < topPlays.size() - 1; i++) {
                 if (!used && topPlays.get(i).getPp() < pp) {
                     used = true;
