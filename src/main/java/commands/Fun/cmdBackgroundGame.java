@@ -350,7 +350,7 @@ public class cmdBackgroundGame implements ICommand {
         String help = " (`" + statics.prefix + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + getName() + " [start/bigger/hint/resolve/stop] [-score] [-rating] [-stats <user mention>]` to play the background-guessing game." +
+                return "Enter `" + statics.prefix + getName() + " [start/bigger/hint/resolve/stop] [-score] [-rating] [-stats]` to play the background-guessing game." +
                         "\nWith `start` I will select and show part of a new background for you to guess." +
                         "\nWith `bigger` I will slightly enlargen the currently shown part of the background to make it easier." +
                         "\nWith `hint` I will provide you some clues for the map title." +

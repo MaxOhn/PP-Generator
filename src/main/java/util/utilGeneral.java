@@ -134,7 +134,7 @@ public class utilGeneral {
         return author.getId().equals(secrets.badewanne3ID);
     }
 
-    // Calculate the similarity score between two strings via levensthein distance
+    // Calculate the similarity score between two strings via levenshtein distance
     public static double similarity(String s1, String s2) {
         String longer = s1, shorter = s2;
         if (s1.length() < s2.length()) {
@@ -144,7 +144,7 @@ public class utilGeneral {
         return longerLength == 0 ? 1 : (longerLength - editDistance(longer, shorter)) / (double)longerLength;
     }
 
-    // Function for levensthein distance
+    // Function for levenshtein distance
     public static int editDistance(String s1, String s2) {
         s1 = s1.toLowerCase(); s2 = s2.toLowerCase();
         int[] costs = new int[s2.length() + 1];

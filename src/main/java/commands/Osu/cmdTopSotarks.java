@@ -11,12 +11,6 @@ import java.util.regex.Pattern;
  */
 public class cmdTopSotarks extends cmdTopScores {
 
-    // Check all top scores
-    @Override
-    int getAmount() {
-        return 100;
-    }
-
     // The map of the score must either have sotarks as creator or be a guest diff from sotarks
     @Override
     boolean getMapCondition(OsuBeatmap m) {

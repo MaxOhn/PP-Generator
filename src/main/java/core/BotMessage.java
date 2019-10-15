@@ -206,7 +206,7 @@ public class BotMessage {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 if (mb.isEmpty() && scores.size() > 5) {
-                    mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the specified mods in `")
+                    mb.append("I found ").append(String.valueOf(scores.size())).append(" scores with the specified properties in `")
                             .append(u.getUsername()).append("`'s top 100, here's the top 5 of them:");
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }

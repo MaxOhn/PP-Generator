@@ -114,27 +114,19 @@ public class utilOsu {
     // Given a rank as a string, return the corresponding rank as enum
     public static rankEmote getRankEmote(String rank) {
         switch (rank) {
-            case "XH":
-                return rankEmote.XH;
-            case "X":
-                return rankEmote.X_;
-            case "SH":
-                return rankEmote.SH;
-            case "S":
-                return rankEmote.S_;
-            case "A":
-                return rankEmote.A_;
-            case "B":
-                return rankEmote.B_;
-            case "C":
-                return rankEmote.C_;
-            case "D":
-                return rankEmote.D_;
+            case "XH": return rankEmote.XH;
+            case "X": return rankEmote.X_;
+            case "SH": return rankEmote.SH;
+            case "S": return rankEmote.S_;
+            case "A": return rankEmote.A_;
+            case "B": return rankEmote.B_;
+            case "C": return rankEmote.C_;
+            case "D": return rankEmote.D_;
+            default: return rankEmote.F_;
         }
-        return rankEmote.F_;
     }
 
-    // Saving ranks as discord emotes
+    // Saving ranks as discord emote ids
     public enum rankEmote {
         XH("515354675059621888"),
         X_("515354674929336320"),

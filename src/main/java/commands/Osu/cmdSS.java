@@ -10,12 +10,6 @@ import main.java.util.statics;
  */
 public class cmdSS extends cmdTopScores {
 
-    // Check all top scores
-    @Override
-    int getAmount() {
-        return 100;
-    }
-
     // The score must be an SS
     @Override
     boolean getScoreCondition(OsuScore s, GameMode mode) {
