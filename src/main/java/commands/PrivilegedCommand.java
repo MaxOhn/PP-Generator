@@ -34,8 +34,8 @@ public abstract class PrivilegedCommand implements ICommand {
                 return false;
             }
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Error while retrieving authorityRoles: " + e);
-            event.getTextChannel().sendMessage("Something went wrong, ping bade or smth :p").queue();
+            logger.error("Error while retrieving authorityRoles: ", e);
+            event.getTextChannel().sendMessage("Something went wrong, blame bade").queue();
             return false;
         }
         return customCalled(args, event);

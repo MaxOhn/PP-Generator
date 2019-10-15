@@ -40,13 +40,11 @@ public class commandHandler {
             try {
                 // If so, perform the action in new thread
                 if (safe) {
-                    final Thread t = new Thread(() -> {
-                        if (commands.get(invoke) instanceof INumberedCommand && cmd.number != -1)
-                            ((INumberedCommand) commands.get(invoke)).setNumber(cmd.number).action(cmd.args, cmd.event);
-                        else
-                            commands.get(invoke).action(cmd.args, cmd.event);
-                    });
-                    t.start();
+                    new Thread(() -> {
+                        if (cmd.number != -1 && commands.get(invoke) instanceof INumberedCommand)
+                            ((INumberedCommand) commands.get(invoke)).setNumber(cmd.number);
+                        commands.get(invoke).action(cmd.args, cmd.event);
+                    }).start();
                 }
                 // Log the occurrence of the invoke
                 if (cmd.event.isFromType(ChannelType.TEXT)) {

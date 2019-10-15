@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 public class ReadyListener extends ListenerAdapter {
 
     public void onReady(ReadyEvent event) {
-        LoggerFactory.getLogger(this.getClass()).info("API is ready!");
         Main.osu = Osu.getAPI(secrets.osuAPIkey);
         Main.customOsu = new CustomOsu();
         if (secrets.RELEASE)
@@ -18,5 +17,6 @@ public class ReadyListener extends ListenerAdapter {
         Main.discLink = new DiscordLink();
         Main.memberHandler = new MemberHandler();
         Main.reactionHandler = new ReactionHandler();
+        LoggerFactory.getLogger(this.getClass()).info("API is ready!");
     }
 }
