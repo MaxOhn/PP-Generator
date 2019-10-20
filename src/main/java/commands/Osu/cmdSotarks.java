@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 /*
     Count amount of maps in users top scores that are from sotarks
  */
-public class cmdTopSotarks extends cmdTopScores {
+public class cmdSotarks extends cmdTop {
 
     // The map of the score must either have sotarks as creator or be a guest diff from sotarks
     @Override
@@ -33,11 +33,14 @@ public class cmdTopSotarks extends cmdTopScores {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "topsotarks -h` for more help)";
+        String help = " (`" + statics.prefix + "sotarks -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "topsotarks [-m <s/t/c/m for mode>] [osu name] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top 5 scores on any Sotarks maps."
+                return "Enter `" + statics.prefix + "sotarks[number] [-m <s/t/c/m for mode>] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top 5 scores on any Sotarks maps."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
+                        + "\nWith `-acc` you can specify a bottom limit for counted accuracies. Must be a positive decimal number."
+                        + "\nWith `-combo` you can specify a bottom limit for counted combos. Must be a positive integer."
+                        + "\nWith `-grade` you can specify what grade counted scores will have. Must be either SS, S, A, B, C, or D"
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

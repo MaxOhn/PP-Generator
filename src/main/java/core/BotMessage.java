@@ -43,7 +43,7 @@ public class BotMessage {
     private List<OsuUser> users;
     private OsuScore score;
     private List<OsuScore> scores;
-    private ArrayList<OsuBeatmap> maps;
+    private List<OsuBeatmap> maps;
 
     private String topplays;
     private int retries;
@@ -543,7 +543,7 @@ public class BotMessage {
     }
 
     // Set mulitple maps for the message
-    public BotMessage maps(ArrayList<OsuBeatmap> maps) {
+    public BotMessage maps(List<OsuBeatmap> maps) {
         this.maps = maps;
         return this;
     }
