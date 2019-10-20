@@ -175,7 +175,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 .collect(Collectors.groupingBy(OsuScore::getBeatmapID))
                 .values()
                 .stream()
-                .filter(list -> list.size() >= compareAmount && list.stream().allMatch(this::isValidScore))
+                .filter(list -> list.size() >= compareAmount && list.stream().allMatch(this::hasValidMods))
                 .sorted((a, b) -> Math.round(a.get(0).getPp() - b.get(0).getPp()))
                 .flatMap(List::stream)
                 .collect(Collectors.toList());

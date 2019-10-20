@@ -127,7 +127,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             int limit = status != modStatus.WITHOUT ? 50 : 10;
             scores = Main.customOsu.getScores(mapID, getType() == lbType.NATIONAL, status == modStatus.WITHOUT ? null : new HashSet<>(Arrays.asList(includedMods)))
                     .stream().limit(limit)
-                    .filter(this::isValidScore)
+                    .filter(this::hasValidMods)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             event.getChannel().sendMessage("Could not retrieve scores of the beatmap, blame bade").queue();

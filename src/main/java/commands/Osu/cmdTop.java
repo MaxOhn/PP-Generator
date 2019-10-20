@@ -1,9 +1,6 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.GameMode;
-import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
@@ -14,24 +11,34 @@ import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static main.java.util.utilOsu.mods_strToInt;
 
 /*
-    Display a single top score of a user
+    Display top scores of a user that satisfy conditions
  */
-public class cmdTop implements INumberedCommand {
+public class cmdTop extends cmdModdedCommand implements INumberedCommand {
 
     private int number = 1;
+    private double acc;
+    private int combo;
+    private String grade;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
+        if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help"))) {
+            event.getChannel().sendMessage(help(0)).queue();
+            return false;
+        }
+        setInitial();
         number = 1;
         return true;
     }
@@ -46,26 +53,27 @@ public class cmdTop implements INumberedCommand {
         GameMode mode = GameMode.STANDARD;
         for (int i = 0; i < args.length; i++) {
             if (args[i].equals("-m") || args[i].equals("-mode")) {
-                if (i+1 < args.length) {
-                    switch (args[i+1]) {
+                if (i + 1 < args.length) {
+                    switch (args[i + 1]) {
                         case "standard":
                         case "std":
                         case "s": mode = GameMode.STANDARD; break;
+                        case "taiko":
                         case "tko":
                         case "t": mode = GameMode.TAIKO; break;
                         case "ctb":
                         case "c":
-                            event.getChannel().sendMessage(help(5)).queue();
+                            event.getChannel().sendMessage(help(2)).queue();
                             return;
                         case "mania":
                         case "mna":
                         case "m": mode = GameMode.MANIA; break;
                         default:
-                            event.getChannel().sendMessage(help(4)).queue();
+                            event.getChannel().sendMessage(help(3)).queue();
                             return;
                     }
                 } else {
-                    event.getChannel().sendMessage(help(4)).queue();
+                    event.getChannel().sendMessage(help(3)).queue();
                     return;
                 }
             }
@@ -78,6 +86,93 @@ public class cmdTop implements INumberedCommand {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);
         }
+        // Check for accuracy in arguments
+        delIndex = argList.indexOf("-acc");
+        if (delIndex > -1) {
+            try {
+                acc = Double.parseDouble(argList.get(delIndex + 1));
+                if (acc < 0) throw new IllegalArgumentException("Accuracy must be positive");
+            } catch (Exception e) {
+                event.getChannel().sendMessage(help(4)).queue();
+                return;
+            }
+            argList.remove(delIndex + 1);
+            argList.remove(delIndex);
+        } else acc = 0;
+        // Check for combo in arguments
+        delIndex = argList.indexOf("-combo");
+        if (delIndex > -1) {
+            try {
+                combo = Integer.parseInt(argList.get(delIndex + 1));
+                if (combo < 0) throw new IllegalArgumentException("Combo must be positive");
+            } catch (Exception e) {
+                event.getChannel().sendMessage(help(5)).queue();
+                return;
+            }
+            argList.remove(delIndex + 1);
+            argList.remove(delIndex);
+        } else combo = 0;
+        // Check for grade in arguments
+        delIndex = argList.indexOf("-grade");
+        if (delIndex > -1) {
+            if (argList.size() < delIndex + 2) {
+                event.getChannel().sendMessage(help(6)).queue();
+                return;
+            }
+            switch (argList.get(delIndex + 1).toLowerCase()) {
+                case "ss":
+                case "s":
+                case "a":
+                case "b":
+                case "c":
+                case "d":
+                    grade = argList.get(delIndex + 1).toLowerCase();
+                    break;
+                default:
+                    event.getChannel().sendMessage(help(6)).queue();
+                    return;
+            }
+            argList.remove(delIndex + 1);
+            argList.remove(delIndex);
+        } else grade = "";
+        // Check for mods in arguments
+        Pattern p = Pattern.compile("\\+[^!]*!?");
+        setInitial();
+        int mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            if (word.contains("!")) {
+                status = cmdModdedCommand.modStatus.EXACT;
+                word = word.substring(1, word.length() - 1);
+            } else {
+                status = word.equals("+nm") ? modStatus.EXACT : cmdModdedCommand.modStatus.CONTAINS;
+                word = word.substring(1);
+            }
+            includedMods = GameMod.get(mods_strToInt(word.toUpperCase()));
+            argList.remove(mIdx);
+        }
+        p = Pattern.compile("-[^!]*!");
+        mIdx = -1;
+        for (String s : argList) {
+            if (p.matcher(s).matches()) {
+                mIdx = argList.indexOf(s);
+                break;
+            }
+        }
+        if (mIdx != -1) {
+            String word = argList.get(mIdx);
+            word = word.substring(1, word.length()-1);
+            excludedMods.addAll(Arrays.asList(GameMod.get(mods_strToInt(word.toUpperCase()))));
+            if (word.contains("nm"))
+                excludeNM = true;
+            argList.remove(mIdx);
+        }
         // Get the name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
@@ -86,9 +181,6 @@ public class cmdTop implements INumberedCommand {
                 event.getChannel().sendMessage(help(1)).queue();
                 return;
             }
-        } else if (args[0].equals("-h") || args[0].equals("-help")) {
-            event.getChannel().sendMessage(help(0)).queue();
-            return;
         } else {
             name = String.join(" ", argList);
         }
@@ -109,67 +201,196 @@ public class cmdTop implements INumberedCommand {
             return;
         }
         // Retrieve user's top scores
-        Collection<OsuScore> topPlays;
+        List<OsuScore> scores;
         try {
-            topPlays = user.getTopScores(number).get();
+            scores = user.getTopScores(100).get();
         } catch (OsuAPIException e) {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
-        // Get the appropriate score
-        final Iterator<OsuScore> it = topPlays.iterator();
-        OsuScore rbScore = it.next();
-        while(it.hasNext() && --number > 0)
-            rbScore = it.next();
-        // Retrieve the score's map
-        OsuBeatmap map;
-        try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(rbScore.getBeatmapID());
-        } catch (SQLException | ClassNotFoundException e) {
-            try {
-                map = rbScore.getBeatmap().get();
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve map").queue();
+        if (number < 6) {
+            // Consider only scores with correct mods that fullfill the score condition
+            scores = scores.stream()
+                    .filter(s -> hasValidMods(s) && getScoreCondition(s, user.getMode()))
+                    .collect(Collectors.toList());
+            List<OsuBeatmap> maps = new ArrayList<>();
+            // If there is a condition on maps, take all scores for which the map satisfies the condition
+            if (!getMapCondition(null)) {
+                for (OsuScore s : scores) {
+                    OsuBeatmap map;
+                    try {
+                        if (!secrets.WITH_DB)
+                            throw new SQLException();
+                        map = DBProvider.getBeatmap(s.getBeatmapID());
+                    } catch (SQLException | ClassNotFoundException e) {
+                        try {
+                            map = s.getBeatmap().get();
+                        } catch (OsuAPIException e1) {
+                            continue;
+                        }
+                        try {
+                            if (secrets.WITH_DB)
+                                DBProvider.addBeatmap(map);
+                        } catch (ClassNotFoundException | SQLException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    if (getMapCondition(map))
+                        maps.add(map);
+                }
+                scores = scores.stream()
+                        .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
+                        .collect(Collectors.toList());
+            // No condition on maps -> just take the maps of the first 5 scores
+            } else {
+                maps.addAll(scores.stream().limit(5).map(s -> {
+                    OsuBeatmap map;
+                    try {
+                        if (!secrets.WITH_DB)
+                            throw new SQLException();
+                        map = DBProvider.getBeatmap(s.getBeatmapID());
+                    } catch (SQLException | ClassNotFoundException e) {
+                        try {
+                            map = s.getBeatmap().get();
+                        } catch (OsuAPIException e1) {
+                            return null;
+                        }
+                        try {
+                            if (secrets.WITH_DB)
+                                DBProvider.addBeatmap(map);
+                        } catch (ClassNotFoundException | SQLException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    return map;
+                }).filter(Objects::nonNull).collect(Collectors.toList()));
+            }
+            if (scores.size() == 0) {
+                event.getChannel().sendMessage(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM)).queue();
                 return;
             }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
+            // Build message
+            new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
+                    .maps(maps.stream().limit(5).collect(Collectors.toList()))
+                    .mode(mode).buildAndSend();
+        } else {
+            // Get the appropriate score
+            OsuScore topScore = null;
+            OsuBeatmap map = null;
+            for (OsuScore s : scores) {
+                if (getScoreCondition(s, user.getMode())) {
+                    if (!getMapCondition(null)) {
+                        try {
+                            if (!secrets.WITH_DB)
+                                throw new SQLException();
+                            map = DBProvider.getBeatmap(s.getBeatmapID());
+                        } catch (SQLException | ClassNotFoundException e) {
+                            try {
+                                map = s.getBeatmap().get();
+                            } catch (OsuAPIException e1) {
+                                event.getChannel().sendMessage("Could not retrieve map").queue();
+                                return;
+                            }
+                            try {
+                                if (secrets.WITH_DB)
+                                    DBProvider.addBeatmap(map);
+                            } catch (ClassNotFoundException | SQLException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
+                        if (getMapCondition(map) && --number == 0) {
+                            topScore = s;
+                            break;
+                        }
+                    } else if (--number == 0) {
+                        topScore = s;
+                        break;
+                    }
+                }
             }
+            if (topScore == null) {
+                event.getChannel().sendMessage("No top score found with the specified poperties.").queue();
+                return;
+            }
+            // Retrieve the score's map if it didn't happen already
+            if (map == null) {
+                try {
+                    if (!secrets.WITH_DB)
+                        throw new SQLException();
+                    map = DBProvider.getBeatmap(topScore.getBeatmapID());
+                } catch (SQLException | ClassNotFoundException e) {
+                    try {
+                        map = topScore.getBeatmap().get();
+                    } catch (OsuAPIException e1) {
+                        event.getChannel().sendMessage("Could not retrieve map").queue();
+                        return;
+                    }
+                    try {
+                        if (secrets.WITH_DB)
+                            DBProvider.addBeatmap(map);
+                    } catch (ClassNotFoundException | SQLException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+            // Retrieve the global leaderboard of the map
+            Collection<OsuScore> globalPlays;
+            try {
+                globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
+            } catch (OsuAPIException e) {
+                event.getChannel().sendMessage("Could not retrieve global scores").queue();
+                return;
+            }
+            // Create the message
+            new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(topScore)
+                    .mode(mode).topplays(scores, globalPlays).buildAndSend();
         }
-        // Retrieve the global leaderboard of the map
-        Collection<OsuScore> globalPlays;
-        try {
-            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
-        } catch (OsuAPIException e) {
-            event.getChannel().sendMessage("Could not retrieve global scores").queue();
-            return;
-        }
-        // Create the message
-        new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(rbScore)
-                .mode(mode).topplays(topPlays, globalPlays).buildAndSend();
+    }
+
+    String noScoreMessage(String username, boolean withMods) {
+        return "Could not find any top scores from user `" + username + "`" + (withMods || acc > 0 || !grade.isEmpty() || combo > 0 ? " with the given specifications" : "");
+    }
+
+    boolean getMapCondition(OsuBeatmap m) {
+        return true;
+    }
+
+    boolean getScoreCondition(OsuScore s, GameMode m) {
+        if (s == null) return true;
+        return utilOsu.getAcc(s, m) >= acc
+                && s.getMaxCombo() >= combo
+                && (grade.isEmpty()
+                    || s.getRank().replace("H", "").replace("X", "ss").toLowerCase().equals(grade));
+    }
+
+    BotMessage.MessageType getMessageType() {
+        return BotMessage.MessageType.TOPSCORES;
     }
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "best -h` for more help)";
+        String help = " (`" + statics.prefix + "topscores -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "top[number] [-m <s/t/c/m for mode>] [osu name]` to make me respond with the users selected best performance."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + "top8`, I will give the user's 8th best score, defaults to 1."
+                return "Enter `" + statics.prefix + "top[number] [-m <s/t/c/m for mode>] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top scores with the given properties."
+                        + "\nIf no number is specified or it's up to 5, I will show the top 5 scores. Otherwise I will show only the number-th top score."
+                        + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
+                        + "\nWith `-acc` you can specify a bottom limit for counted accuracies. Must be a positive decimal number."
+                        + "\nWith `-combo` you can specify a bottom limit for counted combos. Must be a positive integer."
+                        + "\nWith `-grade` you can specify what grade counted scores will have. Must be either SS, S, A, B, C, or D"
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "Either specify a osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 3:
-                return "Specify a number after '-n'" + help;
-            case 4:
-                return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
-            case 5:
+                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
+            case 2:
                 return "CtB is not yet supported" + help;
+            case 3:
+                return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
+            case 4:
+                return "After '-acc' you must specify a positive number i.e. `-acc 96.73`" + help;
+            case 5:
+                return "After '-combo' you must specify a positive integer i.e. `-combo 567`" + help;
+            case 6:
+                return "After '-grade' you must specify a either SS, S, A, B, C, or D i.e. `-grade B`" + help;
             default:
                 return help(0);
         }
@@ -181,7 +402,7 @@ public class cmdTop implements INumberedCommand {
     }
 
     @Override
-    public cmdTop setNumber(int number) {
+    public INumberedCommand setNumber(int number) {
         this.number = number;
         return this;
     }

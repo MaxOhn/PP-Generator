@@ -115,14 +115,14 @@ public class Main {
         commandHandler.commands.put("link", new cmdLink());
         commandHandler.commands.put("recentbest", new cmdRecentBest());
         commandHandler.commands.put("rb", new cmdRecentBest());
-        commandHandler.commands.put("top", new cmdTop());
         commandHandler.commands.put("scores", new cmdScores());
-        commandHandler.commands.put("topscores", new cmdTopScores());
-        commandHandler.commands.put("osutop", new cmdTopScores());
+        commandHandler.commands.put("top", new cmdTop());
+        commandHandler.commands.put("topscores", new cmdTop());
+        commandHandler.commands.put("osutop", new cmdTop());
         commandHandler.commands.put("nochoke", new cmdNoChoke());
         commandHandler.commands.put("nochokes", new cmdNoChoke());
         commandHandler.commands.put("nc", new cmdNoChoke());
-        commandHandler.commands.put("sotarks", new cmdTopSotarks());
+        commandHandler.commands.put("sotarks", new cmdSotarks());
         commandHandler.commands.put("ss", new cmdSS());
         commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
         commandHandler.commands.put("lb", new cmdMapLeaderboard());
@@ -156,6 +156,8 @@ public class Main {
         commandHandler.commands.put("tijdmachine", new cmdTijdmachine());
         commandHandler.commands.put("rockefeller", new cmdRockefeller());
         commandHandler.commands.put("fireandflames", new cmdFireAndFlames());
+        commandHandler.commands.put("bg", new cmdBackgroundGame());
+        commandHandler.commands.put("bgm", new cmdBackgroundGameMania());
 
         // utility
         commandHandler.commands.put("devtool", new cmdDevTool());
@@ -171,8 +173,5 @@ public class Main {
         commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
         commandHandler.commands.put("roleassign", new cmdRoleAssign());
-        commandHandler.commands.put("bg", new cmdBackgroundGame());
-        commandHandler.commands.put("background", new cmdBackgroundGame());
-        commandHandler.commands.put("bgm", new cmdBackgroundGameMania());
     }
 }

@@ -34,7 +34,7 @@ public abstract class cmdModdedCommand implements ICommand {
     }
 
     // Check if given score satisfies mod condition
-    boolean isValidScore(OsuScore score) {
+    boolean hasValidMods(OsuScore score) {
         boolean response = excludedMods.size() == 0 || excludesMods(score);
         switch (status) {
             case CONTAINS:
