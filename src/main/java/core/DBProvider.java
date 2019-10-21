@@ -50,7 +50,7 @@ public class DBProvider {
             BgGameRanking current = it.next();
             if (result == 0) {
                 Statement stmntNew = c.createStatement();
-                stmntNew.executeQuery("insert into bgGame (discord, score, rating) values (" +
+                stmntNew.execute("insert into bgGame (discord, score, rating) values (" +
                         current.getDiscordUser() + ", " + current.getScore() + ", " + current.getRating() + ")");
                 stmntNew.close();
             }
@@ -73,7 +73,7 @@ public class DBProvider {
             rating = rs.getDouble("rating") + minRating;
         } else {
             stmnt = c.createStatement();
-            stmnt.executeQuery("insert into bgGame (discord, score, rating) values (" +
+            stmnt.execute("insert into bgGame (discord, score, rating) values (" +
                     discord + ", 0, 0)");
             score = rating = 0;
         }

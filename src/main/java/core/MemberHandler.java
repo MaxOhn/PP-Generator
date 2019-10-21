@@ -105,7 +105,7 @@ public class MemberHandler {
     }
 
     private void regularIteration() {
-        final Thread t = new Thread(() -> {
+        new Thread(() -> {
 
             // Kick unchecked members
             ZonedDateTime now = ZonedDateTime.now();
@@ -163,7 +163,7 @@ public class MemberHandler {
                             + ") satisfies top condition, added top role");
                 }
             }
-        });
-        t.start();
+            logger.info("Handled unchecked members and top role distribution");
+        }).start();
     }
 }

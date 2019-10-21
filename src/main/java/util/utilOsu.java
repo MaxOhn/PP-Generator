@@ -165,7 +165,8 @@ public class utilOsu {
     public static String getIdFromString(String idString) {
         Pattern p = Pattern.compile("((.*)/([0-9]{1,8})($|([&?])m=[0-3]))|(^[0-9]{1,8}$)");
         String id = "-1";
-        Matcher m = p.matcher(idString);
+        // Replace < > in case they were given for discord
+        Matcher m = p.matcher(idString.replace("<", "").replace(">", ""));
         if (m.find())
             id = m.group(3);
         if (id == null)

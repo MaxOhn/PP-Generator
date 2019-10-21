@@ -80,8 +80,31 @@ public class CustomOsu {
         }
     }
 
-    // Return all scores on the given map with the given mods, on either national or global leaderboard
     public Collection<OsuScore> getScores(String mapID, boolean national, Set<GameMod> mods) throws IOException {
+        Collection<OsuScore> scores = getScoresHelper(mapID, national, mods);
+        if (mods != null) {
+            if (mods.contains(GameMod.DOUBLE_TIME)) {
+                mods.remove(GameMod.DOUBLE_TIME);
+                mods.add(GameMod.NIGHTCORE);
+                scores.addAll(getScoresHelper(mapID, national, mods));
+                scores = scores.stream()
+                        .sorted((a, b) -> (b.getScore() - a.getScore()))
+                        .limit(50)
+                        .collect(Collectors.toList());
+            } else if (mods.contains(GameMod.NIGHTCORE)) {
+                mods.remove(GameMod.NIGHTCORE);
+                mods.add(GameMod.DOUBLE_TIME);
+                scores.addAll(getScoresHelper(mapID, national, mods));
+                scores = scores.stream()
+                        .sorted((a, b) -> (b.getScore() - a.getScore()))
+                        .limit(50)
+                        .collect(Collectors.toList());
+            }
+        }
+        return scores;
+    }
+    // Return all scores on the given map with the given mods, on either national or global leaderboard
+    public Collection<OsuScore> getScoresHelper(String mapID, boolean national, Set<GameMod> mods) throws IOException {
         limiter.acquire();
         // Prepare url and request data
         StringBuilder url = new StringBuilder("http://osu.ppy.sh/beatmaps/" + mapID + "/scores?");
@@ -129,7 +152,6 @@ public class CustomOsu {
             s.setUser(Main.osu.users.getAsQuery(new EndpointUsers.ArgumentsBuilder(s.getUserID()).build()).asLazilyLoaded());
             s.setBeatmap(Main.osu.beatmaps.getAsQuery(new EndpointBeatmaps.ArgumentsBuilder()
                     .setBeatmapID(s.getBeatmapID()).build()).asLazilyLoaded().map(list -> list.get(0)));
-
             scores.add(s);
         }
         return scores;
