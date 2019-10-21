@@ -1,10 +1,8 @@
 package main.java.commands.Osu;
 
 import com.oopsjpeg.osu4j.GameMod;
-import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -25,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -63,7 +62,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 .collect(Collectors.toCollection(ArrayList::new));
 
         // Retrieve mods from argument list
-        boolean noMods = true;
+        boolean specifiedMods = false;
         Pattern p = Pattern.compile("\\+[^!]*!?");
         setInitial();
         int mIdx = -1;
@@ -83,19 +82,19 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 word = word.substring(1);
             }
             includedMods = GameMod.get(mods_strToInt(word.toUpperCase()));
-            noMods =  false;
+            specifiedMods = true;
             argList.remove(mIdx);
         }
         // Retrieve hit object parameters from argument list
         double acc = -1;
         int combo = 0, nM = 0, score = 0, n320 = 0, n300 = 0, n200 = 0, n100 = 0, n50 = 0;
+        boolean withParameters = false;
 
         if ((mIdx = argList.indexOf("-a")) != -1 || (mIdx = argList.indexOf("-acc")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-a` must come a decimal number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 acc = Double.parseDouble(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-a` must come a decimal number!").queue();
@@ -105,11 +104,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-c")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-c` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 combo = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-c` must come an integer number!").queue();
@@ -119,11 +117,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-x")) != -1 || (mIdx = argList.indexOf("-m")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-x`/`-m` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 nM = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-x`/`-m` must come an integer number!").queue();
@@ -133,11 +130,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-s")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-s` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 score = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-s` must come an integer number!").queue();
@@ -147,11 +143,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-300")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-300` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 n300 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-300` must come an integer number!").queue();
@@ -161,11 +156,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-100")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-100` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 n100 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-100` must come an integer number!").queue();
@@ -175,11 +169,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             argList.remove(mIdx);
         }
         if ((mIdx = argList.indexOf("-50")) != -1) {
-            if (argList.size() < mIdx + 2) {
-                event.getChannel().sendMessage("After `-50` must come an integer number!").queue();
-                return;
-            }
+            withParameters = true;
             try {
+                if (argList.size() < mIdx + 2)
+                    throw new NumberFormatException();
                 n50 = Integer.parseInt(argList.get(mIdx + 1));
             } catch (NumberFormatException e) {
                 event.getChannel().sendMessage("After `-50` must come an integer number!").queue();
@@ -193,20 +186,17 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             return;
         }
         // Retrieve map
-        String mapID = getMapId(event, argList);
-        if (mapID.equals("-1")) {
+        OsuScore osuscore = retrieveScore(event, argList);
+        if (osuscore == null)
             return;
-        }
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
                 throw new SQLException();
-            map = DBProvider.getBeatmap(Integer.parseInt(mapID));
+            map = DBProvider.getBeatmap(osuscore.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
             try {
-                map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
-                ).get(0);
+                map = osuscore.getBeatmap().get();
             } catch (OsuAPIException e1) {
                 event.getChannel().sendMessage("Could not retrieve beatmap").queue();
                 return;
@@ -225,87 +215,95 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         int hitSum = 0;
         FileInteractor.prepareFiles(map);
         int nTotal = FileInteractor.countTotalObjects(map.getID());
+        // Create simulated score
         switch (map.getMode()) {
-            case STANDARD:
+            case STANDARD: {
                 hitSum = n300 + n100 + n50 + nM;
-                break;
-            case MANIA:
-                if (score > 1000000) {
-                    event.getChannel().sendMessage("The score must be between 0 and 1000000 on mania maps").queue();
+                if (hitSum > nTotal) {
+                    event.getChannel().sendMessage("The map has only " + nTotal + " objects, you gave too many (" + hitSum + ") in the parameters").queue();
                     return;
                 }
+                if (hitSum == 0 && acc == -1)
+                    n300 = nTotal;
+                // Handle specified parameters if there are any
+                if (withParameters) {
+                    if (acc > 0) {
+                        HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc, nTotal, 0, n300, 0, n100, n50, nM);
+                        n300 = hitresults.get("n300");
+                        n100 = hitresults.get("n100");
+                        n50 = hitresults.get("n50");
+                        nM = hitresults.get("nM");
+                        if (combo == 0)
+                            combo = map.getMaxCombo();
+                    } else if (combo > 0) {
+                        if (nM == 0)
+                            nM = map.getMaxCombo() / combo;
+                        if (n300 == 0)
+                            n300 = nTotal - nM;
+                        else if (n100 == 0)
+                            n100 = nTotal - n300 - nM;
+                        else
+                            n50 = nTotal - n300 - n100 - nM;
+                    } else {
+                        combo = map.getMaxCombo();
+                        if (n300 == 0)
+                            n300 = nTotal - n100 - n50 - nM;
+                        else if (n100 == 0)
+                            n100 = nTotal - n300 - n50 - nM;
+                        else
+                            n50 = nTotal - n300 - n100 - nM;
+                    }
+                    osuscore.setCount300(n300);
+                    osuscore.setCount100(n100);
+                    osuscore.setCount50(n50);
+                    osuscore.setCountmiss(nM);
+                    osuscore.setMaxcombo(combo);
+                // Otherwise just unchoke the score
+                } else
+                    utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()), 300);
+                if (specifiedMods)
+                    osuscore.setEnabledMods(includedMods);
                 break;
-            case TAIKO:
-                hitSum = n300 + n100 + nM;
+            }
+            case MANIA: {
+                if (score > 1_000_000) {
+                    event.getChannel().sendMessage("The score must be between 0 and 1,000,000 on mania maps").queue();
+                    return;
+                }
+                if (score == 0)
+                    score = 1_000_000;
+                // Only care about score but its nicer to see proper hitresults in the message
+                if (acc == -1)
+                    n320 = nTotal - n300 - n200 - n100 - n50 - nM;
+                else {
+                    HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc, nTotal, n320, n300, n200, n100, n50, nM);
+                    n320 = hitresults.get("n320");
+                    n300 = hitresults.get("n300");
+                    n200 = hitresults.get("n200");
+                    n100 = hitresults.get("n100");
+                    n50 = hitresults.get("n50");
+                    nM = hitresults.get("nM");
+                }
+                osuscore.setScore(score);
+                osuscore.setCountgeki(n320);
+                osuscore.setCount300(n300);
+                osuscore.setCountkatu(n200);
+                osuscore.setCount100(n100);
+                osuscore.setCount50(n50);
+                osuscore.setCountmiss(nM);
+                osuscore.setMaxcombo(combo);
                 break;
-            case CATCH_THE_BEAT:
+            }
+            case TAIKO: {
+                event.getChannel().sendMessage("Not available for taiko :(").queue();
+                return;
+            }
+            default:
                 event.getChannel().sendMessage("Mode not yet supported :(").queue();
                 return;
         }
-        if (hitSum > nTotal) {
-            event.getChannel().sendMessage("The map has only " + nTotal + " objects, you gave too many (" + hitSum + ") in the parameters").queue();
-            return;
-        } else if (hitSum == 0 && acc == -1) {
-            if (map.getMode() == GameMode.MANIA) n320 = nTotal;
-            else n300 = nTotal;
-        }
-        if (map.getMode() == GameMode.MANIA && score == 0) {
-            score = 1000000;
-        }
-        // Create simulated score
-        OsuScore osuscore = getScore();
-        List<OsuScore> scores = new ArrayList<>();
-        if (osuscore == null || map.getMode() != GameMode.STANDARD) {
-            if (hitSum < nTotal) {
-                HashMap<String, Integer> hitresults = utilOsu.getHitResults(map.getMode(), acc >= 0 ? acc : (osuscore == null ? 100 : utilOsu.getAcc(osuscore, map.getMode())), nTotal, n320, n300, n200, n100, n50, nM);
-                n320 = hitresults.get("n320");
-                n300 = hitresults.get("n300");
-                n200 = hitresults.get("n200");
-                n100 = hitresults.get("n100");
-                n50 = hitresults.get("n50");
-                nM = hitresults.get("nM");
-            }
-            if (combo == 0) combo = map.getMaxCombo();
-            if (noMods) {
-                for (GameMod[] mods : allMods) {
-                    OsuScore s = new OsuScore(Main.osu);
-                    s.setBeatmapID(map.getID());
-                    s.setEnabledMods(mods);
-                    s.setMaxcombo(combo);
-                    s.setScore(score);
-                    s.setCountgeki(n320);
-                    s.setCount300(n300);
-                    s.setCountkatu(n200);
-                    s.setCount100(n100);
-                    s.setCount50(n50);
-                    s.setCountmiss(nM);
-                    scores.add(s);
-                }
-            } else {
-                OsuScore s = new OsuScore(Main.osu);
-                s.setBeatmapID(map.getID());
-                s.setEnabledMods(includedMods);
-                s.setMaxcombo(combo);
-                s.setScore(score);
-                s.setCountgeki(n320);
-                s.setCount300(n300);
-                s.setCountkatu(n200);
-                s.setCount100(n100);
-                s.setCount50(n50);
-                s.setCountmiss(nM);
-                scores.add(s);
-            }
-        } else {
-            utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()));
-            if (!noMods) osuscore.setEnabledMods(includedMods);
-            scores.add(osuscore);
-        }
         // Create the message
-        new BotMessage(event.getChannel(), BotMessage.MessageType.SIMULATE).map(map).osuscores(scores).buildAndSend();
-    }
-
-    protected OsuScore getScore() {
-        return null;
+        new BotMessage(event.getChannel(), BotMessage.MessageType.SIMULATE).map(map).osuscore(osuscore).buildAndSend();
     }
 
     @Override
@@ -328,30 +326,78 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         }
     }
 
-    protected String getMapId(MessageReceivedEvent event, List<String> argList) {
-        if (argList.size() > 0)
-            return utilOsu.getIdFromString(argList.get(0));
-        else {
+    protected OsuScore retrieveScore(MessageReceivedEvent event, List<String> argList) {
+        if (argList.size() > 0) {
+            OsuScore newScore = new OsuScore(Main.osu);
+            newScore.setBeatmapID(Integer.parseInt(utilOsu.getIdFromString(argList.get(0))));
+            return newScore;
+        } else {
             int counter = 100;
             for (Message msg: (event.isFromType(ChannelType.PRIVATE) ? event.getChannel() : event.getTextChannel()).getIterableHistory()) {
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                     List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                    if (fields.size() > 0) {
-                        if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
-                                || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
-                            if (--number <= 0)
-                                return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                    if (!msg.getContentRaw().contains("Simulated") && fields.size() > 0 && fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")) {
+                            if (--number <= 0) {
+                                OsuScore newScore = new OsuScore(Main.osu);
+                                newScore.setBeatmapID(Integer.parseInt(msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1)));
+                                Pattern p = Pattern.compile(".*\\[ \\*\\*(\\d*)x\\*\\*/\\d*x ]\\t \\{ (\\d*) / (\\d*) / (\\d*)( / (\\d*)( / \\d* / (\\d*))?)? }");
+                                Matcher matcher = p.matcher(fields.get(0).getValue());
+                                if (matcher.find()) {
+                                    newScore.setMaxcombo(Integer.parseInt(matcher.group(1)));
+                                    if (matcher.group(6) != null) {
+                                        newScore.setCount300(Integer.parseInt(matcher.group(2)));
+                                        newScore.setCount100(Integer.parseInt(matcher.group(3)));
+                                        newScore.setCount50(Integer.parseInt(matcher.group(4)));
+                                        newScore.setCountmiss(Integer.parseInt(matcher.group(6)));
+                                    } else {
+                                        newScore.setCount300(Integer.parseInt(matcher.group(2)));
+                                        newScore.setCount100(Integer.parseInt(matcher.group(3)));
+                                        newScore.setCountmiss(Integer.parseInt(matcher.group(4)));
+                                    }
+                                }
+                                int plusIdx = fields.get(0).getName().indexOf("+");
+                                if (plusIdx == -1)
+                                    newScore.setEnabledMods(new GameMod[0]);
+                                else
+                                    newScore.setEnabledMods(GameMod.get(utilOsu.mods_strToInt(fields.get(0).getName().substring(plusIdx + 1).split("\\t")[0])));
+                                return newScore;
+                            }
+                    } else if (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")) {
+                        if (--number <= 0) {
+                            OsuScore newScore = new OsuScore(Main.osu);
+                            newScore.setBeatmapID(Integer.parseInt(msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1)));
+                            newScore.setMaxcombo(Integer.parseInt(fields.get(4).getValue().split("x\\*\\*/")[0].substring(2)));
+                            Pattern p = Pattern.compile("\\{ (\\d*) / (\\d*) / (\\d*)( / (\\d*)( / \\d* / (\\d*))?)? }");
+                            Matcher matcher = p.matcher(fields.get(5).getValue());
+                            if (matcher.find()) {
+                                if (matcher.group(5) != null) {
+                                    newScore.setCount300(Integer.parseInt(matcher.group(1)));
+                                    newScore.setCount100(Integer.parseInt(matcher.group(2)));
+                                    newScore.setCount50(Integer.parseInt(matcher.group(3)));
+                                    newScore.setCountmiss(Integer.parseInt(matcher.group(5)));
+                                } else {
+                                    newScore.setCount300(Integer.parseInt(matcher.group(1)));
+                                    newScore.setCount100(Integer.parseInt(matcher.group(2)));
+                                    newScore.setCountmiss(Integer.parseInt(matcher.group(3)));
+                                }
+                            }
+                            int plusIdx = fields.get(0).getValue().indexOf("+");
+                            if (plusIdx == -1)
+                                newScore.setEnabledMods(new GameMod[0]);
+                            else
+                                newScore.setEnabledMods(GameMod.get(utilOsu.mods_strToInt(fields.get(0).getValue().substring(plusIdx + 1))));
+                            return newScore;
                         }
                     }
                 }
                 if (--counter == 0) {
                     event.getChannel().sendMessage("Could not find last score embed, must be too old").queue();
-                    return "-1";
+                    return null;
                 }
             }
         }
-        return "-1";    // never reached
+        return null;    // never reached
     }
 
     @Override

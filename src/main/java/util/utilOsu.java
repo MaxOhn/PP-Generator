@@ -5,7 +5,6 @@ import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,7 +163,7 @@ public class utilOsu {
 
     // Given the url of osu beatmap, return the id of that map as a string
     public static String getIdFromString(String idString) {
-        Pattern p = Pattern.compile("((.*)/([0-9]{1,8})($|([&?])m=[0-3]))|([0-9]{1,8})");
+        Pattern p = Pattern.compile("((.*)/([0-9]{1,8})($|([&?])m=[0-3]))|(^[0-9]{1,8}$)");
         String id = "-1";
         Matcher m = p.matcher(idString);
         if (m.find())
@@ -204,23 +203,6 @@ public class utilOsu {
         if (mode == GameMode.MANIA) denominator *= 300;
         double res = numerator / denominator;
         return 100 * Math.max(0.0D, Math.min(res, 1.0D));
-    }
-
-    // Given the accuracy, approximate the hitresults of the score
-    public static HashMap<String, Integer> getHitResults(GameMode mode, double acc, OsuScore s) {
-        int nTotal = 0;
-        switch (mode) {
-            case STANDARD:
-                nTotal += s.getHit300() + s.getHit100() + s.getHit50() + s.getMisses();
-                break;
-            case MANIA:
-                nTotal += s.getGekis() + s.getHit300() + s.getKatus() + s.getHit100() + s.getHit50() + s.getMisses();
-                break;
-            case TAIKO:
-                nTotal += s.getHit300() + s.getHit100() + s.getMisses();
-                break;
-        }
-        return getHitResults(mode, acc, nTotal, s.getGekis(), s.getHit300(), s.getKatus(), s.getHit100(), s.getHit50(), s.getMisses());
     }
 
     // Given the accuracy, approximate the hitresults of the score
@@ -306,22 +288,32 @@ public class utilOsu {
     }
 
     // Remove all misses of a score and modify the combo to a fullcombo
-    public static OsuScore unchokeScore(OsuScore score, int maxCombo, GameMode mode, int nObjects) {
-        if (score.getMaxCombo() == maxCombo) return score;
+    public static void unchokeScore(OsuScore score, int maxCombo, GameMode mode, int nObjects, int transferTo) {
+        if (mode == GameMode.MANIA) {
+            score.setScore(1_000_000);
+            score.setCountgeki(score.getGekis() + score.getMisses() + nObjects - (score.getGekis() + score.getHit300()
+                    + score.getKatus() + score.getHit100() + score.getHit50() + score.getMisses()));
+            score.setCountmiss(0);
+            return;
+        }
+        if (score.getMaxCombo() == maxCombo) return;
         score.setMaxcombo(maxCombo);
         int missing = nObjects - (score.getHit300() + score.getHit100() + score.getHit50() + score.getMisses());
-        if (missing > 0) score.setCount300(score.getHit300() + missing);
         double ratio = (double)score.getHit300() / (score.getHit300() + score.getHit100() + score.getHit50());
-        for (; score.getMisses() > 0; score.setCountmiss(score.getMisses()-1)) {
-            // Depends partially on randomness
-            if (ThreadLocalRandom.current().nextDouble(1) < ratio)
-                score.setCount100(score.getHit100() + 1);
-            else
-                score.setCount300(score.getHit300() + 1);
+        // Distribute missing hitresults based on the current ratio
+        if (missing > 0) {
+            int new300s = (int)(ratio * missing);
+            score.setCount300(score.getHit300() + new300s);
+            score.setCount100(score.getHit100() + (missing - new300s));
+        }
+        switch (transferTo) {
+            case 300: score.setCount300(score.getHit300() + score.getMisses()); break;
+            case 100: score.setCount100(score.getHit100() + score.getMisses()); break;
+            case 50: score.setCount50(score.getHit50() + score.getMisses()); break;
+            default: throw new IllegalArgumentException("transferTo must be either 300, 100, or 50");
         }
         score.setCountmiss(0);
         score.setPp(0);
         score.setRank(utilOsu.getRank(mode, score, nObjects));
-        return score;
     }
 }

@@ -17,13 +17,12 @@ public class cmdSimulateRecent extends cmdSimulateMap {
 
     private OsuScore recent;
 
-
     // Retrieve the map id
     @Override
-    protected String getMapId(MessageReceivedEvent event, List<String> argList) {
+    protected OsuScore retrieveScore(MessageReceivedEvent event, List<String> argList) {
         if (number > 50) {
             event.getChannel().sendMessage("The number must be between 1 and 50").queue();
-            return "-1";
+            return null;
         }
         recent = null;
         // Get the name either from arguments or from database link
@@ -32,7 +31,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             name = Main.discLink.getOsu(event.getAuthor().getId());
             if (name == null) {
                 event.getChannel().sendMessage(help(1)).queue();
-                return "-1";
+                return null;
             }
         } else {
             name = String.join(" ", argList);
@@ -42,7 +41,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             name = Main.discLink.getOsu(name.substring(2, name.length()-1));
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
-                return "-1";
+                return null;
             }
         }
         // Retrieve recent scores of user
@@ -58,17 +57,12 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             }
             if (number > 0) {
                 event.getChannel().sendMessage("User's recent history doesn't go that far back").queue();
-                return "-1";
+                return null;
             }
         } catch (Exception e) {
             event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
-            return "-1";
+            return null;
         }
-        return recent.getBeatmapID() + "";
-    }
-
-    @Override
-    protected OsuScore getScore() {
         return recent;
     }
 
@@ -78,7 +72,7 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "simulate" + getName() + "[number] [osu name] [+<nm/hd/nfeznc/...>]"
-                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-s <score>] [-320 <amount 320s>] [-300 <amount 300s>] [-200 <amount 200s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
+                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-s <score>] [-300 <amount 300s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
                         + " to make me simulate a score on the user's most recently played map."
                         + "\nIf the score is a pass on a osu!std map, I will simulate a nochoke, otherwise (fail or non-osu!std score) I consider the given parameters, defaults to SS."
                         + "\nFor mania scores, only the score value matters so don't bother adding acc, misses, 320s, ..."

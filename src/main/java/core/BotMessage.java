@@ -226,7 +226,7 @@ public class BotMessage {
                     osuscore(s);
                     mods = getModString();
                     if (!description.toString().equals("")) description.append("\n");
-                    if (typeM == MessageType.NOCHOKESCORES) p.noChoke();
+                    if (typeM == MessageType.NOCHOKESCORES) p.noChoke(50);
                     description.append("**").append(idx++).append(".** [**")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(p.getMap().getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
@@ -388,15 +388,13 @@ public class BotMessage {
                 break;
             }
             case SIMULATE: {
-                // Map and scores need to be set beforehand
-                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                // Map needs to be set beforehand
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 mb.append("Simulated score:");
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
                         : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setThumbnail("attachment://thumb.jpg");
-                osuscore(scores.get(0));
                 switch (p.getMode()) {
                     case STANDARD:
                         hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
@@ -424,46 +422,11 @@ public class BotMessage {
                 if (p.getMode() != GameMode.MANIA)
                     fields.add(new MessageEmbed.Field("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x", true));
                 fields.add(new MessageEmbed.Field("Hits", hitString, true));
-                if (scores.size() == 1) {
-                    eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
-                            + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
-                    fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
-                    fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
-                    fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
-                } else {
-                    eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
-                            + "]", "https://osu.ppy.sh/b/" + p.getMap().getID());
-                    fields.add(0, new MessageEmbed.Field("Rank", getRank(), true));
-                    StringBuilder description = new StringBuilder();
-                    for (OsuScore s : scores) {
-                        if (p.getMode() == GameMode.MANIA) {
-                            GameMod[] tempMods = s.getEnabledMods();
-                            boolean foundMod = false;
-                            for (int i = 0; i < s.getEnabledMods().length; i++) {
-                                if (tempMods[i] == GameMod.HARD_ROCK || tempMods[i] == GameMod.HIDDEN) {
-                                    foundMod = true;
-                                    break;
-                                }
-                            }
-                            if (foundMod) continue;
-                        }
-                        osuscore(s);
-                        String ppStr;
-                        if (s.getPp() == 0) {
-                            try {
-                                ppStr = new DecimalFormat("0.00").format(DBProvider.getPpRating(p.getMap().getID(), utilOsu.mods_arrToStr(s.getEnabledMods())));
-                            } catch (Exception e) {
-                                ppStr = p.getPp();
-                            }
-                        } else {
-                            ppStr = p.getPp();
-                        }
-                        fields.add(new MessageEmbed.Field((getModString().equals("") ? "NM" : getModString().substring(2)) + " (" + p.getStarRating() + "★):",
-                                "**" + ppStr + "pp** / " + p.getPpMax() + "PP", true));
-                    }
-                    fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
-                    eb.setDescription(description.append("\n"));
-                }
+                eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
+                        + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
+                fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
+                fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
+                fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
                 break;
@@ -499,6 +462,21 @@ public class BotMessage {
                         } catch (InterruptedException ignored) { }
                     });
                     break;
+                case SIMULATE:
+                    // Send and later minimize the message a little differently than before
+                    ma.queue(message -> {
+                        try {
+                            Thread.sleep(shortFormatDelay);
+                            eb.clearFields().setTimestamp(null)
+                                    .addField(new MessageEmbed.Field(getRank() + getModString() + (p.getScore() > 0 ? "\t" +
+                                            NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) : "") + "\t(" +
+                                            p.getAcc() + "%)", "**" + p.getPp() +
+                                            "**/" + p.getPpMax() + "PP\t[ **" + p.getCombo() + "x**/" +
+                                            p.getMaxCombo() + "x ]\t " + hString, false));
+                            message.editMessage(eb.build()).queue();
+                        } catch (InterruptedException ignored) { }
+                    });
+                    break;
                 case LEADERBOARD:
                 case SCORES:
                 case TOPSCORES:
@@ -506,7 +484,6 @@ public class BotMessage {
                 case SS:
                 case RATIO:
                 case NOCHOKESCORES:
-                case SIMULATE:
                     // Just send
                     ma.queue();
                     break;

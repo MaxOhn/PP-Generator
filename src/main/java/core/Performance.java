@@ -80,9 +80,9 @@ public class Performance {
     }
 
     // Set the current state as a no-choke i.e. remove misses and make it fullcombo
-    public void noChoke() {
+    public void noChoke(int transferMissesTo) {
         if (mode != GameMode.STANDARD) return;
-        utilOsu.unchokeScore(score, getMaxCombo(), mode, getNObjects());
+        utilOsu.unchokeScore(score, getMaxCombo(), mode, getNObjects(), transferMissesTo);
         this.acc = 0;
     }
 

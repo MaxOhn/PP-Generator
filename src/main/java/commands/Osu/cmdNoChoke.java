@@ -119,7 +119,7 @@ public class cmdNoChoke implements ICommand {
                     p.map(map).osuscore(score);
                     // Make it no-choke if required
                     if (p.getCombo() < p.getMaxCombo()) {
-                        p.noChoke();
+                        p.noChoke(300);
                         score.setCount300(p.getN300());
                         score.setCount100(p.getN100());
                         score.setCountmiss(p.getNMisses());
