@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static main.java.util.utilOsu.mods_strToInt;
 
@@ -211,7 +210,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
         if (number < 6) {
             // Consider only scores with correct mods that fullfill the score condition
             scores = scores.stream()
-                    .filter(s -> hasValidMods(s) && getScoreCondition(s, user.getMode()))
+                    .filter(s -> getScoreCondition(s, user.getMode()))
                     .collect(Collectors.toList());
             List<OsuBeatmap> maps = new ArrayList<>();
             // If there is a condition on maps, take all scores for which the map satisfies the condition
@@ -360,7 +359,8 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
         return utilOsu.getAcc(s, m) >= acc
                 && s.getMaxCombo() >= combo
                 && (grade.isEmpty()
-                    || s.getRank().replace("H", "").replace("X", "ss").toLowerCase().equals(grade));
+                    || s.getRank().replace("H", "").replace("X", "ss").toLowerCase().equals(grade))
+                && hasValidMods(s);
     }
 
     BotMessage.MessageType getMessageType() {

@@ -134,7 +134,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
             e.printStackTrace();
             return;
         }
-        new BotMessage(event.getChannel(), BotMessage.MessageType.LEADERBOARD).map(map).osuscores(scores).mode(map.getMode()).buildAndSend();
+        new BotMessage(event.getChannel(), BotMessage.MessageType.LEADERBOARD).map(map).osuscores(scores).mode(map.getMode()).author(event.getAuthor()).buildAndSend();
     }
 
     @Override

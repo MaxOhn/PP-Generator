@@ -258,9 +258,10 @@ public class BotMessage {
                 break;
             }
             case LEADERBOARD: {
-                // Map and scores need to be set beforehand
+                // Map, author and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
+                if (author == null) throw new IllegalStateException(Error.AUTHOR.getMsg());
                 String iconURL = "";
                 if (scores.size() > 10) {
                     iconURL = "https://a.ppy.sh/" + scores.get(0).getUserID();
@@ -284,21 +285,28 @@ public class BotMessage {
                                     + " [" + p.getMap().getVersion() + "] [" + p.getStarRating() + "★]",
                             "https://osu.ppy.sh/b/" + p.getMap().getID(), iconURL);
                 }
+                String authorName = Main.discLink.getOsu(author.getId());
+                if (authorName != null)
+                    authorName = authorName.toLowerCase();
                 String comboDisplay;
                 StringBuilder description = new StringBuilder();
                 int idx = 1;
                 for (OsuScore s : scores) {
                     osuscore(s);
                     comboDisplay = " [ " + p.getCombo() + "x/";
-                    if (p.getMode() == GameMode.MANIA) {
-                        comboDisplay += " " + p.getNMisses() + " miss" + (p.getNMisses() != 1 ? "es" : "") + " ]";
-                    } else {
-                        comboDisplay += p.getMaxCombo() + "x ]";
-                    }
+                    comboDisplay += p.getMode() == GameMode.MANIA
+                            ? (" " + p.getNMisses() + " miss" + (p.getNMisses() != 1 ? "es" : "") + " ]")
+                            : (p.getMaxCombo() + "x ]");
                     if (!description.toString().equals("")) description.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
-                    description.append("**").append(idx++).append(".** ").append(getRank()).append(" **[").append(s.getUsername())
-                            .append("](https://osu.ppy.sh/u/").append(s.getUsername().replaceAll(" ", "%20")).append(")**: ")
+                    description.append("**").append(idx++).append(".** ").append(getRank()).append(" **");
+                    if (authorName != null && s.getUsername().toLowerCase().equals(authorName))
+                        description.append("__");
+                    description.append("[").append(s.getUsername()).append("](https://osu.ppy.sh/u/")
+                            .append(s.getUsername().replaceAll(" ", "%20")).append(")");
+                    if (authorName != null && s.getUsername().toLowerCase().equals(authorName))
+                        description.append("__");
+                    description.append("**: ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
                             .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")

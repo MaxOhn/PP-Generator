@@ -17,7 +17,7 @@ public class cmdSS extends cmdTop {
         boolean result = s.getMisses() == 0 && s.getHit100() == 0 && s.isPerfect();
         if (mode == GameMode.STANDARD) result &= s.getHit50() == 0;
         else if (mode == GameMode.MANIA) result &= s.getKatus() == 0 && s.getHit50() == 0;
-        return result;
+        return result && hasValidMods(s);
     }
 
     @Override

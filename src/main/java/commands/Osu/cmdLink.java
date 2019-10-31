@@ -18,6 +18,7 @@ public class cmdLink implements ICommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
+        // No name as argument -> unlink
         if (args.length == 0) {
             if (Main.discLink.removeLink(event.getAuthor().getId())) {
                 event.getChannel().sendMessage("You are no longer linked").queue();
@@ -32,13 +33,14 @@ public class cmdLink implements ICommand {
             return;
         }
         String name = String.join(" ", args);
+        // Check if name is valid
         try {
            Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).build());
         } catch (Exception e) {
             event.getChannel().sendMessage("Could not find osu user with name `" + name + "`").queue();
             return;
         }
-
+        // Add link
         if (Main.discLink.addLink(event.getAuthor().getId(), name))
             event.getChannel().sendMessage("I linked discord's `" + event.getAuthor().getName()
                     + "` with osu's `" + name + "`").queue();

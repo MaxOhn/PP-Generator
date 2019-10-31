@@ -2,8 +2,6 @@
 --- GENERAL ---
 check if pp calculation has an update
 mark score of author in <lb if available
-remove score number in BotCommand from <sr
-fix number for <top with given mods
 show top 5 for rb when number <6
 
 --- BUGS ---
