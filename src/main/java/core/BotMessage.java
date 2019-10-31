@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.entities.User;
 import net.dv8tion.jda.core.requests.restaction.MessageAction;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
@@ -61,14 +62,15 @@ public class BotMessage {
         this.p = new Performance();
     }
 
-    public void buildAndSend() {
-        buildAndSend(null);
+    public void buildAndSend(@NotNull Runnable runnable) {
+        buildAndSend();
+        runnable.run();
     }
 
     // All data is set, time to create the message (absolutely disgusting function and I'm sorry for that)
-    public void buildAndSend(Runnable runnable) {
+    public void buildAndSend() {
         File thumbFile = null;  // File for either author image or thumbnail image
-        String ppString = "**", hitString = "{ ", extendedTitle = "";
+        String hitString = "{ ", extendedTitle = "";
         TemporalAccessor timestamp;
         ZonedDateTime date = ZonedDateTime.now();
         // ------ BUILDING THE MESSAGE ------
@@ -113,7 +115,6 @@ public class BotMessage {
                         break;
                     default: throw new IllegalStateException("GameMode not supported");
                 }
-                ppString += p.getPp();
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
                         + secondsToTimeFormat(p.getMap().getHitLength()) + "`) BPM: `" + p.getMap().getBPM() + "` Objects: `"
@@ -127,7 +128,7 @@ public class BotMessage {
                     .addField("Rank", getRank() + getModString(),true)
                     .addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()),true)
                     .addField("Acc", p.getAcc() + "%",true)
-                    .addField("PP", ppString + "**/" + p.getPpMax() + "PP",true)
+                    .addField("PP", "**" + p.getPp() + "**/" + p.getPpMax() + "PP",true)
                     .addField("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x",true)
                     .addField("Hits", hitString,true)
                     .addField("Map Info", mapInfo,true);
@@ -408,7 +409,6 @@ public class BotMessage {
                     default:
                         throw new IllegalStateException("GameMode not supported");
                 }
-                ppString += p.getPp();
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
                         + secondsToTimeFormat(p.getMap().getHitLength()) + "`) BPM: `" + p.getMap().getBPM() + "` Objects: `"
@@ -425,7 +425,7 @@ public class BotMessage {
                 eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                         + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                 fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
-                fields.add(3, new MessageEmbed.Field("PP", ppString + "**/" + p.getPpMax() + "PP", true));
+                fields.add(3, new MessageEmbed.Field("PP", "**" + p.getPp() + "**/" + p.getPpMax() + "PP", true));
                 fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
@@ -497,7 +497,6 @@ public class BotMessage {
         } catch (Exception e) {
             LoggerFactory.getLogger(this.getClass()).error("Caught error while sending message:", e);
         }
-        if (runnable != null) runnable.run();
     }
 
     // Set a single user for the message

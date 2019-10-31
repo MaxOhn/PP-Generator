@@ -147,7 +147,7 @@ public class cmdWhatIf implements ICommand {
                         + "the player would have an additional score of <number> pp.\n"
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "The first argument must be of the form `+<number>` e.g. `+321.45`, afterwards you can specify the name" + help;
+                return "The first argument must be of the form `<number>` e.g. `321.45`, afterwards you can specify the name" + help;
             case 2:
                 return "The number must be positive you clown :D" + help;
             default:

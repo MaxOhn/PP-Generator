@@ -186,10 +186,11 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
                     if (fields.size() > 0) {
                         if (fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")
                                 || (fields.size() >= 5 && fields.get(5).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*"))) {
-                            return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
+                            if (--number == 0)
+                                return msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1);
                         }
                     // Get id from embed author
-                    } else if (embedAuthor != null && embedAuthor.getUrl().matches("https://osu.ppy.sh/b/.*")) {
+                    } else if (--number == 0 && embedAuthor != null && embedAuthor.getUrl().matches("https://osu.ppy.sh/b/.*")) {
                         return embedAuthor.getUrl().substring(embedAuthor.getUrl().lastIndexOf("/") + 1);
                     }
                 }

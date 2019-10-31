@@ -63,6 +63,8 @@ public class cmdSimulateRecent extends cmdSimulateMap {
             event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return null;
         }
+        if (getMode() == GameMode.STANDARD && !recent.isPerfect())
+            recent.setScore(0);
         return recent;
     }
 

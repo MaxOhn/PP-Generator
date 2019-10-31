@@ -3,6 +3,7 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -196,7 +197,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             map = DBProvider.getBeatmap(osuscore.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
             try {
-                map = osuscore.getBeatmap().get();
+                map = Main.osu.beatmaps.query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(osuscore.getBeatmapID()).build()).get(0);
             } catch (OsuAPIException e1) {
                 event.getChannel().sendMessage("Could not retrieve beatmap").queue();
                 return;
@@ -212,7 +213,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             }
         }
         // Check parameter constrains
-        int hitSum = 0;
+        int hitSum;
         FileInteractor.prepareFiles(map);
         int nTotal = FileInteractor.countTotalObjects(map.getID());
         // Create simulated score
