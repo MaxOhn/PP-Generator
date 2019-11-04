@@ -37,12 +37,18 @@ public class cmdRank implements ICommand {
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
         // Parse rank from arguments
+        String country = "";
         int rank;
         try {
             rank = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
-            event.getChannel().sendMessage(help(1)).queue();
-            return;
+            try {
+                rank = Integer.parseInt(args[0].substring(2));
+                country = args[0].substring(0, 2);
+            } catch (NumberFormatException e1) {
+                event.getChannel().sendMessage(help(1)).queue();
+                return;
+            }
         }
         if (rank < 1) {
             event.getChannel().sendMessage(help(2)).queue();
@@ -68,7 +74,7 @@ public class cmdRank implements ICommand {
         }
         // Check if name is given as mention
         if (name.startsWith("<@") && name.endsWith(">")) {
-            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+            name = Main.discLink.getOsu(name.substring(name.startsWith("<@!") ? 3 : 2, name.length()-1));
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
@@ -92,51 +98,62 @@ public class cmdRank implements ICommand {
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
                 "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        eb.setTitle("How many pp is " + user.getUsername() + " missing to reach rank #" + NumberFormat.getNumberInstance(Locale.US).format(rank) + "?");
+        String rankPrefix = country.isEmpty() ? "#" : country.toUpperCase();
+        eb.setTitle("How many pp is " + user.getUsername() + " missing to reach rank " + rankPrefix + NumberFormat.getNumberInstance(Locale.US).format(rank) + "?");
         StringBuilder description = new StringBuilder();
-        if (user.getRank() <= rank) {
-            description.append(user.getUsername()).append(" already has rank #").append(NumberFormat.getNumberInstance(Locale.US).format(user.getRank()))
-                    .append(" and is thus already above rank #")
-                    .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".\nNo more pp are required.");
+        if (country.isEmpty() && user.getRank() <= rank) {
+            description.append(user.getUsername()).append(" already has rank ").append(rankPrefix)
+                    .append(NumberFormat.getNumberInstance(Locale.US).format(user.getRank()))
+                    .append(" and is thus already above rank ").append(rankPrefix)
+                    .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".");
         } else {
             // Retrieve the required pp
             double pp;
             try {
-                pp = Main.customOsu.getPpOfRank(rank, getMode());
+                pp = Main.customOsu.getPpOfRank(rank, getMode(), country);
             } catch (IOException e) {
                 LoggerFactory.getLogger(this.getClass()).error("Could not retrieve pp of rank", e);
                 event.getChannel().sendMessage("Some thing went wrong, blame bade").queue();
                 return;
-            }
-            // Retrieve the top plays of a osu user
-            List<OsuScore> topPlays;
-            try {
-                topPlays = user.getTopScores(100).get();
-            } catch (OsuAPIException e) {
-                event.getChannel().sendMessage("Could not retrieve top scores").queue();
+            } catch (IllegalArgumentException e) {
+                event.getChannel().sendMessage(help(4)).queue();
                 return;
             }
-            double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
-            // Calculate how the pp value of the required score
-            int size = topPP.length, idx = size - 1;
-            double factor = Math.pow(0.95, idx), top = user.getPPRaw(), bot = 0, current = topPP[idx];
-            for (; top + bot < pp; idx--) {
-                top -= current * factor;
-                if (idx == 0)
-                    break;
-                current = topPP[idx - 1];
-                bot += current * factor;
-                factor /= 0.95;
+            if (user.getPPRaw() >= pp) {
+                description.append("Rank ").append(rankPrefix).append(NumberFormat.getNumberInstance(Locale.US).format(rank))
+                        .append(" currently requires **").append(round(pp)).append("pp**, so ").append(user.getUsername())
+                        .append(" is with **").append(round(user.getPPRaw())).append("pp** already above that.");
+            } else {
+                // Retrieve the top plays of a osu user
+                List<OsuScore> topPlays;
+                try {
+                    topPlays = user.getTopScores(100).get();
+                } catch (OsuAPIException e) {
+                    event.getChannel().sendMessage("Could not retrieve top scores").queue();
+                    return;
+                }
+                double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
+                // Calculate how the pp value of the required score
+                int size = topPP.length, idx = size - 1;
+                double factor = Math.pow(0.95, idx), top = user.getPPRaw(), bot = 0, current = topPP[idx];
+                for (; top + bot < pp; idx--) {
+                    top -= current * factor;
+                    if (idx == 0)
+                        break;
+                    current = topPP[idx - 1];
+                    bot += current * factor;
+                    factor /= 0.95;
+                }
+                double required = pp - top - bot;
+                if (top + bot >= pp)
+                    required = (required + (factor *= 0.95) * topPP[idx]) / factor;
+                if (size < 100)
+                    required -= topPP[size - 1] * Math.pow(0.95, size - 1);
+                description.append("Rank ").append(rankPrefix).append(NumberFormat.getNumberInstance(Locale.US).format(rank))
+                        .append(" currently requires **").append(pp).append("pp**, so ").append(user.getUsername())
+                        .append(" is missing **").append(round(pp - user.getPPRaw())).append("** raw pp, achievable by a single score worth **")
+                        .append(round(required)).append("pp**.");
             }
-            double required = pp - top - bot;
-            if (top + bot >= pp)
-                required = (required + (factor *= 0.95) * topPP[idx]) / factor;
-            if (size < 100)
-                required -= topPP[size - 1] * Math.pow(0.95, size - 1);
-            description.append("Rank #").append(NumberFormat.getNumberInstance(Locale.US).format(rank))
-                    .append(" currently requires **").append(pp).append("pp**, so ").append(user.getUsername())
-                    .append(" is missing **").append(round(pp - user.getPPRaw())).append("** raw pp, achievable by a single score worth **")
-                    .append(round(required)).append("pp**.");
         }
         eb.setDescription(description);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
@@ -152,15 +169,18 @@ public class cmdRank implements ICommand {
         String help = " (`" + statics.prefix + "rank" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "rank" + getName() + " [number] [osu name]` to make me calculate how many more pp "
-                        + "are required for the player to reach rank <number>.\n"
+                return "Enter `" + statics.prefix + "rank" + getName() + " [number / <country acronym>number] [osu name]` to make me calculate how many more pp "
+                        + "are required for the player to reach rank <number>."
+                        + "\nIf the number is specified with a country acronym, e.g. `be15`, I will consider the number as national rank instead of global rank."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "The first argument must be an integer of the form `<number>` e.g. `321`, afterwards you can specify the name" + help;
+                return "The first argument must either be a positive integer, e.g. `15`, or a country acronym followed by a positive integer, e.g. `be15`, afterwards you can specify the name" + help;
             case 2:
                 return "The number must be positive you clown :D" + help;
             case 3:
-                return "I'm unfortunately only able to calculate the pp for ranks up to 10000 :(";
+                return "Unfortunately I'm only able to calculate the pp for ranks up to 10000 :(";
+            case 4:
+                return "Seems like you didn't give a valid country acronym. It must be something like `be`, `de`, `us`, `kr`, ..." + help;
             default:
                 return help(0);
         }

@@ -186,10 +186,13 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             event.getChannel().sendMessage("Invalid hit results. Acc must be between 0 and 100, everything else must be non-negative.").queue();
             return;
         }
-        // Retrieve map
+        // Retrieve score
         OsuScore osuscore = retrieveScore(event, argList);
         if (osuscore == null)
             return;
+        if (status != modStatus.WITHOUT)
+            osuscore.setEnabledMods(includedMods);
+        // Retrieve map
         OsuBeatmap map;
         try {
             if (!secrets.WITH_DB)
@@ -338,7 +341,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 if (msg.getAuthor().equals(event.getJDA().getSelfUser()) && msg.getEmbeds().size() > 0) {
                     MessageEmbed msgEmbed = msg.getEmbeds().iterator().next();
                     List<MessageEmbed.Field> fields = msgEmbed.getFields();
-                    if (!msg.getContentRaw().contains("Simulated") && fields.size() > 0 && fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")) {
+                    if (fields.size() > 0 && fields.get(0).getValue().matches(".*\\{( ?\\d+ ?/){2,} ?\\d+ ?}.*")) {
                             if (--number <= 0) {
                                 OsuScore newScore = new OsuScore(Main.osu);
                                 newScore.setBeatmapID(Integer.parseInt(msgEmbed.getUrl().substring(msgEmbed.getUrl().lastIndexOf("/") + 1)));

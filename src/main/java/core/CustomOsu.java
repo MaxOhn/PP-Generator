@@ -158,7 +158,7 @@ public class CustomOsu {
     }
 
     // Retrieve the pp of the user with the given global rank (works only if rank is <=10000)
-    public double getPpOfRank(int rank, GameMode mode) throws IOException {
+    public double getPpOfRank(int rank, GameMode mode, String country) throws IllegalArgumentException, IOException {
         if (rank < 1 || rank > 10000)
             throw new IllegalArgumentException("Rank must be between 1 and 10000");
         limiter.acquire();
@@ -170,7 +170,9 @@ public class CustomOsu {
             case TAIKO: modeString = "taiko"; break;
             case CATCH_THE_BEAT: modeString = "fruits"; break;
         }
-        String url = "https://osu.ppy.sh/rankings/" + modeString + "/performance?page=" + (1 - (rank % 50 == 0 ? 1 : 0) + rank / 50) + "#scores";
+        String url = "https://osu.ppy.sh/rankings/" + modeString + "/performance?"
+                + (country.isEmpty() ? "" : "country=" + country + "&")
+                + "page=" + (1 - (rank % 50 == 0 ? 1 : 0) + rank / 50) + "#scores";
         HttpGet getRequest = new HttpGet(url);
         HttpResponse response = client.execute(getRequest);
         if (response.getStatusLine().getStatusCode() != 200) {
@@ -184,7 +186,15 @@ public class CustomOsu {
                     .getElementsByTag("tbody").first().children().stream()
                     .skip(rank % 50 == 0 ? 49 : (rank % 50) - 1).findFirst();
             if (elem.isPresent()) {
-                return Double.parseDouble(elem.get().child(4).text().replace(",", ""));
+                try {
+                    if (Integer.parseInt(elem.get().child(0).text().substring(1)) == rank)
+                        return Double.parseDouble(elem.get().child(4).text().replace(",", ""));
+                    else
+                        throw new IllegalArgumentException("Country acronym not valid");
+                } catch (NumberFormatException e1) {
+                    logger.warn("Error while scraping rankings page to get pp for rank");
+                    throw e1;
+                }
             } else
                 throw new IllegalStateException("Could not find row " + ((rank % 50) - 1) + " of response html");
         } catch (Exception e) {

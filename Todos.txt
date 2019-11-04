@@ -1,14 +1,15 @@
 
 --- GENERAL ---
 check if pp calculation has an update
-mark score of author in <lb if available
 show top 5 for rb when number <6
+<rb <@!userid> didnt work
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions
 	- mapid 107410 (nyan [Insane]) at 100% completion?
 	- mapid 1256809, noteIndex 3201, lineNum 3200
 	- mapid 487951, noteIndex 1686, lineNum 1685
+	- mapid 1706017, noteIndex 496, lineNum 495
 
 --- IDEAS ---
 page scrap to get last ranked/loved/... maps

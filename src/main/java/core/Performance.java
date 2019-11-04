@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.oopsjpeg.osu4j.GameMode.*;
 import static main.java.util.utilOsu.mods_intToStr;
 
 /*
@@ -81,7 +82,7 @@ public class Performance {
 
     // Set the current state as a no-choke i.e. remove misses and make it fullcombo
     public void noChoke(int transferMissesTo) {
-        if (mode != GameMode.STANDARD) return;
+        if (mode != STANDARD) return;
         utilOsu.unchokeScore(score, getMaxCombo(), mode, getNObjects(), transferMissesTo);
         this.acc = 0;
     }
@@ -180,15 +181,15 @@ public class Performance {
                     " " + secrets.mapPath + map.getID() + ".osu");
             // Add mods
             for (GameMod mod: mods)
-                cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
+                cmdLineString.append(" -m ").append(mods_intToStr((int) mod.getBit()));
             // Modify score if mode is mania
-            if (mode == GameMode.MANIA) {
-                int max = 1000000;
+            if (mode == MANIA) {
+                int max = 1_000_000;
                 if (mods.contains(GameMod.NO_FAIL)) max *= 0.5;
                 if (mods.contains(GameMod.HALF_TIME)) max *= 0.5;
                 if (mods.contains(GameMod.EASY)) max *= 0.5;
-                if (max < 1000000) {
-                    max = Math.max(max, 130000);
+                if (max < 1_000_000) {
+                    max = Math.max(max, 130_000);
                     cmdLineString.append(" -s ").append(max);
                 }
             }
@@ -258,14 +259,14 @@ public class Performance {
                 cmdLineString.append(" -a ").append(getAccDouble())
                         .append(" -c ").append(score.getMaxCombo())
                         .append(" -X ").append(score.getMisses())
-                        .append(mode == GameMode.STANDARD ? " -M " + score.getHit50() : "")
+                        .append(mode == STANDARD ? " -M " + score.getHit50() : "")
                         .append(" -G ").append(score.getHit100());
             } else { // mode == 3
                 cmdLineString.append(" -s ").append(score.getScore());
             }
             // Set mods
             for (GameMod mod: mods)
-                cmdLineString.append(" -m ").append(mods_intToStr((int)mod.getBit()));
+                cmdLineString.append(" -m ").append(mods_intToStr((int) mod.getBit()));
             // Run command on terminal
             Runtime rt = Runtime.getRuntime();
             Process pr = rt.exec(cmdLineString.toString());
@@ -337,7 +338,7 @@ public class Performance {
     }
 
     public int getMaxCombo() {
-        if (mode != GameMode.STANDARD) return 0;
+        if (mode != STANDARD) return 0;
         return map.getMaxCombo();
     }
 
