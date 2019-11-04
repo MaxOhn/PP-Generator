@@ -108,20 +108,24 @@ public class cmdRank implements ICommand {
                     .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".");
         } else {
             // Retrieve the required pp
-            double pp;
+            OsuUser rankHolder;
             try {
-                pp = Main.customOsu.getPpOfRank(rank, getMode(), country);
+                rankHolder = Main.osu.users.query(
+                        new EndpointUsers.ArgumentsBuilder(Main.customOsu.getUserIdOfRank(rank, getMode(), country)).setMode(getMode()).build()
+                );
             } catch (IOException e) {
-                LoggerFactory.getLogger(this.getClass()).error("Could not retrieve pp of rank", e);
+                LoggerFactory.getLogger(this.getClass()).error("Could not retrieve user of rank", e);
                 event.getChannel().sendMessage("Some thing went wrong, blame bade").queue();
                 return;
             } catch (IllegalArgumentException e) {
                 event.getChannel().sendMessage(help(4)).queue();
                 return;
             }
+            double pp = round(rankHolder.getPPRaw());
             if (user.getPPRaw() >= pp) {
                 description.append("Rank ").append(rankPrefix).append(NumberFormat.getNumberInstance(Locale.US).format(rank))
-                        .append(" currently requires **").append(round(pp)).append("pp**, so ").append(user.getUsername())
+                        .append(" is currently held by ").append(rankHolder.getUsername())
+                        .append(" with **").append(round(pp)).append("pp**, so ").append(user.getUsername())
                         .append(" is with **").append(round(user.getPPRaw())).append("pp** already above that.");
             } else {
                 // Retrieve the top plays of a osu user
@@ -150,7 +154,8 @@ public class cmdRank implements ICommand {
                 if (size < 100)
                     required -= topPP[size - 1] * Math.pow(0.95, size - 1);
                 description.append("Rank ").append(rankPrefix).append(NumberFormat.getNumberInstance(Locale.US).format(rank))
-                        .append(" currently requires **").append(pp).append("pp**, so ").append(user.getUsername())
+                        .append(" is currently held by ").append(rankHolder.getUsername())
+                        .append(" with **").append(pp).append("pp**, so ").append(user.getUsername())
                         .append(" is missing **").append(round(pp - user.getPPRaw())).append("** raw pp, achievable by a single score worth **")
                         .append(round(required)).append("pp**.");
             }

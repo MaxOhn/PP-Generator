@@ -158,7 +158,7 @@ public class CustomOsu {
     }
 
     // Retrieve the pp of the user with the given global rank (works only if rank is <=10000)
-    public double getPpOfRank(int rank, GameMode mode, String country) throws IllegalArgumentException, IOException {
+    public int getUserIdOfRank(int rank, GameMode mode, String country) throws IllegalArgumentException, IOException {
         if (rank < 1 || rank > 10000)
             throw new IllegalArgumentException("Rank must be between 1 and 10000");
         limiter.acquire();
@@ -186,15 +186,7 @@ public class CustomOsu {
                     .getElementsByTag("tbody").first().children().stream()
                     .skip(rank % 50 == 0 ? 49 : (rank % 50) - 1).findFirst();
             if (elem.isPresent()) {
-                try {
-                    if (Integer.parseInt(elem.get().child(0).text().substring(1)) == rank)
-                        return Double.parseDouble(elem.get().child(4).text().replace(",", ""));
-                    else
-                        throw new IllegalArgumentException("Country acronym not valid");
-                } catch (NumberFormatException e1) {
-                    logger.warn("Error while scraping rankings page to get pp for rank");
-                    throw e1;
-                }
+                return Integer.parseInt(elem.get().child(1).child(0).child(1).attr("data-user-id"));
             } else
                 throw new IllegalStateException("Could not find row " + ((rank % 50) - 1) + " of response html");
         } catch (Exception e) {
