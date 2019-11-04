@@ -2,7 +2,6 @@
 --- GENERAL ---
 check if pp calculation has an update
 show top 5 for rb when number <6
-<rb <@!userid> didnt work
 
 --- BUGS ---
 fix FileInteractor.offsetOfNode NullPointerExceptions

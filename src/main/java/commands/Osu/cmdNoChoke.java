@@ -52,8 +52,8 @@ public class cmdNoChoke implements ICommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (name.startsWith("<@") && name.endsWith(">")) {
-            name = Main.discLink.getOsu(name.substring(2, name.length()-1));
+        if (event.getMessage().getMentionedMembers().size() > 0) {
+            name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
                 return;
