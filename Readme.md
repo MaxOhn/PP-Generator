@@ -26,10 +26,9 @@ There are a few things to take care of so here's how you should proceed:
 
 - Clone this repository via `git clone https://github.com/MaxOhn/PP-Generator.git`
 
-- Move through your command window into `PPGenerator/src/main/resources/`. There you will find two `.jar` files which you need to add to your local Maven repository via:
+- Move through your command window into `PPGenerator/src/main/resources/`. There you will find a `.jar` file which you need to add to your local Maven repository via:
 
-    - `mvn install:install-file -Dfile=osu4j-2.1.jar -DgroupId=com.oopsjpeg -DartifactId=osu4j -Dversion=2.1.1 -Dpackaging=jar -DgeneratePom=true`
-    - `mvn install:install-file -Dfile=twitch-api-wrapper-0.3-jar-with-dependencies.jar -DgroupId=com.mb3364 -DartifactId=twitch-api-wrapper -Dversion=0.3 -Dpackaging=jar -DgeneratePom=true`
+    - `mvn install:install-file -Dfile=osu4j-2.1.1.jar -DgroupId=com.oopsjpeg -DartifactId=osu4j -Dversion=2.1.1 -Dpackaging=jar -DgeneratePom=true`
 
 - The file `/util/secrets.java` which contains variables such as discord token, osu api key, twitch client id, file paths, ... is naturally ommitted for this repository. Instead, there is a file `/util/secretsButPublic.java` that demonstrates which variables are required so you have to add them yourself.
 

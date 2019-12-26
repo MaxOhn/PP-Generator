@@ -190,7 +190,7 @@ public class CustomOsu {
             } else
                 throw new IllegalStateException("Could not find row " + ((rank % 50) - 1) + " of response html");
         } catch (Exception e) {
-            logger.warn("Error while scraping rankings page to get pp for rank");
+            logger.warn("Error while scraping rankings page to get user id of rank");
             throw e;
         }
     }

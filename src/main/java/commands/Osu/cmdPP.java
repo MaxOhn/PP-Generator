@@ -136,7 +136,7 @@ public class cmdPP implements ICommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "pp" + getName() + " [number] [osu name]` to make me calculate what score "
-                        + "is required for the player to have <number> total pp.\n"
+                        + "is required for the player to have <number> total pp."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "The first argument must be of the form `<number>` e.g. `321.45`, afterwards you can specify the name" + help;

@@ -144,7 +144,7 @@ public class cmdWhatIf implements ICommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "whatif" + getName() + " [number] [osu name]` to make me calculate the total pp if "
-                        + "the player would have an additional score of <number> pp.\n"
+                        + "the player would have an additional score of <number> pp."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "The first argument must be of the form `<number>` e.g. `321.45`, afterwards you can specify the name" + help;

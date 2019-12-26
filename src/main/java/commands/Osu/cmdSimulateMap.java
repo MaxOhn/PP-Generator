@@ -263,8 +263,12 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                     osuscore.setCountmiss(nM);
                     osuscore.setMaxcombo(combo);
                 // Otherwise just unchoke the score
-                } else
+                } else {
+                    osuscore.setCount300(n300);
+                    osuscore.setCount100(Math.max(osuscore.getHit100(), 0));
+                    osuscore.setCount50(Math.max(osuscore.getHit50(), 0));
                     utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()), 300);
+                }
                 if (specifiedMods)
                     osuscore.setEnabledMods(includedMods);
                 break;

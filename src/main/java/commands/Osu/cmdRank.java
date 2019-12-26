@@ -107,7 +107,7 @@ public class cmdRank implements ICommand {
                     .append(" and is thus already above rank ").append(rankPrefix)
                     .append(NumberFormat.getNumberInstance(Locale.US).format(rank)).append(".");
         } else {
-            // Retrieve the required pp
+            // Retrieve the user at the required rank
             OsuUser rankHolder;
             try {
                 rankHolder = Main.osu.users.query(
@@ -128,7 +128,7 @@ public class cmdRank implements ICommand {
                         .append(" with **").append(round(pp)).append("pp**, so ").append(user.getUsername())
                         .append(" is with **").append(round(user.getPPRaw())).append("pp** already above that.");
             } else {
-                // Retrieve the top plays of a osu user
+                // Retrieve the top plays of osu user
                 List<OsuScore> topPlays;
                 try {
                     topPlays = user.getTopScores(100).get();
