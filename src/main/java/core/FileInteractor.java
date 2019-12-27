@@ -94,6 +94,7 @@ public class FileInteractor {
             }
             line = reader.readLine();
             String[] splitted = line.split(",");
+            reader.close();
             return Integer.parseInt(splitted[2]);
         } catch (IOException e) {
             logger.error("Something went wrong while calculating the offset of a note:", e);
@@ -116,6 +117,7 @@ public class FileInteractor {
                 if (reachedHO) nobjects++;
                 reachedHO |= line.equals("[HitObjects]");
             }
+            reader.close();
             return nobjects;
         } catch (IOException e) {
             logger.error("Something went wrong while counting the objects of a map:", e);

@@ -12,6 +12,7 @@ import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -48,45 +49,11 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
-        // Check for a mode in arguments
-        GameMode mode = GameMode.STANDARD;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-m") || args[i].equals("-mode")) {
-                if (i + 1 < args.length) {
-                    switch (args[i + 1]) {
-                        case "standard":
-                        case "std":
-                        case "s": mode = GameMode.STANDARD; break;
-                        case "taiko":
-                        case "tko":
-                        case "t": mode = GameMode.TAIKO; break;
-                        case "ctb":
-                        case "c":
-                            event.getChannel().sendMessage(help(2)).queue();
-                            return;
-                        case "mania":
-                        case "mna":
-                        case "m": mode = GameMode.MANIA; break;
-                        default:
-                            event.getChannel().sendMessage(help(3)).queue();
-                            return;
-                    }
-                } else {
-                    event.getChannel().sendMessage(help(3)).queue();
-                    return;
-                }
-            }
-        }
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
-        int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
-        }
         // Check for accuracy in arguments
-        delIndex = argList.indexOf("-acc");
+        int delIndex = argList.indexOf("-acc");
         if (delIndex > -1) {
             try {
                 acc = Double.parseDouble(argList.get(delIndex + 1));
@@ -184,7 +151,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             name = String.join(" ", argList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -194,9 +161,9 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
         // Retrieve osu user data
         OsuUser user;
         try {
-            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
         } catch (Exception e) {
-            event.getChannel().sendMessage("`" + name + "` was not found").queue();
+            event.getChannel().sendMessage("User `" + name + "` was not found").queue();
             return;
         }
         // Retrieve user's top scores
@@ -271,7 +238,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             // Build message
             new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
                     .maps(maps.stream().limit(5).collect(Collectors.toList()))
-                    .mode(mode).buildAndSend();
+                    .mode(getMode()).buildAndSend();
         } else {
             // Get the appropriate score
             OsuScore topScore = null;
@@ -342,7 +309,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             }
             // Create the message
             new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(topScore)
-                    .mode(mode).topplays(scores, globalPlays).buildAndSend();
+                    .mode(getMode()).topplays(scores, globalPlays).buildAndSend();
         }
     }
 
@@ -369,10 +336,10 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + "topscores -h` for more help)";
+        String help = " (`" + statics.prefix + "top" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "top[number] [-m <s/t/c/m for mode>] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top scores with the given properties."
+                return "Enter `" + statics.prefix + "top" + getName() + "[number] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top scores with the given properties."
                         + "\nIf no number is specified or it's up to 5, I will show the top 5 scores. Otherwise I will show only the number-th top score."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nWith `-acc` you can specify a bottom limit for counted accuracies. Must be a positive decimal number."
@@ -405,5 +372,13 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
     public INumberedCommand setNumber(int number) {
         this.number = number;
         return this;
+    }
+
+    public String getName() {
+        return "";
+    }
+
+    public GameMode getMode() {
+        return GameMode.STANDARD;
     }
 }

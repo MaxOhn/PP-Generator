@@ -12,6 +12,7 @@ import main.java.core.*;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -52,7 +53,7 @@ public class cmdNoChoke implements ICommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();

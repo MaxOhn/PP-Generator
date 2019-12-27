@@ -94,7 +94,7 @@ public class cmdScores implements INumberedCommand {
             return;
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();

@@ -82,19 +82,58 @@ public class CustomOsu {
 
     public Collection<OsuScore> getScores(String mapID, boolean national, Set<GameMod> mods) throws IOException {
         Collection<OsuScore> scores = getScoresHelper(mapID, national, mods);
+        // Check whether given mods include DT or NC
         if (mods != null) {
+            // Contains DT -> add scores from NC leaderboard
             if (mods.contains(GameMod.DOUBLE_TIME)) {
                 mods.remove(GameMod.DOUBLE_TIME);
                 mods.add(GameMod.NIGHTCORE);
-                scores.addAll(getScoresHelper(mapID, national, mods));
+                Collection<OsuScore> allScores = new ArrayList<>(scores);
+                allScores.addAll(getScoresHelper(mapID, national, mods));
+                HashMap<Integer, Integer> seen = new HashMap<>();
+                scores.clear();
+                for (OsuScore score : allScores) {
+                    // If user id already seen
+                    if (seen.containsKey(score.getUserID())) {
+                        // Check if previous osuscore with that id had less score aswell
+                        if (seen.get(score.getUserID()) < score.getScore()) {
+                            scores.removeIf(s -> s.getUserID() == score.getUserID());
+                            scores.add(score);
+                            // No need to update seen HashMap since each user id can appear at most twice anyway
+                        }
+                        // Id not yet seen, add to scores
+                    } else {
+                        seen.put(score.getUserID(), score.getScore());
+                        scores.add(score);
+                    }
+                }
                 scores = scores.stream()
                         .sorted((a, b) -> (b.getScore() - a.getScore()))
                         .limit(50)
                         .collect(Collectors.toList());
+            // Contains NC -> add scores from DT leaderboard
             } else if (mods.contains(GameMod.NIGHTCORE)) {
                 mods.remove(GameMod.NIGHTCORE);
                 mods.add(GameMod.DOUBLE_TIME);
-                scores.addAll(getScoresHelper(mapID, national, mods));
+                Collection<OsuScore> allScores = new ArrayList<>(scores);
+                allScores.addAll(getScoresHelper(mapID, national, mods));
+                HashMap<Integer, Integer> seen = new HashMap<>();
+                scores.clear();
+                for (OsuScore score : allScores) {
+                    // If user id already seen
+                    if (seen.containsKey(score.getUserID())) {
+                        // Check if previous osuscore with that id had less score aswell
+                        if (seen.get(score.getUserID()) < score.getScore()) {
+                            scores.removeIf(s -> s.getUserID() == score.getUserID());
+                            scores.add(score);
+                            // No need to update seen HashMap since each user id can appear at most twice anyway
+                        }
+                    // Id not yet seen, add to scores
+                    } else {
+                        seen.put(score.getUserID(), score.getScore());
+                        scores.add(score);
+                    }
+                }
                 scores = scores.stream()
                         .sorted((a, b) -> (b.getScore() - a.getScore()))
                         .limit(50)

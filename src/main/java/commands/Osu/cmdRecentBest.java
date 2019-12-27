@@ -14,6 +14,7 @@ import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -39,42 +40,9 @@ public class cmdRecentBest implements INumberedCommand {
             event.getChannel().sendMessage("The number must be between 1 and 100").queue();
             return;
         }
-        // Check for mode in arguments
-        GameMode mode = GameMode.STANDARD;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("-m") || args[i].equals("-mode")) {
-                if (i+1 < args.length) {
-                    switch (args[i+1]) {
-                        case "standard":
-                        case "std":
-                        case "s": mode = GameMode.STANDARD; break;
-                        case "tko":
-                        case "t": mode = GameMode.TAIKO; break;
-                        case "ctb":
-                        case "c":
-                            event.getChannel().sendMessage(help(5)).queue();
-                            return;
-                        case "mania":
-                        case "mna":
-                        case "m": mode = GameMode.MANIA; break;
-                        default:
-                            event.getChannel().sendMessage(help(4)).queue();
-                            return;
-                    }
-                } else {
-                    event.getChannel().sendMessage(help(4)).queue();
-                    return;
-                }
-            }
-        }
         ArrayList<String> argList = Arrays.stream(args)
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toCollection(ArrayList::new));
-        int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
-        }
         // Get name either from arguments or from database link
         String name;
         if (argList.size() == 0) {
@@ -90,7 +58,7 @@ public class cmdRecentBest implements INumberedCommand {
             name = String.join(" ", argList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -100,7 +68,7 @@ public class cmdRecentBest implements INumberedCommand {
         // Retrieve osu user data
         OsuUser user;
         try {
-            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build());
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
         } catch (Exception e) {
             event.getChannel().sendMessage("`" + name + "` was not found").queue();
             return;
@@ -150,7 +118,7 @@ public class cmdRecentBest implements INumberedCommand {
             return;
         }
         // Construct the message
-        new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBEST).user(user).map(map).osuscore(rbScore).mode(mode)
+        new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBEST).user(user).map(map).osuscore(rbScore).mode(getMode())
                 .topplays(topPlays, globalPlays).buildAndSend();
     }
 
@@ -159,9 +127,9 @@ public class cmdRecentBest implements INumberedCommand {
         String help = " (`" + statics.prefix + "recentbest -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "recentbest[number] [-m <s/t/c/m for mode>] [osu name]` "
+                return "Enter `" + statics.prefix + "recentbest" + getName() + "[number] [osu name]` "
                         + "to make me respond with the users selected best recent performance."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + "rb8`, I will skip the most recent 7 top scores "
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + "rb" + getName() + "8`, I will skip the most recent 7 top scores "
                         + "and show the 8-th score, defaults to 1."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
@@ -184,5 +152,13 @@ public class cmdRecentBest implements INumberedCommand {
     public cmdRecentBest setNumber(int number) {
         this.number = number;
         return this;
+    }
+
+    public String getName() {
+        return "";
+    }
+
+    public GameMode getMode() {
+        return GameMode.STANDARD;
     }
 }

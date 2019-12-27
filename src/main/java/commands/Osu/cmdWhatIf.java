@@ -10,8 +10,10 @@ import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.awt.*;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -63,7 +65,7 @@ public class cmdWhatIf implements ICommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -87,16 +89,16 @@ public class cmdWhatIf implements ICommand {
             return;
         }
         // Prepare the message
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setThumbnail("https://a.ppy.sh/" + user.getID());
-        eb.setAuthor(user.getUsername() + ": "
+        EmbedBuilder eb = new EmbedBuilder()
+                .setThumbnail("https://a.ppy.sh/" + user.getID())
+                .setAuthor(user.getUsername() + ": "
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getPPRaw()) + "pp (#"
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getRank()) + " "
                         + user.getCountry()
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
-                "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
+                        "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg")
+                .setTitle("What if " + user.getUsername() + " got a new " + pp + "pp score?");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        eb.setTitle("What if " + user.getUsername() + " got a new " + pp + "pp score?");
         StringBuilder description = new StringBuilder();
         // pp too low
         if (pp < topPlays.get(topPlays.size() - 1).getPp()) {
@@ -130,7 +132,8 @@ public class cmdWhatIf implements ICommand {
                     .append(round(potential + bonus - user.getPPRaw())).append("** to **")
                     .append(round(potential + bonus)).append("pp**.");
         }
-        eb.setDescription(description);
+        eb.setDescription(description)
+                .setColor(Color.green);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
     }
 

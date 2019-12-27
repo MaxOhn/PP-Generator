@@ -247,13 +247,12 @@ public class utilOsu {
     // Calculate the rank as a string of a given score
     public static String getRank(GameMode mode, OsuScore score, int nObjects) {
         Set<GameMod> mods = new HashSet<>(Arrays.asList(score.getEnabledMods()));
-        double ratio300;
         double acc;
         switch (mode) {
             case STANDARD:
                 if (score.getHit300() == nObjects)
                     return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
-                ratio300 = (double)score.getHit300()/nObjects;
+                double ratio300 = (double)score.getHit300()/nObjects;
                 if (ratio300 > 0.9 && (double)score.getHit50()/nObjects < 0.01 && score.getMisses() == 0)
                     return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
                 else if ((ratio300 > 0.8 && score.getMisses() == 0) || ratio300 > 0.9)

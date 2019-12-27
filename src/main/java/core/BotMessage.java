@@ -434,7 +434,7 @@ public class BotMessage {
                         + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
                 fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
                 fields.add(3, new MessageEmbed.Field("PP", "**" + p.getPp() + "**/" + p.getPpMax() + "PP", true));
-                fields.add(new MessageEmbed.Field("Map Info", mapInfo, true));
+                fields.add(new MessageEmbed.Field("Map Info", mapInfo, false));
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
                 break;

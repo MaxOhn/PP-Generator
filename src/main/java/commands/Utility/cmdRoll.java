@@ -43,7 +43,7 @@ public class cmdRoll implements ICommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "roll [limit]` to make me give you a number between 1 and <limit>." +
-                        "\nDefault: limit=10";
+                        "\nDefault limit is 100";
             case 1:
                 return "Limit must be bigger than 1" + help;
             case 2:

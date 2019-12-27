@@ -10,8 +10,10 @@ import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.awt.*;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -62,7 +64,7 @@ public class cmdPP implements ICommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -78,16 +80,16 @@ public class cmdPP implements ICommand {
             return;
         }
         // Prepare the message
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setThumbnail("https://a.ppy.sh/" + user.getID());
-        eb.setAuthor(user.getUsername() + ": "
+        EmbedBuilder eb = new EmbedBuilder()
+                .setThumbnail("https://a.ppy.sh/" + user.getID())
+                .setAuthor(user.getUsername() + ": "
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getPPRaw()) + "pp (#"
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getRank()) + " "
                         + user.getCountry()
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
-                "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
+                        "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg")
+                .setTitle("What score is missing for " + user.getUsername() + " to reach " + pp + "pp?");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        eb.setTitle("What score is missing for " + user.getUsername() + " to reach " + pp + "pp?");
         StringBuilder description = new StringBuilder();
         // pp too low
         if (user.getPPRaw() > pp) {
@@ -122,7 +124,8 @@ public class cmdPP implements ICommand {
             description.append("To reach ").append(pp).append("pp with one additional score, ").append(user.getUsername()).append(" needs to perform a **")
                     .append(round(required)).append("pp** score which would be the top #").append(++idx).append(".");
         }
-        eb.setDescription(description);
+        eb.setDescription(description)
+                .setColor(Color.green);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
     }
 

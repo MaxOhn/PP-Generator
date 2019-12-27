@@ -10,9 +10,11 @@ import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.EmbedBuilder;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -73,7 +75,7 @@ public class cmdRank implements ICommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -89,17 +91,17 @@ public class cmdRank implements ICommand {
             return;
         }
         // Prepare the message
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setThumbnail("https://a.ppy.sh/" + user.getID());
-        eb.setAuthor(user.getUsername() + ": "
+        String rankPrefix = country.isEmpty() ? "#" : country.toUpperCase();
+        EmbedBuilder eb = new EmbedBuilder()
+                .setThumbnail("https://a.ppy.sh/" + user.getID())
+                .setAuthor(user.getUsername() + ": "
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getPPRaw()) + "pp (#"
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getRank()) + " "
                         + user.getCountry()
                         + NumberFormat.getNumberInstance(Locale.US).format(user.getCountryRank()) + ")",
-                "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg");
+                        "https://osu.ppy.sh/u/" + user.getID(), "attachment://thumb.jpg")
+                .setTitle("How many pp is " + user.getUsername() + " missing to reach rank " + rankPrefix + NumberFormat.getNumberInstance(Locale.US).format(rank) + "?");
         File flagIcon = new File(statics.flagPath + user.getCountry() + ".png");
-        String rankPrefix = country.isEmpty() ? "#" : country.toUpperCase();
-        eb.setTitle("How many pp is " + user.getUsername() + " missing to reach rank " + rankPrefix + NumberFormat.getNumberInstance(Locale.US).format(rank) + "?");
         StringBuilder description = new StringBuilder();
         if (country.isEmpty() && user.getRank() <= rank) {
             description.append(user.getUsername()).append(" already has rank ").append(rankPrefix)
@@ -160,7 +162,8 @@ public class cmdRank implements ICommand {
                         .append(round(required)).append("pp**.");
             }
         }
-        eb.setDescription(description);
+        eb.setDescription(description)
+                .setColor(Color.green);
         event.getChannel().sendMessage(eb.build()).addFile(flagIcon, "thumb.jpg").queue();
     }
 

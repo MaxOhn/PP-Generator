@@ -2,17 +2,7 @@
 --- GENERAL ---
 check if pp calculation has an update
 show top 5 for rb when number <6
-set embed color green for hypotheical commands
-make <roll try to parse first argument as upper limit, otherwise default to 100
-<lb should show a player at most once (either better dt or nc score)
-
-map info for <s(r) not properly alligned
-
-minor refactor for ratio300 in utilOsu.getRank (?)
-dont request personal top 100 on <r if map not ranked
 add ctb support without any pp calculation
-<s still giving -1 50s result
-split <top into <top, <topm, and <topt
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions
@@ -20,9 +10,6 @@ FileInteractor.offsetOfNode NullPointerExceptions
 	- mapid 1256809, noteIndex 3201, lineNum 3200
 	- mapid 487951, noteIndex 1686, lineNum 1685
 	- mapid 1706017, noteIndex 496, lineNum 495
-IllegalStateException: You must specify a Guild for Messages which are not sent from a TextChannel!
-	from <ratio in private messages
-
 
 --- IDEAS ---
 page scrap to get last ranked/loved/... maps

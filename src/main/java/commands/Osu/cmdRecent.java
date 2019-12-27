@@ -1,9 +1,6 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.GameMode;
-import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.OsuUser;
+import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
@@ -16,6 +13,7 @@ import main.java.core.Main;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
@@ -62,7 +60,7 @@ public class cmdRecent implements INumberedCommand {
             name = String.join(" ", argsList);
         }
         // Check if name is given as mention
-        if (event.getMessage().getMentionedMembers().size() > 0) {
+        if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
                 event.getChannel().sendMessage("The mentioned user is not linked, I don't know who you mean").queue();
@@ -119,7 +117,7 @@ public class cmdRecent implements INumberedCommand {
         Collection<OsuScore> topPlays;
         Collection<OsuScore> globalPlays;
         try {
-            topPlays = user.getTopScores(100).get();
+            topPlays = map.getApproved() == ApprovalState.RANKED ? user.getTopScores(100).get() : new ArrayList<>();
             globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
         } catch (OsuAPIException e) {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();

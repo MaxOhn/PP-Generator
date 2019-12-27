@@ -4,9 +4,6 @@
 # Log file
 *.log
 
-# BlueJ files
-*.ctxt
-
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
@@ -30,3 +27,4 @@ src/main/resources/bgGame/*.png
 src/main/resources/mapThumb/*.jpg
 src/main/java/util/secrets.java
 src/main/java/util/MainTest.java
+.vscode/

@@ -64,8 +64,13 @@ public class Main {
         commandHandler.commands.put("recent", new cmdRecent());
         commandHandler.commands.put("r", new cmdRecent());
         commandHandler.commands.put("rs", new cmdRecent());
+        commandHandler.commands.put("recentbest", new cmdRecentBest());
+        commandHandler.commands.put("rb", new cmdRecentBest());
         commandHandler.commands.put("compare", new cmdScores());
         commandHandler.commands.put("c", new cmdScores());
+        commandHandler.commands.put("top", new cmdTop());
+        commandHandler.commands.put("topscores", new cmdTop());
+        commandHandler.commands.put("osutop", new cmdTop());
         commandHandler.commands.put("recentleaderboard", new cmdRecentLeaderboard());
         commandHandler.commands.put("rlb", new cmdRecentLeaderboard());
         commandHandler.commands.put("recentglb", new cmdRecentGlobalLeaderboard());
@@ -80,7 +85,12 @@ public class Main {
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
+        commandHandler.commands.put("recentbesttaiko", new cmdRecentBestTaiko());
+        commandHandler.commands.put("rbtaiko", new cmdRecentBestTaiko());
+        commandHandler.commands.put("rbt", new cmdRecentBestTaiko());
         commandHandler.commands.put("ct", new cmdScores());
+        commandHandler.commands.put("toptaiko", new cmdTopTaiko());
+        commandHandler.commands.put("topt", new cmdTopTaiko());
         commandHandler.commands.put("recenttaikolb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("rtlb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
@@ -97,7 +107,12 @@ public class Main {
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
+        commandHandler.commands.put("recentbestmania", new cmdRecentBestMania());
+        commandHandler.commands.put("rbmania", new cmdRecentBestMania());
+        commandHandler.commands.put("rbm", new cmdRecentBestMania());
         commandHandler.commands.put("cm", new cmdScores());
+        commandHandler.commands.put("topmania", new cmdTopMania());
+        commandHandler.commands.put("topm", new cmdTopMania());
         commandHandler.commands.put("recentmanialb", new cmdRecentManiaLeaderboard());
         commandHandler.commands.put("rmlb", new cmdRecentManiaLeaderboard());
         commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
@@ -113,12 +128,7 @@ public class Main {
 
         // osu! general
         commandHandler.commands.put("link", new cmdLink());
-        commandHandler.commands.put("recentbest", new cmdRecentBest());
-        commandHandler.commands.put("rb", new cmdRecentBest());
         commandHandler.commands.put("scores", new cmdScores());
-        commandHandler.commands.put("top", new cmdTop());
-        commandHandler.commands.put("topscores", new cmdTop());
-        commandHandler.commands.put("osutop", new cmdTop());
         commandHandler.commands.put("nochoke", new cmdNoChoke());
         commandHandler.commands.put("nochokes", new cmdNoChoke());
         commandHandler.commands.put("nc", new cmdNoChoke());
