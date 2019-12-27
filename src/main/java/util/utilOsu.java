@@ -33,13 +33,13 @@ public class utilOsu {
             sb.append("FL");
         if ((mods & 4096) != 0)
             sb.append("SO");
-        if ((mods & 16384) != 0)
+        if ((mods & 16_384) != 0)
             sb.append("PF");
         else if ((mods & 32) != 0)
             sb.append("SD");
-        if ((mods & 1048576) != 0)
+        if ((mods & 1_048_576) != 0)
             sb.append("FI");
-        if ((mods & 1073741824) != 0)
+        if ((mods & 1_073_741_824) != 0)
             sb.append("MR");
         return sb.toString();
     }
@@ -61,9 +61,20 @@ public class utilOsu {
                 case "NC": flag += 576; break;
                 case "FL": flag += 1024; break;
                 case "SO": flag += 4096; break;
-                case "PF": flag += 16416; break;
-                case "FI": flag += 1048576; break;
-                case "MR": flag += 1073741824; break;
+                case "PF": flag += 16_416; break;
+                case "FI": flag += 1_048_576; break;
+                case "MR": flag += 1_073_741_824; break;
+
+                case "1K": flag += 67_108_864; break;
+                case "2K": flag += 268_435_456; break;
+                case "3K": flag += 134_217_728; break;
+                case "4K": flag += 32_768; break;
+                case "5K": flag += 65_536; break;
+                case "6K": flag += 131_072; break;
+                case "7K": flag += 262_144; break;
+                case "8K": flag += 524_288; break;
+                case "9K": flag += 16_777_216; break;
+
                 default: break;
             }
         }
@@ -72,23 +83,23 @@ public class utilOsu {
 
     // Given a mod int, return the corresponding string but only for key mods
     public static String keys_intToStr(int mods) {
-        if ((mods & 67108864) != 0)
+        if ((mods & 67_108_864) != 0)
             return "1K";
-        if ((mods & 268435456) != 0)
+        if ((mods & 268_435_456) != 0)
             return "2K";
-        if ((mods & 134217728) != 0)
+        if ((mods & 134_217_728) != 0)
             return "3K";
-        if ((mods & 32768) != 0)
+        if ((mods & 32_768) != 0)
             return "4K";
-        if ((mods & 65536) != 0)
+        if ((mods & 65_536) != 0)
             return "5K";
-        if ((mods & 131072) != 0)
+        if ((mods & 131_072) != 0)
             return "6K";
-        if ((mods & 262144) != 0)
+        if ((mods & 262_144) != 0)
             return "7K";
-        if ((mods & 524288) != 0)
+        if ((mods & 524_288) != 0)
             return "8K";
-        if ((mods & 16777216) != 0)
+        if ((mods & 16_777_216) != 0)
             return "9K";
         return "";
     }

@@ -1,8 +1,7 @@
 
 --- GENERAL ---
 check if pp calculation has an update
-show top 5 for rb when number < 6
-provide filtering by keys for <topmania
+(provide filtering by keys for <topmania)
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions
@@ -12,11 +11,10 @@ FileInteractor.offsetOfNode NullPointerExceptions
 	- mapid 1706017, noteIndex 496, lineNum 495
 
 --- IDEAS ---
-page scrap to get last ranked/loved/... maps
 command showing average max combo, maybe weighted
-command to show all scores of mapset
-hypothetical command <reach [name] that shows required pp to reach that user
 <selfprune to remove own msg (& bot responses)
-<osu command to show stats
-<urban to show urban dictionary definition of a word/phrase
+<osu / <mania / <taiko / <ctb command to show stats
 <suggest <ss pp value> gives top 10 maps (with mods) that have that pp value
+(command to show all scores of mapset)
+(page scrap to get last ranked/loved/... maps)
+(<urban to show urban dictionary definition of a word/phrase [same for <wolfram])

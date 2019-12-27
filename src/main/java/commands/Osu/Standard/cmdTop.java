@@ -134,7 +134,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
         }
         if (mIdx != -1) {
             String word = argList.get(mIdx);
-            word = word.substring(1, word.length()-1);
+            word = word.substring(1, word.length() - 1);
             excludedMods.addAll(Arrays.asList(GameMod.get(mods_strToInt(word.toUpperCase()))));
             if (word.contains("nm"))
                 excludeNM = true;
@@ -175,6 +175,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
+        List<OsuScore> actual = new ArrayList<>(scores);
         if (number < 6) {
             // Consider only scores with correct mods that fullfill the score condition
             scores = scores.stream()
@@ -236,9 +237,13 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
                 event.getChannel().sendMessage(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM)).queue();
                 return;
             }
+            LinkedList<Integer> indices = new LinkedList<>();
+            for (OsuScore s : scores) {
+                indices.addLast(actual.indexOf(s));
+            }
             // Build message
             new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
-                    .maps(maps.stream().limit(5).collect(Collectors.toList()))
+                    .maps(maps.stream().limit(5).collect(Collectors.toList())).indices(indices)
                     .mode(getMode()).buildAndSend();
         } else {
             // Get the appropriate score

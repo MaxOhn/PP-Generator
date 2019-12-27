@@ -184,7 +184,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             case 0:
                 return "Enter `" + statics.prefix + "common" + getName() + " <osu name 1> [osu name 2 [ osu name 3 ...]] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make "
                         + "me list the maps appearing in all given player's top 100 scores.\nIf you're not linked via `"
-                        + statics.prefix + "link <osu name>" + "`, you must specify at least two names, otherwise I compare "
+                        + statics.prefix + "link <osu name>`, you must specify at least two names, otherwise I compare "
                         + "your linked account with the specified name.\n**User names that contain spaces must be "
                         + "encapsulated with \"** e.g. \"nathan on osu\""
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods.";

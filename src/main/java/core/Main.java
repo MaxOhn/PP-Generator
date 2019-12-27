@@ -96,6 +96,7 @@ public class Main {
         commandHandler.commands.put("whatif", new cmdWhatIf());
         commandHandler.commands.put("pp", new cmdPP());
         commandHandler.commands.put("rank", new cmdRank());
+        commandHandler.commands.put("reach", new cmdReach());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
@@ -121,6 +122,8 @@ public class Main {
         commandHandler.commands.put("rankmania", new cmdRankMania());
         commandHandler.commands.put("ratio", new cmdRatio());
         commandHandler.commands.put("ratios", new cmdRatio());
+        commandHandler.commands.put("reachmania", new cmdReachMania());
+        commandHandler.commands.put("reachm", new cmdReachMania());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
@@ -142,6 +145,8 @@ public class Main {
         commandHandler.commands.put("pptaiko", new cmdPPTaiko());
         commandHandler.commands.put("rankt", new cmdRankTaiko());
         commandHandler.commands.put("ranktaiko", new cmdRankTaiko());
+        commandHandler.commands.put("reachtaiko", new cmdReachTaiko());
+        commandHandler.commands.put("reacht", new cmdReachTaiko());
 
         // osu! ctb
         commandHandler.commands.put("recentctb", new cmdRecentFruits());
@@ -163,6 +168,8 @@ public class Main {
         commandHandler.commands.put("ppc", new cmdPPFruits());
         commandHandler.commands.put("rankctb", new cmdRankFruits());
         commandHandler.commands.put("rankc", new cmdRankFruits());
+        commandHandler.commands.put("reachctb", new cmdReachFruits());
+        commandHandler.commands.put("reachc", new cmdReachFruits());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());
