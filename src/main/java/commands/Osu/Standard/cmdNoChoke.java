@@ -1,4 +1,4 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;

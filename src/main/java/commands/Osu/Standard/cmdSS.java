@@ -1,7 +1,8 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
+import main.java.commands.Osu.Standard.cmdTop;
 import main.java.core.BotMessage;
 import main.java.util.statics;
 

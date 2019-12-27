@@ -2,13 +2,12 @@ package main.java.core;
 
 import com.oopsjpeg.osu4j.backend.Osu;
 import main.java.commands.Fun.*;
+import main.java.commands.Osu.Fruits.*;
 import main.java.commands.Osu.Mania.*;
+import main.java.commands.Osu.Standard.*;
 import main.java.commands.Osu.Taiko.*;
 import main.java.commands.Osu.*;
-import main.java.commands.Twitch.cmdAddStream;
-import main.java.commands.Twitch.cmdAllStreamers;
-import main.java.commands.Twitch.cmdRemoveStream;
-import main.java.commands.Twitch.cmdTrackedStreams;
+import main.java.commands.Twitch.*;
 import main.java.commands.Utility.*;
 import main.java.listeners.*;
 import main.java.util.secrets;
@@ -60,21 +59,37 @@ public class Main {
 
     private static void addCommands() {
 
+        // osu! general
+        commandHandler.commands.put("link", new cmdLink());
+        commandHandler.commands.put("compare", new cmdScores());
+        commandHandler.commands.put("c", new cmdScores());
+        commandHandler.commands.put("scores", new cmdScores());
+        commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
+        commandHandler.commands.put("lb", new cmdMapLeaderboard());
+        commandHandler.commands.put("globallb", new cmdGlobalLeaderboard());
+        commandHandler.commands.put("glb", new cmdGlobalLeaderboard());
+        commandHandler.commands.put("simulate", new cmdSimulateMap());
+        commandHandler.commands.put("s", new cmdSimulateMap());
+
         // osu! standard
         commandHandler.commands.put("recent", new cmdRecent());
         commandHandler.commands.put("r", new cmdRecent());
         commandHandler.commands.put("rs", new cmdRecent());
         commandHandler.commands.put("recentbest", new cmdRecentBest());
         commandHandler.commands.put("rb", new cmdRecentBest());
-        commandHandler.commands.put("compare", new cmdScores());
-        commandHandler.commands.put("c", new cmdScores());
         commandHandler.commands.put("top", new cmdTop());
         commandHandler.commands.put("topscores", new cmdTop());
         commandHandler.commands.put("osutop", new cmdTop());
+        commandHandler.commands.put("nochoke", new cmdNoChoke());
+        commandHandler.commands.put("nochokes", new cmdNoChoke());
+        commandHandler.commands.put("nc", new cmdNoChoke());
+        commandHandler.commands.put("sotarks", new cmdSotarks());
+        commandHandler.commands.put("ss", new cmdSS());
         commandHandler.commands.put("recentleaderboard", new cmdRecentLeaderboard());
         commandHandler.commands.put("rlb", new cmdRecentLeaderboard());
         commandHandler.commands.put("recentglb", new cmdRecentGlobalLeaderboard());
         commandHandler.commands.put("rglb", new cmdRecentGlobalLeaderboard());
+        commandHandler.commands.put("common", new cmdCommonScores());
         commandHandler.commands.put("simulaterecent", new cmdSimulateRecent());
         commandHandler.commands.put("sr", new cmdSimulateRecent());
         commandHandler.commands.put("wi", new cmdWhatIf());
@@ -82,21 +97,47 @@ public class Main {
         commandHandler.commands.put("pp", new cmdPP());
         commandHandler.commands.put("rank", new cmdRank());
 
+        // osu! mania
+        commandHandler.commands.put("recentmania", new cmdRecentMania());
+        commandHandler.commands.put("rm", new cmdRecentMania());
+        commandHandler.commands.put("recentbestmania", new cmdRecentBestMania());
+        commandHandler.commands.put("rbmania", new cmdRecentBestMania());
+        commandHandler.commands.put("rbm", new cmdRecentBestMania());
+        commandHandler.commands.put("topmania", new cmdTopMania());
+        commandHandler.commands.put("topm", new cmdTopMania());
+        commandHandler.commands.put("recentmanialb", new cmdRecentManiaLeaderboard());
+        commandHandler.commands.put("rmlb", new cmdRecentManiaLeaderboard());
+        commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
+        commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
+        commandHandler.commands.put("commonmania", new cmdCommonScoresMania());
+        commandHandler.commands.put("commonm", new cmdCommonScoresMania());
+        commandHandler.commands.put("simulaterecentmania", new cmdSimulateRecentMania());
+        commandHandler.commands.put("srm", new cmdSimulateRecentMania());
+        commandHandler.commands.put("wim", new cmdWhatIfMania());
+        commandHandler.commands.put("whatifmania", new cmdWhatIfMania());
+        commandHandler.commands.put("ppm", new cmdPPMania());
+        commandHandler.commands.put("ppmania", new cmdPPMania());
+        commandHandler.commands.put("rankm", new cmdRankMania());
+        commandHandler.commands.put("rankmania", new cmdRankMania());
+        commandHandler.commands.put("ratio", new cmdRatio());
+        commandHandler.commands.put("ratios", new cmdRatio());
+
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
         commandHandler.commands.put("recentbesttaiko", new cmdRecentBestTaiko());
         commandHandler.commands.put("rbtaiko", new cmdRecentBestTaiko());
         commandHandler.commands.put("rbt", new cmdRecentBestTaiko());
-        commandHandler.commands.put("ct", new cmdScores());
         commandHandler.commands.put("toptaiko", new cmdTopTaiko());
         commandHandler.commands.put("topt", new cmdTopTaiko());
         commandHandler.commands.put("recenttaikolb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("rtlb", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
-        commandHandler.commands.put("simulatetaiko", new cmdSimulateTaiko());
-        commandHandler.commands.put("st", new cmdSimulateTaiko());
+        commandHandler.commands.put("commontaiko", new cmdCommonScoresTaiko());
+        commandHandler.commands.put("commont", new cmdCommonScoresTaiko());
+        commandHandler.commands.put("simulaterecenttaiko", new cmdSimulateRecentTaiko());
+        commandHandler.commands.put("srt", new cmdSimulateRecentTaiko());
         commandHandler.commands.put("wit", new cmdWhatIfTaiko());
         commandHandler.commands.put("whatiftaiko", new cmdWhatIfTaiko());
         commandHandler.commands.put("ppt", new cmdPPTaiko());
@@ -104,45 +145,17 @@ public class Main {
         commandHandler.commands.put("rankt", new cmdRankTaiko());
         commandHandler.commands.put("ranktaiko", new cmdRankTaiko());
 
-        // osu! mania
-        commandHandler.commands.put("recentmania", new cmdRecentMania());
-        commandHandler.commands.put("rm", new cmdRecentMania());
-        commandHandler.commands.put("recentbestmania", new cmdRecentBestMania());
-        commandHandler.commands.put("rbmania", new cmdRecentBestMania());
-        commandHandler.commands.put("rbm", new cmdRecentBestMania());
-        commandHandler.commands.put("cm", new cmdScores());
-        commandHandler.commands.put("topmania", new cmdTopMania());
-        commandHandler.commands.put("topm", new cmdTopMania());
-        commandHandler.commands.put("recentmanialb", new cmdRecentManiaLeaderboard());
-        commandHandler.commands.put("rmlb", new cmdRecentManiaLeaderboard());
-        commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
-        commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
-        commandHandler.commands.put("simulatemania", new cmdSimulateMania());
-        commandHandler.commands.put("sm", new cmdSimulateMania());
-        commandHandler.commands.put("wim", new cmdWhatIfMania());
-        commandHandler.commands.put("whatifmania", new cmdWhatIfMania());
-        commandHandler.commands.put("ppm", new cmdPPMania());
-        commandHandler.commands.put("ppmania", new cmdPPMania());
-        commandHandler.commands.put("rankm", new cmdRankMania());
-        commandHandler.commands.put("rankmania", new cmdRankMania());
-
-        // osu! general
-        commandHandler.commands.put("link", new cmdLink());
-        commandHandler.commands.put("scores", new cmdScores());
-        commandHandler.commands.put("nochoke", new cmdNoChoke());
-        commandHandler.commands.put("nochokes", new cmdNoChoke());
-        commandHandler.commands.put("nc", new cmdNoChoke());
-        commandHandler.commands.put("sotarks", new cmdSotarks());
-        commandHandler.commands.put("ss", new cmdSS());
-        commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
-        commandHandler.commands.put("lb", new cmdMapLeaderboard());
-        commandHandler.commands.put("glb", new cmdGlobalLeaderboard());
-        commandHandler.commands.put("globallb", new cmdGlobalLeaderboard());
-        commandHandler.commands.put("common", new cmdCommonScores());
-        commandHandler.commands.put("ratio", new cmdRatio());
-        commandHandler.commands.put("ratios", new cmdRatio());
-        commandHandler.commands.put("simulate", new cmdSimulateMap());
-        commandHandler.commands.put("s", new cmdSimulateMap());
+        // osu! ctb
+        commandHandler.commands.put("topctb", new cmdTopFruits());
+        commandHandler.commands.put("topc", new cmdTopFruits());
+        commandHandler.commands.put("commonctb", new cmdCommonScoresFruits());
+        commandHandler.commands.put("commonc", new cmdCommonScoresFruits());
+        commandHandler.commands.put("whatifctb", new cmdWhatIfFruits());
+        commandHandler.commands.put("wic", new cmdWhatIfFruits());
+        commandHandler.commands.put("ppctb", new cmdPPFruits());
+        commandHandler.commands.put("ppc", new cmdPPFruits());
+        commandHandler.commands.put("rankctb", new cmdRankFruits());
+        commandHandler.commands.put("rankc", new cmdRankFruits());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

@@ -171,8 +171,9 @@ public class BotMessage {
                             fieldValue += s.getGekis() + "/" + s.getHit300() + "/" + s.getKatus()
                                     + "/" + s.getHit100() + "/" + s.getHit50();
                             break;
-                        default:
-                            throw new IllegalStateException(Error.MODE.getMsg());
+                        case CATCH_THE_BEAT:
+                            // TODO
+                            break;
                     }
                     fieldValue += "/" + s.getMisses() + "}\t" + howLongAgo(s.getDate());
                     eb.addField(fieldName, fieldValue, false);
@@ -226,18 +227,23 @@ public class BotMessage {
                     map(maps.get(idx - 1));
                     osuscore(s);
                     mods = getModString();
+                    double starRating = Math.round(100 * (u.getMode() == GameMode.CATCH_THE_BEAT
+                            ? p.getMap().getDifficulty()
+                            : p.getStarRatingDouble())) / 100.0;
+                    String ppMax = u.getMode() == GameMode.CATCH_THE_BEAT ? "0" : p.getPpMax();
                     if (!description.toString().equals("")) description.append("\n");
                     if (typeM == MessageType.NOCHOKESCORES) p.noChoke(50);
                     description.append("**").append(idx++).append(".** [**")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(p.getMap().getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
-                            .append(p.getStarRating()).append("★]\n ")
-                            .append(getRank()).append(" **").append(p.getPp()).append("**/").append(p.getPpMax())
+                            .append(starRating).append("★]\n ")
+                            .append(getRank()).append(" **").append(p.getPp()).append("**/").append(ppMax)
                             .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore())).append("\n  [ ")
                             .append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ] ~ { ");
                     switch (p.getMode()) {
                         case STANDARD:
+                        case CATCH_THE_BEAT:
                             description.append(s.getHit300()).append(" / ").append(s.getHit100()).append(" / ")
                                     .append(s.getHit50());
                             break;
@@ -248,8 +254,6 @@ public class BotMessage {
                             break;
                         case TAIKO:
                             description.append(s.getHit300()).append(" / ").append(s.getHit100());
-                            break;
-                        default:
                             break;
                     }
                     description.append(" / ").append(s.getMisses()).append(" } ~ ").append(howLongAgo(s.getDate()));
@@ -534,7 +538,6 @@ public class BotMessage {
 
     // Set the game mode
     public BotMessage mode(GameMode mode) {
-        if (mode == GameMode.CATCH_THE_BEAT) throw new IllegalStateException(Error.MODE.getMsg());
         this.p.mode(mode);
         return this;
     }
@@ -615,7 +618,6 @@ public class BotMessage {
         MAP("Unspecified map"),
         HISTORY("Unspecified history"),
         TYPEM("Invalid message type"),
-        MODE("Unsupported game mode"),
         COLLECTION("Collection is undefined"),
         USER("User is undefined"),
         AUTHOR("Author is undefined");

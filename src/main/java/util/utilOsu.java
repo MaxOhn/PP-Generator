@@ -191,19 +191,23 @@ public class utilOsu {
 
     // Given a score, a mode and the amount of total hitobjects, return the accuracy of the score
     public static double getAcc(OsuScore score, GameMode mode, int nTotal) {
-        double numerator = (double)score.getHit50() * 50.0D + (double)score.getHit100() * 100.0D + (double)score.getHit300() * 300.0D;
-        if (mode == GameMode.MANIA)
-            numerator += (double)score.getKatus() * 200.0D + (double)score.getGekis() * 300.0D;
-        else if (mode == GameMode.TAIKO)
-            numerator = 0.5 * score.getHit100() + score.getHit300();
-        double denominator;
-        if (mode == GameMode.STANDARD)
-            denominator = (double)(nTotal) * 300.0D;
-        else // taiko, mania
-            denominator = nTotal;
-        if (mode == GameMode.MANIA) denominator *= 300;
-        double res = numerator / denominator;
-        return 100 * Math.max(0.0D, Math.min(res, 1.0D));
+        double numerator = 0, denominator = nTotal;
+        switch (mode) {
+            case MANIA:
+                numerator = (double)score.getKatus() * 200.0D + (double)score.getGekis() * 300.0D;
+            case STANDARD:
+                numerator += (double)score.getHit50() * 50.0D + (double)score.getHit100() * 100.0D + (double)score.getHit300() * 300.0D;
+                denominator *= 300.0;
+                break;
+            case CATCH_THE_BEAT:
+                numerator = (double)score.getHit300() + (double)score.getHit100() + (double)score.getHit50();
+                denominator = numerator + (double)score.getKatus() + (double)score.getMisses();
+                break;
+            case TAIKO:
+                numerator = 0.5 * score.getHit100() + score.getHit300();
+                break;
+        }
+        return Math.round(10_000.0 * numerator / denominator) / 100.0;
     }
 
     // Given the accuracy, approximate the hitresults of the score

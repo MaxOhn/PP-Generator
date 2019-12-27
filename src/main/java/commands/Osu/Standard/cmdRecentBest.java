@@ -1,4 +1,4 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
@@ -134,10 +134,6 @@ public class cmdRecentBest implements INumberedCommand {
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 4:
-                return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
-            case 5:
-                return "CtB is not yet supported" + help;
             default:
                 return help(0);
         }

@@ -112,7 +112,7 @@ public class cmdRatio implements INumberedCommand {
 
     @Override
     public utilGeneral.Category getCategory() {
-        return utilGeneral.Category.OSU;
+        return utilGeneral.Category.MANIA;
     }
 
     @Override

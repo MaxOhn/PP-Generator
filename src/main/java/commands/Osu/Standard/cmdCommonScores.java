@@ -1,9 +1,10 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.ICommand;
+import main.java.commands.Osu.cmdModdedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -42,7 +43,6 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 .filter(arg -> !arg.isEmpty())
                 .collect(Collectors.toList());
         List<String> names = new ArrayList<>();
-        GameMode mode = GameMode.STANDARD;
 
         // Get the names inbetween quotes
         if (argList.stream().anyMatch(w -> w.contains("\""))) {
@@ -56,39 +56,6 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             argList = Arrays.stream(argString.split(" "))
                     .filter(arg -> !arg.isEmpty())
                     .collect(Collectors.toList());
-        }
-
-        // Get the mode by checking for -m or -mode
-        for (int i = 0; i < argList.size(); i++) {
-            if (argList.get(i).equals("-m") || args[i].equals("-mode")) {
-                if (i+1 < args.length) {
-                    switch (argList.get(i+1)) {
-                        case "standard":
-                        case "std":
-                        case "s": mode = GameMode.STANDARD; break;
-                        case "tko":
-                        case "t": mode = GameMode.TAIKO; break;
-                        case "ctb":
-                        case "c":
-                            event.getChannel().sendMessage(help(2)).queue();
-                            return;
-                        case "mania":
-                        case "mna":
-                        case "m": mode = GameMode.MANIA; break;
-                        default:
-                            event.getChannel().sendMessage(help(3)).queue();
-                            return;
-                    }
-                } else {
-                    event.getChannel().sendMessage(help(3)).queue();
-                    return;
-                }
-            }
-        }
-        int delIndex = Math.max(argList.indexOf("-m"), argList.indexOf("-mode"));
-        if (delIndex > -1) {
-            argList.remove(delIndex + 1);
-            argList.remove(delIndex);
         }
 
         // Get the mods by checking for +...
@@ -152,7 +119,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         List<OsuUser> users = new ArrayList<>();
         try {
             for (String name : names)
-                users.add(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(mode).build()));
+                users.add(Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build()));
         } catch (Exception e) {
             event.getChannel().sendMessage("Could not find at least one of the players (`"
                     + String.join("` / `", names) + "`)").queue();
@@ -206,7 +173,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             maps.add(map);
         }
 
-        new BotMessage(event.getChannel(), BotMessage.MessageType.COMMONSCORES).maps(maps).mode(mode).osuscores(common)
+        new BotMessage(event.getChannel(), BotMessage.MessageType.COMMONSCORES).maps(maps).mode(getMode()).osuscores(common)
                 .users(users).buildAndSend();
     }
 
@@ -215,7 +182,7 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         String help = " (`" + statics.prefix + "common -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "common <osu name 1> [osu name 2 [ osu name 3 ...]] [-m <s/t/c/m for mode>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make "
+                return "Enter `" + statics.prefix + "common" + getName() + " <osu name 1> [osu name 2 [ osu name 3 ...]] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make "
                         + "me list the maps appearing in all given player's top 100 scores.\nIf you're not linked via `"
                         + statics.prefix + "link <osu name>" + "`, you must specify at least two names, otherwise I compare "
                         + "your linked account with the specified name.\n**User names that contain spaces must be "
@@ -224,14 +191,8 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
             case 1:
                 return "Either specify an second user name or link your discord to an osu profile via `" + statics.prefix
                         + "link <osu name>" + "` so that I compare you account with the specified name" + help;
-            case 2:
-                return "CtB is not yet supported" + help;
-            case 3:
-                return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
             case 4:
                 return "You must specify at least one user name" + help;
-            case 5:
-                return "Could not parse message. Have you specified between one and two usernames?" + help;
             default:
                 return help(0);
         }
@@ -240,5 +201,13 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
     @Override
     public utilGeneral.Category getCategory() {
         return utilGeneral.Category.OSU;
+    }
+
+    public GameMode getMode() {
+        return GameMode.STANDARD;
+    }
+
+    public String getName() {
+        return "";
     }
 }

@@ -13,20 +13,20 @@ import java.util.HashSet;
  */
 public abstract class cmdModdedCommand implements ICommand {
 
-    modStatus status = modStatus.WITHOUT;
-    boolean excludeNM = false;
+    protected modStatus status = modStatus.WITHOUT;
+    protected boolean excludeNM = false;
 
-    GameMod[] includedMods;
-    HashSet<GameMod> excludedMods;
+    protected GameMod[] includedMods;
+    protected HashSet<GameMod> excludedMods;
 
     // If mods aren't given, choose WITHOUT, otherwise they must be either exact or a subset
-    enum modStatus {
+    protected enum modStatus {
         WITHOUT,
         CONTAINS,
         EXACT,
     }
 
-    void setInitial() {
+    protected void setInitial() {
         status = modStatus.WITHOUT;
         includedMods = new GameMod[0];
         excludedMods = new HashSet<>();
@@ -34,7 +34,7 @@ public abstract class cmdModdedCommand implements ICommand {
     }
 
     // Check if given score satisfies mod condition
-    boolean hasValidMods(OsuScore score) {
+    protected boolean hasValidMods(OsuScore score) {
         boolean response = excludedMods.size() == 0 || excludesMods(score);
         switch (status) {
             case CONTAINS:

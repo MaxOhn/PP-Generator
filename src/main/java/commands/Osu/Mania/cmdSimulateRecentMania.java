@@ -1,19 +1,19 @@
 package main.java.commands.Osu.Mania;
 
 import com.oopsjpeg.osu4j.GameMode;
-import main.java.commands.Osu.Standard.cmdRecent;
+import main.java.commands.Osu.Standard.cmdSimulateRecent;
 import main.java.util.utilGeneral;
 
-public class cmdRecentMania extends cmdRecent {
+public class cmdSimulateRecentMania extends cmdSimulateRecent {
 
     @Override
-    public GameMode getMode() {
+    protected GameMode getMode() {
         return GameMode.MANIA;
     }
 
     @Override
-    public String getName() {
-        return "recentmania";
+    protected String getName() {
+        return "mania";
     }
 
     @Override

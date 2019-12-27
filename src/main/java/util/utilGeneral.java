@@ -74,7 +74,11 @@ public class utilGeneral {
     // Command categories
     public enum Category {
         FUN("Fun"),
+        OSU_GENERAL("osu!general"),
         OSU("osu!"),
+        MANIA("Mania"),
+        TAIKO("Taiko"),
+        CTB("Catch the beat"),
         TWITCH("Twitch"),
         UTILITY("Utility");
         String name;

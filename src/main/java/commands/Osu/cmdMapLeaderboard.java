@@ -156,7 +156,7 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
 
     @Override
     public utilGeneral.Category getCategory() {
-        return utilGeneral.Category.OSU;
+        return utilGeneral.Category.OSU_GENERAL;
     }
 
     @Override

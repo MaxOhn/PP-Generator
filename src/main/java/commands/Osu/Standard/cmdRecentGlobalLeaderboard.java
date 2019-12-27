@@ -1,11 +1,13 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
 import main.java.commands.INumberedCommand;
+import main.java.commands.Osu.cmdGlobalLeaderboard;
 import main.java.core.Main;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -13,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
-    Display the leaderboard of a map that was recently played
+    Display the global leaderboard of a map that was recently played
  */
-public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumberedCommand {
+public class cmdRecentGlobalLeaderboard extends cmdGlobalLeaderboard implements INumberedCommand {
 
     private int number = 1;
 
@@ -42,7 +44,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
         } else {
             name = String.join(" ", argList);
         }
-        // Check if name was given as mention
+        // Check if name is given as mention
         if (event.isFromType(ChannelType.TEXT) && event.getMessage().getMentionedMembers().size() > 0) {
             name = Main.discLink.getOsu(event.getMessage().getMentionedMembers().get(0).getUser().getId());
             if (name == null) {
@@ -75,7 +77,7 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
     }
 
     @Override
-    public cmdRecentLeaderboard setNumber(int number) {
+    public cmdRecentGlobalLeaderboard setNumber(int number) {
         this.number = number;
         return this;
     }
@@ -90,16 +92,22 @@ public class cmdRecentLeaderboard extends cmdMapLeaderboard implements INumbered
 
     @Override
     public String help(int hCode) {
-        String help = " (`" + statics.prefix + getName() + "leaderboard -h` for more help)";
+        String help = " (`" + statics.prefix + getName() + "glb -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + getName() + "leaderboard[number] [osu name]` to make me show the national top 10 scores on the beatmap of the user's last play."
-                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "leaderboard8`, I will skip the most recent 7 scores "
-                        + "and show the leaderboard of the 8-th recent score, defaults to 1.";
+                return "Enter `" + statics.prefix + getName() + "glb[number] [osu name]` to make me show the global top 10 scores on the beatmap of the user's last play."
+                        + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "glb8`, I will skip the most recent 7 scores "
+                        + "and show the leaderboard of the 8-th recent score, defaults to 1."
+                        + "\nIf no beatmap is specified, I will search the channel's history for scores instead and consider the map of the [number]-th score, default to 1.";
             case 1:
                 return "The first argument must either be the link to a beatmap e.g. `https://osu.ppy.sh/b/1613091&m=0`, or just the id of the beatmap" + help;
             default:
                 return help(0);
         }
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.OSU;
     }
 }

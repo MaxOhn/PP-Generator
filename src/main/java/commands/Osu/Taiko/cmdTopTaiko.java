@@ -1,7 +1,8 @@
 package main.java.commands.Osu.Taiko;
 
 import com.oopsjpeg.osu4j.GameMode;
-import main.java.commands.Osu.cmdTop;
+import main.java.commands.Osu.Standard.cmdTop;
+import main.java.util.utilGeneral;
 
 public class cmdTopTaiko extends cmdTop {
     @Override
@@ -12,5 +13,10 @@ public class cmdTopTaiko extends cmdTop {
     @Override
     public String getName() {
         return "taiko";
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.TAIKO;
     }
 }

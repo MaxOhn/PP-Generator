@@ -1,4 +1,4 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;

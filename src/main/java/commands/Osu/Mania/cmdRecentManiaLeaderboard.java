@@ -1,7 +1,8 @@
 package main.java.commands.Osu.Mania;
 
 import com.oopsjpeg.osu4j.GameMode;
-import main.java.commands.Osu.cmdRecentLeaderboard;
+import main.java.commands.Osu.Standard.cmdRecentLeaderboard;
+import main.java.util.utilGeneral;
 
 public class cmdRecentManiaLeaderboard extends cmdRecentLeaderboard {
 
@@ -13,5 +14,10 @@ public class cmdRecentManiaLeaderboard extends cmdRecentLeaderboard {
     @Override
     protected String getName() {
         return "recentmania";
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.MANIA;
     }
 }

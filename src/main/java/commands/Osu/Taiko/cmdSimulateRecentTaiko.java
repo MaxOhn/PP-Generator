@@ -1,18 +1,19 @@
 package main.java.commands.Osu.Taiko;
 
 import com.oopsjpeg.osu4j.GameMode;
-import main.java.commands.Osu.Standard.cmdRecentBest;
+import main.java.commands.Osu.Standard.cmdSimulateRecent;
 import main.java.util.utilGeneral;
 
-public class cmdRecentBestTaiko extends cmdRecentBest {
+public class cmdSimulateRecentTaiko extends cmdSimulateRecent {
+
     @Override
-    public String getName() {
-        return "taiko";
+    protected GameMode getMode() {
+        return GameMode.TAIKO;
     }
 
     @Override
-    public GameMode getMode() {
-        return GameMode.TAIKO;
+    protected String getName() {
+        return "taiko";
     }
 
     @Override

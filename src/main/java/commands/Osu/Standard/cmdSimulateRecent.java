@@ -1,10 +1,12 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
+import main.java.commands.Osu.cmdSimulateMap;
 import main.java.core.Main;
 import main.java.util.statics;
+import main.java.util.utilGeneral;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
@@ -101,5 +103,10 @@ public class cmdSimulateRecent extends cmdSimulateMap {
     public cmdSimulateRecent setNumber(int number) {
         this.number = number;
         return this;
+    }
+
+    @Override
+    public utilGeneral.Category getCategory() {
+        return utilGeneral.Category.OSU;
     }
 }

@@ -56,6 +56,6 @@ public class cmdLink implements ICommand {
 
     @Override
     public utilGeneral.Category getCategory() {
-        return utilGeneral.Category.OSU;
+        return utilGeneral.Category.OSU_GENERAL;
     }
 }

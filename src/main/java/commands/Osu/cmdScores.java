@@ -175,7 +175,7 @@ public class cmdScores implements INumberedCommand {
 
     @Override
     public utilGeneral.Category getCategory() {
-        return utilGeneral.Category.OSU;
+        return utilGeneral.Category.OSU_GENERAL;
     }
 
     @Override

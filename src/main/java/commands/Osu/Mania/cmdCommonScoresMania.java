@@ -1,11 +1,10 @@
 package main.java.commands.Osu.Mania;
 
 import com.oopsjpeg.osu4j.GameMode;
-import main.java.commands.Osu.Standard.cmdRecent;
+import main.java.commands.Osu.Standard.cmdCommonScores;
 import main.java.util.utilGeneral;
 
-public class cmdRecentMania extends cmdRecent {
-
+public class cmdCommonScoresMania extends cmdCommonScores {
     @Override
     public GameMode getMode() {
         return GameMode.MANIA;
@@ -13,7 +12,7 @@ public class cmdRecentMania extends cmdRecent {
 
     @Override
     public String getName() {
-        return "recentmania";
+        return "mania";
     }
 
     @Override

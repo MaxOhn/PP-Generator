@@ -1,10 +1,11 @@
-package main.java.commands.Osu;
+package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
+import main.java.commands.Osu.cmdModdedCommand;
 import main.java.core.BotMessage;
 import main.java.core.DBProvider;
 import main.java.core.Main;
@@ -348,10 +349,6 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
-            case 2:
-                return "CtB is not yet supported" + help;
-            case 3:
-                return "After '-m' specify either 's' for standard, 't' for taiko, 'c' for CtB, or 'm' for mania" + help;
             case 4:
                 return "After '-acc' you must specify a positive number i.e. `-acc 96.73`" + help;
             case 5:
