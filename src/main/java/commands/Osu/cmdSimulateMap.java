@@ -306,8 +306,8 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 event.getChannel().sendMessage("Not available for taiko :(").queue();
                 return;
             }
-            default:
-                event.getChannel().sendMessage("Mode not yet supported :(").queue();
+            case CATCH_THE_BEAT:
+                event.getChannel().sendMessage("Not available for ctb :(").queue();
                 return;
         }
         // Create the message

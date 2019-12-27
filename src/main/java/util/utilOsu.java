@@ -178,12 +178,12 @@ public class utilOsu {
     public static double getAcc(OsuScore score, GameMode mode) {
         int nTotal = score.getHit300() + score.getHit100() + score.getMisses();
         switch (mode) {
+            case MANIA:
+                nTotal += score.getGekis();
+            case CATCH_THE_BEAT:
+                nTotal += score.getKatus();
             case STANDARD:
                 nTotal += score.getHit50();
-                break;
-            case MANIA:
-                nTotal += score.getGekis() + score.getKatus() + score.getHit50();
-                break;
             default: break;
         }
         return getAcc(score, mode, nTotal);
@@ -201,7 +201,7 @@ public class utilOsu {
                 break;
             case CATCH_THE_BEAT:
                 numerator = (double)score.getHit300() + (double)score.getHit100() + (double)score.getHit50();
-                denominator = numerator + (double)score.getKatus() + (double)score.getMisses();
+                //denominator = numerator + (double)score.getKatus() + (double)score.getMisses();
                 break;
             case TAIKO:
                 numerator = 0.5 * score.getHit100() + score.getHit300();
@@ -287,6 +287,18 @@ public class utilOsu {
                     return "A";
                 else if (acc > 80)
                     return "B";
+            case CATCH_THE_BEAT:
+                acc = getAcc(score, GameMode.CATCH_THE_BEAT);
+                if (acc == 100)
+                    return mods.contains(GameMod.HIDDEN) ? "XH" : "X";
+                else if (acc > 98)
+                    return mods.contains(GameMod.HIDDEN) ? "SH" : "S";
+                else if (acc > 94)
+                    return "A";
+                else if (acc > 90)
+                    return "B";
+                else if (acc > 85)
+                    return "C";
         }
         return "D";
     }

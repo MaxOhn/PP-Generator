@@ -18,10 +18,10 @@ public class ServerJoinListener extends ListenerAdapter {
         logger.info("Joined a new server: " + event.getGuild().getName());
         try {
             if (secrets.WITH_DB) {
-                logger.info("Trying to initialize serverProperties for server id " + event.getGuild().getId() + "...");
-                DBProvider.setLyricsState(event.getGuild().getId(), true);
-                DBProvider.setAuthorityRoles(event.getGuild().getId(), statics.authorities);
-                logger.info("Successfully initialized serverProperties");
+                //DBProvider.setLyricsState(event.getGuild().getId(), true);
+                //DBProvider.setAuthorityRoles(event.getGuild().getId(), statics.authorities);
+                DBProvider.addServer(event.getGuild().getId(), statics.authorities);
+                logger.info("Successfully initialized serverProperties for server id " + event.getGuild().getId());
             }
         } catch (ClassNotFoundException | SQLException e) {
             logger.error("Error while setting serverProperties for server id " + event.getGuild().getId() + ":");

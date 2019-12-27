@@ -91,14 +91,15 @@ public class Performance {
     public int getNPassedObjects() {
         if (nPassedObjects != 0) return nPassedObjects;
         switch (mode) {
-            case STANDARD:
-                return (nPassedObjects = score.getHit300() + score.getHit100() + score.getHit50() + score.getMisses());
-            case TAIKO:
-                return (nPassedObjects = score.getHit300() + score.getHit100() + score.getMisses());
             case MANIA:
-                return (nPassedObjects = score.getGekis() + score.getKatus() + score.getHit300() + score.getHit100()
-                        + score.getHit50() + score.getMisses());
-            default: return 0;
+                nPassedObjects = score.getGekis();
+            case CATCH_THE_BEAT:
+                nPassedObjects += score.getKatus();
+            case STANDARD:
+                nPassedObjects += score.getHit50();
+            case TAIKO:
+                return (nPassedObjects += score.getHit300() + score.getHit100() + score.getMisses());
+            default: return 0; // c'mon java
         }
     }
 
@@ -174,7 +175,11 @@ public class Performance {
                 case STANDARD: modeStr = "osu"; break;
                 case TAIKO: modeStr = "taiko"; break;
                 case MANIA: modeStr = "mania"; break;
-                default: modeStr = ""; break;
+                case CATCH_THE_BEAT:    // no ctb pp calculation
+                    this.nObjects = 0;
+                    this.ppMax = 0;
+                    return;
+                default: modeStr = ""; break; // c'mon java
             }
             // E.g.: "PerformanceCalculator.dll simulate osu 171024.osu -m hd -m dt"
             StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " simulate " + modeStr +
@@ -248,9 +253,11 @@ public class Performance {
             // Prepare mode
             String modeStr;
             switch (mode) {
+                case STANDARD: modeStr = "osu"; break;
                 case TAIKO: modeStr = "taiko"; break;
                 case MANIA: modeStr = "mania"; break;
-                default: modeStr = "osu"; break;
+                case CATCH_THE_BEAT: return 0; // no ctb pp calculation
+                default: modeStr = ""; break;  // c'mon java
             }
             StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath
                     + " simulate " + modeStr + " " + secrets.mapPath + map.getID() + ".osu");
@@ -361,6 +368,8 @@ public class Performance {
     public double getStarRatingDouble() {
         // If already calculated, return that value
         if (starRating != 0) return starRating;
+        // Don't adjust star rating to mods in CtB as its calculation is not supported
+        if (mode == CATCH_THE_BEAT) return (starRating = Math.round(100.0 * map.getDifficulty()) / 100.0);
         // Consider only those mods that modify the star rating
         HashSet<GameMod> modsImportant = new HashSet<>(mods);
         modsImportant.retainAll(starModifier);
@@ -405,8 +414,9 @@ public class Performance {
         return df.format(getStarRatingDouble());
     }
 
-    // Calculate the star rating of the current map via osu-tool's PerformanceCalculator (no support for CtB)
+    // Calculate the star rating of the current map via osu-tool's PerformanceCalculator (no CtB support)
     private void calculateStarRating(Set<GameMod> m) {
+        if (this.mode == CATCH_THE_BEAT) return;
         StringBuilder cmdLineString = new StringBuilder(statics.execPrefix + "dotnet " + statics.perfCalcPath + " difficulty "
                 + secrets.mapPath + map.getID() + ".osu");
         for (GameMod mod: m)

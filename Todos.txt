@@ -1,8 +1,7 @@
 
 --- GENERAL ---
 check if pp calculation has an update
-show top 5 for rb when number <6
-add ctb support without any pp calculation
+show top 5 for rb when number < 6
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions

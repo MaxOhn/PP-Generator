@@ -6,8 +6,8 @@ import com.oopsjpeg.osu4j.ApprovalState;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.util.Utility;
-import main.java.util.secrets;
 import main.java.commands.Fun.BgGameRanking;
+import main.java.util.secrets;
 
 import java.sql.*;
 import java.time.ZonedDateTime;
@@ -572,6 +572,14 @@ public class DBProvider {
      * -------------------------
      */
 
+    public static void addServer(String serverID, String[] authorities) throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        stmnt.execute("insert ignore into serverProperties(server, lyricsAvailable, authorityRoles) values ('" + serverID
+                + "', true, '" + String.join("##", Arrays.asList(authorities)) + "')");
+    }
+
     // Return whether the song commands are activated on the given server
     public static boolean getLyricsState(String serverID) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -679,7 +687,7 @@ public class DBProvider {
 
     /*
      * ------------------------
-     *         twitch
+     *         streams
      * ------------------------
      */
 

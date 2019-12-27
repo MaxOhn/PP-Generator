@@ -77,14 +77,12 @@ public class cmdSimulateRecent extends cmdSimulateMap {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "simulate" + getName() + "[number] [osu name] [+<nm/hd/nfeznc/...>]"
-                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-s <score>] [-300 <amount 300s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
+                        + " [-a <accuracy>] [-c <combo>] [-x/-m <amount misses>] [-300 <amount 300s>] [-100 <amount 100s>] [-50 <amount 50s>]`"
                         + " to make me simulate a score on the user's most recently played map."
-                        + "\nIf the score is a pass on a osu!std map, I will simulate a nochoke, otherwise (fail or non-osu!std score) I consider the given parameters, defaults to SS."
-                        + "\nFor mania scores, only the score value matters so don't bother adding acc, misses, 320s, ..."
+                        + "\nIf the score is a pass, I will simulate a nochoke, otherwise (fail) I consider the given parameters, defaults to SS."
                         + "\nIf a number is specified and no beatmap, e.g. `" + statics.prefix + "simulate" + getName() + "8`, I will skip the most recent 7 scores "
                         + "and choose the 8-th recent score, defaults to 1."
                         + "\nWith `+` you can choose mods, e.g. `+ezhddt`."
-                        + "\nIf no mods are specified, I will simulate for the mods NM, HD, HR, DT, and HDDT."
                         + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             default:
                 return help(0);

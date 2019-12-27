@@ -136,8 +136,6 @@ public class Main {
         commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("commontaiko", new cmdCommonScoresTaiko());
         commandHandler.commands.put("commont", new cmdCommonScoresTaiko());
-        commandHandler.commands.put("simulaterecenttaiko", new cmdSimulateRecentTaiko());
-        commandHandler.commands.put("srt", new cmdSimulateRecentTaiko());
         commandHandler.commands.put("wit", new cmdWhatIfTaiko());
         commandHandler.commands.put("whatiftaiko", new cmdWhatIfTaiko());
         commandHandler.commands.put("ppt", new cmdPPTaiko());
@@ -146,8 +144,17 @@ public class Main {
         commandHandler.commands.put("ranktaiko", new cmdRankTaiko());
 
         // osu! ctb
+        commandHandler.commands.put("recentctb", new cmdRecentFruits());
+        commandHandler.commands.put("rc", new cmdRecentFruits());
+        commandHandler.commands.put("recentbestctb", new cmdRecentBestFruits());
+        commandHandler.commands.put("rbctb", new cmdRecentBestFruits());
+        commandHandler.commands.put("rbc", new cmdRecentBestFruits());
         commandHandler.commands.put("topctb", new cmdTopFruits());
         commandHandler.commands.put("topc", new cmdTopFruits());
+        commandHandler.commands.put("recentctblb", new cmdRecentFruitsLeaderboard());
+        commandHandler.commands.put("rclb", new cmdRecentFruitsLeaderboard());
+        commandHandler.commands.put("recentctbglb", new cmdRecentFruitsGlobalLeaderboard());
+        commandHandler.commands.put("rcglb", new cmdRecentFruitsGlobalLeaderboard());
         commandHandler.commands.put("commonctb", new cmdCommonScoresFruits());
         commandHandler.commands.put("commonc", new cmdCommonScoresFruits());
         commandHandler.commands.put("whatifctb", new cmdWhatIfFruits());

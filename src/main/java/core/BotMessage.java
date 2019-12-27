@@ -98,6 +98,7 @@ public class BotMessage {
                 date = score.getDate();
                 timestamp = date.toInstant();
                 switch (p.getMode()) {
+                    case CATCH_THE_BEAT:
                     case STANDARD:
                         hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
                         extendedTitle = p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" +
@@ -113,7 +114,6 @@ public class BotMessage {
                         extendedTitle += extendedTitle.equals("") ? getKeyString() + " " + p.getMap().getArtist() + " - "
                                 + p.getMap().getTitle() + " [" + p.getMap().getVersion() + "]" + " [" + p.getStarRating() + "★]" : "";
                         break;
-                    default: throw new IllegalStateException("GameMode not supported");
                 }
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
@@ -161,6 +161,7 @@ public class BotMessage {
                     String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ **"
                             + s.getMaxCombo() + "x**/" + p.getMaxCombo() + "x ]\t {";
                     switch (p.getMode()) {
+                        case CATCH_THE_BEAT:
                         case STANDARD:
                             fieldValue += s.getHit300() + "/" + s.getHit100() + "/" + s.getHit50();
                             break;
@@ -170,9 +171,6 @@ public class BotMessage {
                         case MANIA:
                             fieldValue += s.getGekis() + "/" + s.getHit300() + "/" + s.getKatus()
                                     + "/" + s.getHit100() + "/" + s.getHit50();
-                            break;
-                        case CATCH_THE_BEAT:
-                            // TODO
                             break;
                     }
                     fieldValue += "/" + s.getMisses() + "}\t" + howLongAgo(s.getDate());
@@ -227,16 +225,13 @@ public class BotMessage {
                     map(maps.get(idx - 1));
                     osuscore(s);
                     mods = getModString();
-                    double starRating = Math.round(100 * (u.getMode() == GameMode.CATCH_THE_BEAT
-                            ? p.getMap().getDifficulty()
-                            : p.getStarRatingDouble())) / 100.0;
                     String ppMax = u.getMode() == GameMode.CATCH_THE_BEAT ? "0" : p.getPpMax();
                     if (!description.toString().equals("")) description.append("\n");
                     if (typeM == MessageType.NOCHOKESCORES) p.noChoke(50);
                     description.append("**").append(idx++).append(".** [**")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(p.getMap().getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
-                            .append(starRating).append("★]\n ")
+                            .append(p.getStarRating()).append("★]\n ")
                             .append(getRank()).append(" **").append(p.getPp()).append("**/").append(ppMax)
                             .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
                             .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore())).append("\n  [ ")
@@ -409,6 +404,7 @@ public class BotMessage {
                         : new File(secrets.thumbPath + "bgNotFound.png");
                 eb.setThumbnail("attachment://thumb.jpg");
                 switch (p.getMode()) {
+                    case CATCH_THE_BEAT:
                     case STANDARD:
                         hitString += p.getN300() + " / " + p.getN100() + " / " + p.getN50();
                         break;
@@ -418,8 +414,6 @@ public class BotMessage {
                         hitString += hitString.equals("{ ") ? p.getNGeki() + " / " + p.getN300() + " / "
                                 + p.getNKatu() + " / " + p.getN100() + " / " + p.getN50() : "";
                         break;
-                    default:
-                        throw new IllegalStateException("GameMode not supported");
                 }
                 hitString += " / " + p.getNMisses() + " }";
                 String mapInfo = "Length: `" + secondsToTimeFormat(p.getMap().getTotalLength()) + "` (`"
