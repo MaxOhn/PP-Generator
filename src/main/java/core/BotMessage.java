@@ -24,6 +24,7 @@ import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
@@ -44,6 +45,7 @@ public class BotMessage {
     private List<OsuUser> users;
     private OsuScore score;
     private List<OsuScore> scores;
+    private LinkedList<Integer> indices;
     private List<OsuBeatmap> maps;
 
     private String topplays;
@@ -201,6 +203,11 @@ public class BotMessage {
                     else mb.append(":");
                     scores = scores.stream().limit(5).collect(Collectors.toList());
                 }
+            case RECENTBESTS:
+                if (mb.isEmpty()) {
+                    mb.append("Here are the ").append(String.valueOf(scores.size())).append(" most recent scores in `")
+                            .append(u.getUsername()).append("`'s top 100");
+                }
             case TOPSCORES: {
                 // Maps and scores need to be set beforehand
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
@@ -220,15 +227,16 @@ public class BotMessage {
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 String mods;
                 StringBuilder description = new StringBuilder();
-                int idx = 1;
+                int mapIdx = 0;
                 for (OsuScore s : scores) {
-                    map(maps.get(idx - 1));
+                    int scoreIdx = nextIndex();
+                    map(maps.get(mapIdx++));
                     osuscore(s);
                     mods = getModString();
                     String ppMax = u.getMode() == GameMode.CATCH_THE_BEAT ? "0" : p.getPpMax();
                     if (!description.toString().equals("")) description.append("\n");
                     if (typeM == MessageType.NOCHOKESCORES) p.noChoke(50);
-                    description.append("**").append(idx++).append(".** [**")
+                    description.append("**").append(scoreIdx).append(".** [**")
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(p.getMap().getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
                             .append(p.getStarRating()).append("★]\n ")
@@ -485,6 +493,7 @@ public class BotMessage {
                     break;
                 case LEADERBOARD:
                 case SCORES:
+                case RECENTBESTS:
                 case TOPSCORES:
                 case TOPSOTARKS:
                 case SS:
@@ -586,6 +595,19 @@ public class BotMessage {
         return this;
     }
 
+    // Set indices of scores
+    public BotMessage indices(LinkedList<Integer> indices) {
+        this.indices = indices;
+        return this;
+    }
+
+    private Integer nextIndex() {
+        if (this.indices == null || this.indices.isEmpty()) {
+            this.indices = IntStream.range(1, 16).boxed().collect(Collectors.toCollection(LinkedList::new));
+        }
+        return this.indices.pollFirst();
+    }
+
     // Return the rating of the score as emote and the completion % if the score is failed
     private String getRank() {
         String scoreRank = p.getRank();
@@ -628,6 +650,7 @@ public class BotMessage {
         RECENT,
         COMPARE,
         RECENTBEST,
+        RECENTBESTS,
         SCORES,
         SINGLETOP,
         TOPSCORES,

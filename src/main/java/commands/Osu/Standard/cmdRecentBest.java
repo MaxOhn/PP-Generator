@@ -74,7 +74,7 @@ public class cmdRecentBest implements INumberedCommand {
             return;
         }
         // Retrieve user's top scores
-        Collection<OsuScore> topPlays;
+        List<OsuScore> topPlays;
         try {
             topPlays = user.getTopScores(100).get();
         } catch (OsuAPIException e) {
@@ -82,44 +82,74 @@ public class cmdRecentBest implements INumberedCommand {
             return;
         }
         // Sort scores by date
-        ArrayList<OsuScore> topPlaysByDate = new ArrayList<>(topPlays);
+        List<OsuScore> topPlaysByDate = new ArrayList<>(topPlays);
         topPlaysByDate.sort(Comparator.comparing(OsuScore::getDate).reversed());
-        final Iterator<OsuScore> itr = topPlaysByDate.iterator();
-        OsuScore rbScore = itr.next();
-        // Get the appropriate score
-        while(itr.hasNext() && --number > 0)
-            rbScore = itr.next();
-        // Retrieve the score's map
-        OsuBeatmap map;
-        try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(rbScore.getBeatmapID());
-        } catch (SQLException | ClassNotFoundException e) {
+        if (number > 5) {
+            final Iterator<OsuScore> itr = topPlaysByDate.iterator();
+            OsuScore rbScore = itr.next();
+            // Get the appropriate score
+            while (itr.hasNext() && --number > 0)
+                rbScore = itr.next();
+            // Retrieve the score's map
+            OsuBeatmap map;
             try {
-                map = rbScore.getBeatmap().get();
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve map").queue();
+                if (!secrets.WITH_DB)
+                    throw new SQLException();
+                map = DBProvider.getBeatmap(rbScore.getBeatmapID());
+            } catch (SQLException | ClassNotFoundException e) {
+                try {
+                    map = rbScore.getBeatmap().get();
+                } catch (OsuAPIException e1) {
+                    event.getChannel().sendMessage("Could not retrieve map").queue();
+                    return;
+                }
+                try {
+                    if (secrets.WITH_DB)
+                        DBProvider.addBeatmap(map);
+                } catch (ClassNotFoundException | SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            // Retrieve the global leaderboard of the map
+            Collection<OsuScore> globalPlays;
+            try {
+                globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
+            } catch (OsuAPIException e) {
+                event.getChannel().sendMessage("Could not retrieve global scores").queue();
                 return;
             }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
+            // Construct the message
+            new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBEST).user(user).map(map).osuscore(rbScore).mode(getMode())
+                    .topplays(topPlays, globalPlays).buildAndSend();
+        } else {
+            topPlaysByDate = topPlaysByDate.stream().limit(5).collect(Collectors.toList());
+            List<OsuBeatmap> maps = new ArrayList<>();
+            LinkedList<Integer> indices = new LinkedList<>();
+            for (OsuScore s : topPlaysByDate) {
+                indices.addLast(topPlays.indexOf(s) + 1);
+                OsuBeatmap map;
+                try {
+                    if (!secrets.WITH_DB)
+                        throw new SQLException();
+                    map = DBProvider.getBeatmap(s.getBeatmapID());
+                } catch (SQLException | ClassNotFoundException e) {
+                    try {
+                        map = s.getBeatmap().get();
+                    } catch (OsuAPIException e1) {
+                        continue;
+                    }
+                    try {
+                        if (secrets.WITH_DB)
+                            DBProvider.addBeatmap(map);
+                    } catch (ClassNotFoundException | SQLException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+                maps.add(map);
             }
+            new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBESTS).user(user)
+                    .osuscores(topPlaysByDate).indices(indices).maps(maps).mode(getMode()).buildAndSend();
         }
-        // Retrieve the global leaderboard of the map
-        Collection<OsuScore> globalPlays;
-        try {
-            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).build());
-        } catch (OsuAPIException e) {
-            event.getChannel().sendMessage("Could not retrieve global scores").queue();
-            return;
-        }
-        // Construct the message
-        new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBEST).user(user).map(map).osuscore(rbScore).mode(getMode())
-                .topplays(topPlays, globalPlays).buildAndSend();
     }
 
     @Override

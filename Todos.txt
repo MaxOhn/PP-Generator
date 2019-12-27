@@ -2,6 +2,7 @@
 --- GENERAL ---
 check if pp calculation has an update
 show top 5 for rb when number < 6
+provide filtering by keys for <topmania
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions

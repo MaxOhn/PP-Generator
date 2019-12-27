@@ -101,7 +101,7 @@ public class cmdSetAuthorityRoles extends PrivilegedCommand {
         switch(hCode) {
             case 0:
                 return "Enter `" + statics.prefix + "setauthorityroles [role1 role2 role3 ...] [-c] [-d]` so only users " +
-                        "with one of those roles are allowed to use privileged commands.\nIf a role contains a whitespace" +
+                        "with one of those roles are allowed to use privileged commands.\nIf a role contains whitespaces" +
                         ", encapsulate the role with `\"` e.g. `\"bot commander\"`.\nIf `-c` is specified, I will " +
                         "only respond with the current authority roles instead.\nIf `-d` is specified, I will set the " +
                         "default authority roles.\nUsing this command requires either the admin " +

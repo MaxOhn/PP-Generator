@@ -18,8 +18,6 @@ public class ServerJoinListener extends ListenerAdapter {
         logger.info("Joined a new server: " + event.getGuild().getName());
         try {
             if (secrets.WITH_DB) {
-                //DBProvider.setLyricsState(event.getGuild().getId(), true);
-                //DBProvider.setAuthorityRoles(event.getGuild().getId(), statics.authorities);
                 DBProvider.addServer(event.getGuild().getId(), statics.authorities);
                 logger.info("Successfully initialized serverProperties for server id " + event.getGuild().getId());
             }

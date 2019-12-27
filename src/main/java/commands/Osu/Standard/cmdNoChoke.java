@@ -5,7 +5,6 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
-import com.oopsjpeg.osu4j.backend.EndpointUserBests;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import main.java.commands.ICommand;
 import main.java.core.*;
@@ -16,10 +15,7 @@ import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -76,9 +72,8 @@ public class cmdNoChoke implements ICommand {
                 int currScore = 0;  // score index
                 double ppThreshold = 0;
                 // Retrieve top scores of user
-                ArrayList<OsuScore> scoresList = new ArrayList<>(Main.osu.userBests.query(
-                        new EndpointUserBests.ArgumentsBuilder(oName).setMode(GameMode.STANDARD).setLimit(100).build()
-                ));
+                List<OsuScore> scoresList = user.getTopScores(100).get();
+                List<OsuScore> actual = new ArrayList<>(scoresList);
                 Performance p = new Performance();
                 ArrayList<OsuBeatmap> maps = new ArrayList<>();
                 for (OsuScore score : scoresList) {
@@ -132,6 +127,10 @@ public class cmdNoChoke implements ICommand {
                 // As pp values of the score list were modified, reorder them by pp value and take the top 5
                 scoresList.sort(Comparator.comparing(OsuScore::getPp).reversed());
                 List<OsuScore> scores = scoresList.subList(0, 5);
+                LinkedList<Integer> indices = new LinkedList<>();
+                for (OsuScore s : scores) {
+                    indices.addLast(actual.indexOf(s) + 1);
+                }
                 // Save the maps of the top 5 scores
                 ArrayList<OsuBeatmap> finalMaps = new ArrayList<>();
                 for (OsuScore s : scores) {
@@ -146,7 +145,8 @@ public class cmdNoChoke implements ICommand {
                 // Create final message
                 message.editMessage("Gathering data for `" + user.getUsername() + "`: 100%\nBuilding message...").queue();
                 new BotMessage(event.getChannel(), BotMessage.MessageType.NOCHOKESCORES).author(event.getAuthor()).user(user)
-                        .osuscores(scores).maps(maps).mode(GameMode.STANDARD).buildAndSend(() -> message.delete().queue());
+                        .osuscores(scores).maps(maps).mode(GameMode.STANDARD).indices(indices)
+                        .buildAndSend(() -> message.delete().queue());
             } catch (Exception e0) {
                 event.getChannel().sendMessage("There was some problem, you might wanna retry later again and maybe ping bade or smth :p").queue();
                 e0.printStackTrace();
