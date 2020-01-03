@@ -1,7 +1,11 @@
 
 --- GENERAL ---
 check if pp calculation has an update
+update spreadsheet
 (provide filtering by keys for <topmania)
+typo in <trackedstream msg
+provide opportunity to get lb of other countries with lb/rlb
+  ^ add default country in server properties
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions

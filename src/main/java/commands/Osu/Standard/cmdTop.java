@@ -239,7 +239,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             }
             LinkedList<Integer> indices = new LinkedList<>();
             for (OsuScore s : scores) {
-                indices.addLast(actual.indexOf(s));
+                indices.addLast(actual.indexOf(s) + 1);
             }
             // Build message
             new BotMessage(event.getChannel(), getMessageType()).user(user).osuscores(scores)
