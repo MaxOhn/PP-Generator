@@ -12,6 +12,8 @@ public class utilOsu {
 
     // Given a mod int, return the corresponding string
     public static String mods_intToStr(int mods) {
+        if (mods == 0)
+            return "NM";
         StringBuilder sb = new StringBuilder();
         if ((mods & 1) != 0)
             sb.append("NF");

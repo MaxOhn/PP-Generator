@@ -139,12 +139,12 @@ public class cmdRecent implements INumberedCommand {
         String help = " (`" + statics.prefix + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-              return "Enter `" + statics.prefix + getName() + "[number] [osu name]` to make me respond with info about the players last play."
+              return "Enter `" + statics.prefix + getName() + "[number] [osu name]` to make me respond with info about the player's last play."
                       + "\nIf a number is specified, e.g. `" + statics.prefix + getName() + "8`, I will skip the most recent 7 scores "
                       + "and show the 8-th recent score, defaults to 1."
                       + "\nIf no player name is specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
-                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;
+                return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>`" + help;
             default:
                 return help(0);
         }

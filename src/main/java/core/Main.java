@@ -97,6 +97,9 @@ public class Main {
         commandHandler.commands.put("pp", new cmdPP());
         commandHandler.commands.put("rank", new cmdRank());
         commandHandler.commands.put("reach", new cmdReach());
+        commandHandler.commands.put("osu", new cmdProfile());
+        commandHandler.commands.put("osuprofile", new cmdProfile());
+        commandHandler.commands.put("profileosu", new cmdProfile());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());
@@ -124,6 +127,9 @@ public class Main {
         commandHandler.commands.put("ratios", new cmdRatio());
         commandHandler.commands.put("reachmania", new cmdReachMania());
         commandHandler.commands.put("reachm", new cmdReachMania());
+        commandHandler.commands.put("mania", new cmdProfileMania());
+        commandHandler.commands.put("maniaprofile", new cmdProfileMania());
+        commandHandler.commands.put("profilemania", new cmdProfileMania());
 
         // osu! taiko
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
@@ -147,6 +153,9 @@ public class Main {
         commandHandler.commands.put("ranktaiko", new cmdRankTaiko());
         commandHandler.commands.put("reachtaiko", new cmdReachTaiko());
         commandHandler.commands.put("reacht", new cmdReachTaiko());
+        commandHandler.commands.put("taiko", new cmdProfileTaiko());
+        commandHandler.commands.put("taikoprofile", new cmdProfileTaiko());
+        commandHandler.commands.put("profiletaiko", new cmdProfileTaiko());
 
         // osu! ctb
         commandHandler.commands.put("recentctb", new cmdRecentFruits());
@@ -170,6 +179,9 @@ public class Main {
         commandHandler.commands.put("rankc", new cmdRankFruits());
         commandHandler.commands.put("reachctb", new cmdReachFruits());
         commandHandler.commands.put("reachc", new cmdReachFruits());
+        commandHandler.commands.put("ctb", new cmdProfileFruits());
+        commandHandler.commands.put("ctbprofile", new cmdProfileFruits());
+        commandHandler.commands.put("profilectb", new cmdProfileFruits());
 
         // twitch
         commandHandler.commands.put("addstream", new cmdAddStream());

@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import com.oopsjpeg.osu4j.ApprovalState;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
+import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.util.Utility;
 import main.java.commands.Fun.BgGameRanking;
 import main.java.util.secrets;
@@ -12,6 +13,7 @@ import main.java.util.secrets;
 import java.sql.*;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /*
     Responsible for all communication with the database
@@ -380,7 +382,61 @@ public class DBProvider {
         } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
+    }
 
+    // Retrieve all maps that correspond to the given OsuScore collection
+    public static HashMap<Integer, OsuBeatmap> getBeatmaps(Collection<OsuScore> scores) throws ClassNotFoundException, SQLException {
+        String queryCondition = scores
+                .stream()
+                .map(score -> "mapID='" + score.getBeatmapID() + "'")
+                .collect(Collectors.joining(" OR "));
+        HashMap<Integer, OsuBeatmap> maps = new HashMap<>();
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
+        Statement stmnt = c.createStatement();
+        ResultSet rs = stmnt.executeQuery("select * from beatmapInfo where " + queryCondition);
+        while (rs.next()) {
+            OsuBeatmap m = new OsuBeatmap(Main.osu);
+            m.setBeatmapID(rs.getInt("mapID"));
+            m.setBeatmapSetID(rs.getInt("mapSetID"));
+            switch (rs.getInt("approved")) {
+                case 4:
+                case 3: m.setApproved(ApprovalState.QUALIFIED); break;
+                case 2: m.setApproved(ApprovalState.APPROVED); break;
+                case 1: m.setApproved(ApprovalState.RANKED); break;
+                case 0: m.setApproved(ApprovalState.PENDING); break;
+                case -1: m.setApproved(ApprovalState.WIP); break;
+                default: m.setApproved(ApprovalState.GRAVEYARD); break;
+            }
+            m.setVersion(removeReplacer(rs.getString("version")));
+            m.setTitle(removeReplacer(rs.getString("title")));
+            m.setArtist(removeReplacer(rs.getString("artist")));
+            switch (rs.getInt("mode")) {
+                case 0: m.setMode(GameMode.STANDARD); break;
+                case 1: m.setMode(GameMode.TAIKO); break;
+                case 2: m.setMode(GameMode.CATCH_THE_BEAT); break;
+                default: m.setMode(GameMode.MANIA); break;
+            }
+            m.setDiffDrain((float)rs.getDouble("hp"));
+            m.setDiffSize((float)rs.getDouble("cs"));
+            m.setDiffApproach((float)rs.getDouble("ar"));
+            m.setDiffOverall((float)rs.getDouble("od"));
+            m.setDifficultyrating(rs.getFloat("stars"));
+            m.setTotalLength(rs.getInt("tlength"));
+            m.setHitLength(rs.getInt("hlength"));
+            m.setBpm(rs.getInt("bpm"));
+            m.setMaxCombo(rs.getInt("combo"));
+            m.setCreatorName(removeReplacer(rs.getString("creator")));
+            m.setSource(removeReplacer(rs.getString("source")));
+            String date = rs.getString("date");
+            m.setApprovedDate(date.equals("null") ? null : Utility.parseDate(date));
+            date = rs.getString("updated");
+            m.setApprovedDate(date.equals("null") ? null : Utility.parseDate(date));
+            maps.putIfAbsent(m.getID(), m);
+        }
+        stmnt.close();
+        c.close();
+        return maps;
     }
 
     // Retrieve data of the given mapID and return its map
