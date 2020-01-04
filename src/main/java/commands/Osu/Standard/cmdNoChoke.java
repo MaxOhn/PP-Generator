@@ -121,7 +121,7 @@ public class cmdNoChoke implements ICommand {
                         score.setCountmiss(p.getNMisses());
                         score.setMaxcombo(p.getCombo());
                         score.setPp((float) p.getPpDouble());
-                        score.setRank(p.getRank());
+                        score.setRank(p.getGrade());
                     }
                 }
                 // As pp values of the score list were modified, reorder them by pp value and take the top 5

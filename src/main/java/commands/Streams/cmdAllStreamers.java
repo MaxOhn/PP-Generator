@@ -1,4 +1,4 @@
-package main.java.commands.Twitch;
+package main.java.commands.Streams;
 
 import main.java.commands.ICommand;
 import main.java.util.statics;

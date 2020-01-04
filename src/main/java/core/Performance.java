@@ -110,10 +110,10 @@ public class Performance {
                 : nObjects;
     }
 
-    // Return the rating of the score i.e. SS, XS, A, D, ...
-    public String getRank() {
+    // Return the grade of the score i.e. SS, XS, A, D, ...
+    public String getGrade() {
         if (score.getRank().equals(""))
-            score.setRank(utilOsu.getRank(mode, score, getNObjects()));
+            score.setRank(utilOsu.getGrade(mode, score, getNObjects()));
         return score.getRank();
     }
 

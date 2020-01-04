@@ -102,6 +102,13 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             argList.remove(delIndex + 1);
             argList.remove(delIndex);
         } else grade = "";
+        // Check for "last" option in arguments
+        boolean last = false;
+        delIndex = argList.indexOf("-last");
+        if (delIndex > -1) {
+            last = true;
+            argList.remove(delIndex);
+        }
         // Check for mods in arguments
         Pattern p = Pattern.compile("\\+[^!]*!?");
         setInitial();
@@ -176,6 +183,9 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             return;
         }
         List<OsuScore> actual = new ArrayList<>(scores);
+        if (last) {
+            Collections.reverse(scores);
+        }
         if (number < 6) {
             // Consider only scores with correct mods that fullfill the score condition
             scores = scores.stream()
@@ -345,12 +355,13 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
         String help = " (`" + statics.prefix + "top" + getName() + " -h` for more help)";
         switch(hCode) {
             case 0:
-                return "Enter `" + statics.prefix + "top" + getName() + "[number] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!]` to make me list the user's top scores with the given properties."
+                return "Enter `" + statics.prefix + "top" + getName() + "[number] [osu name] [-acc <number>] [-grade <SS/A/D/...>] [-combo <number>] [+<nm/hd/nfeznc/...>[!]] [-<nm/hd/nfeznc/...>!] [-last]` to make me list the user's top scores with the given properties."
                         + "\nIf no number is specified or it's up to 5, I will show the top 5 scores. Otherwise I will show only the number-th top score."
                         + "\nWith `+` you can choose included mods, e.g. `+hddt`, with `+mod!` you can choose exact mods, and with `-mod!` you can choose excluded mods."
                         + "\nWith `-acc` you can specify a bottom limit for counted accuracies. Must be a positive decimal number."
                         + "\nWith `-combo` you can specify a bottom limit for counted combos. Must be a positive integer."
-                        + "\nWith `-grade` you can specify what grade counted scores will have. Must be either SS, S, A, B, C, or D"
+                        + "\nWith `-grade` you can specify what grade counted scores will have. Must be either SS, S, A, B, C, or D."
+                        + "\nWith `-last`, I will start enumerating the scores from last to first instead of first to last."
                         + "\nIf no player name specified, your discord must be linked to an osu profile via `" + statics.prefix + "link <osu name>" + "`";
             case 1:
                 return "Either specify an osu name or link your discord to an osu profile via `" + statics.prefix + "link <osu name>" + "`" + help;

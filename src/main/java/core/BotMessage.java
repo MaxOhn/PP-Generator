@@ -89,10 +89,10 @@ public class BotMessage {
                 if (p.getMap() == null) throw new IllegalStateException(Error.MAP.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(u.getUsername() + ": "
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + formatNumber(u.getPPRaw()) + "pp (#"
+                                + formatNumber(u.getRank()) + " "
                                 + u.getCountry()
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                                + formatNumber(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
@@ -127,8 +127,8 @@ public class BotMessage {
                     .setDescription(topplays)
                     .setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                                     + "]","https://osu.ppy.sh/b/" + p.getMap().getID())
-                    .addField("Rank", getRank() + getModString(),true)
-                    .addField("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()),true)
+                    .addField("Rank", getGradeFull() + getModString(),true)
+                    .addField("Score", formatNumber(p.getScore()),true)
                     .addField("Acc", p.getAcc() + "%",true)
                     .addField("PP", "**" + p.getPp() + "**/" + p.getPpMax() + "PP",true)
                     .addField("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x",true)
@@ -142,10 +142,10 @@ public class BotMessage {
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
                 eb.setThumbnail("attachment://thumb.jpg");
                 eb.setAuthor(u.getUsername() + ": "
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + formatNumber(u.getPPRaw()) + "pp (#"
+                                + formatNumber(u.getRank()) + " "
                                 + u.getCountry()
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                                + formatNumber(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "https://a.ppy.sh/" + u.getID());
                 thumbFile = filesPrepared
                         ? new File(secrets.thumbPath + p.getMap().getBeatmapSetID() + "l.jpg")
@@ -157,8 +157,8 @@ public class BotMessage {
                 int idx = 1;
                 for (OsuScore s : orderedScores) {
                     osuscore(s);
-                    String fieldName = "**" + idx++ + ".** " + getRank() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
-                            NumberFormat.getNumberInstance(Locale.US).format(s.getScore()) + "\t(" + p.getAcc() + "%)";
+                    String fieldName = "**" + idx++ + ".** " + getGradeFull() + getModString() + "\t[" + p.getStarRating() + "★]\t" +
+                            formatNumber(s.getScore()) + "\t(" + p.getAcc() + "%)";
                     if (p.getMode() == GameMode.MANIA) fieldName += "\t" + getKeyString();
                     String fieldValue = "**" + p.getPp() + "**/" + p.getPpMax() + "PP\t[ **"
                             + s.getMaxCombo() + "x**/" + p.getMaxCombo() + "x ]\t {";
@@ -219,10 +219,10 @@ public class BotMessage {
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
                 eb.setAuthor(u.getUsername() + ": "
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + formatNumber(u.getPPRaw()) + "pp (#"
+                                + formatNumber(u.getRank()) + " "
                                 + u.getCountry()
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                                + formatNumber(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 String mods;
@@ -240,9 +240,9 @@ public class BotMessage {
                             .append(p.getMap().getTitle()).append(" [").append(p.getMap().getVersion()).append("]**](https://osu.ppy.sh/b/")
                             .append(p.getMap().getID()).append(")").append(mods.equals("") ? "" : "**" + mods + "**").append(" [")
                             .append(p.getStarRating()).append("★]\n ")
-                            .append(getRank()).append(" **").append(p.getPp()).append("**/").append(ppMax)
+                            .append(getGradeFull()).append(" **").append(p.getPp()).append("**/").append(ppMax)
                             .append("PP ~ (").append(p.getAcc()).append("%) ~ ")
-                            .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore())).append("\n  [ ")
+                            .append(formatNumber(s.getScore())).append("\n  [ ")
                             .append(p.getCombo()).append("x/").append(p.getMaxCombo()).append("x ] ~ { ");
                     switch (p.getMode()) {
                         case STANDARD:
@@ -306,7 +306,7 @@ public class BotMessage {
                             : (p.getMaxCombo() + "x ]");
                     if (!description.toString().equals("")) description.append("\n");
                     String modstr = getModString().isEmpty() ? "" : "**" + getModString() + "**";
-                    description.append("**").append(idx++).append(".** ").append(getRank()).append(" **");
+                    description.append("**").append(idx++).append(".** ").append(getGradeFull()).append(" **");
                     if (authorName != null && s.getUsername().toLowerCase().equals(authorName))
                         description.append("__");
                     description.append("[").append(s.getUsername()).append("](https://osu.ppy.sh/u/")
@@ -314,7 +314,7 @@ public class BotMessage {
                     if (authorName != null && s.getUsername().toLowerCase().equals(authorName))
                         description.append("__");
                     description.append("**: ")
-                            .append(NumberFormat.getNumberInstance(Locale.US).format(s.getScore()))
+                            .append(formatNumber(s.getScore()))
                             .append(comboDisplay).append(modstr).append("\n~  **")
                             .append(p.getPp()).append("**/").append(p.getPpMax()).append("PP")
                             .append(" ~ ").append(p.getAcc()).append("% ~ ").append(howLongAgo(s.getDate()));
@@ -388,10 +388,10 @@ public class BotMessage {
                 }
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID());
                 eb.setAuthor(u.getUsername() + ": "
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getPPRaw()) + "pp (#"
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getRank()) + " "
+                                + formatNumber(u.getPPRaw()) + "pp (#"
+                                + formatNumber(u.getRank()) + " "
                                 + u.getCountry()
-                                + NumberFormat.getNumberInstance(Locale.US).format(u.getCountryRank()) + ")",
+                                + formatNumber(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 StringBuilder description = new StringBuilder("__**Acc: #Scores | Ratio | % misses:**__");
@@ -431,20 +431,93 @@ public class BotMessage {
                         + p.getMap().getDrain() + "` Stars: `" + df.format(p.getMap().getDifficulty()) + "`";
                 List<MessageEmbed.Field> fields = new ArrayList<>();
                 if (p.getScore() > 0)
-                    fields.add(new MessageEmbed.Field("Score", NumberFormat.getNumberInstance(Locale.US).format(p.getScore()), true));
+                    fields.add(new MessageEmbed.Field("Score", formatNumber(p.getScore()), true));
                 fields.add(new MessageEmbed.Field("Acc", p.getAcc() + "%", true));
                 if (p.getMode() != GameMode.MANIA)
                     fields.add(new MessageEmbed.Field("Combo", "**" + p.getCombo() + "x**/" + p.getMaxCombo() + "x", true));
                 fields.add(new MessageEmbed.Field("Hits", hitString, true));
                 eb.setTitle(getKeyString() + " " + p.getMap().getArtist() + " - " + p.getMap().getTitle() + " [" + p.getMap().getVersion()
                         + "] [" + p.getStarRating() + "★]", "https://osu.ppy.sh/b/" + p.getMap().getID());
-                fields.add(0, new MessageEmbed.Field("Rank", getRank() + getModString(), true));
+                fields.add(0, new MessageEmbed.Field("Rank", getGradeFull() + getModString(), true));
                 fields.add(3, new MessageEmbed.Field("PP", "**" + p.getPp() + "**/" + p.getPpMax() + "PP", true));
                 fields.add(new MessageEmbed.Field("Map Info", mapInfo, false));
                 for (MessageEmbed.Field f : fields)
                     eb.addField(f);
                 break;
             }
+            case PROFILE:
+                // User and scores need to be set beforehand
+                if (u == null) throw new IllegalStateException(Error.USER.getMsg());
+                if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                eb.setThumbnail("https://a.ppy.sh/" + u.getID());
+                eb.setAuthor(u.getUsername() + ": "
+                                + formatNumber(u.getPPRaw()) + "pp (#"
+                                + formatNumber(u.getRank()) + " "
+                                + u.getCountry()
+                                + formatNumber(u.getCountryRank()) + ")",
+                        "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
+                thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
+                List<MessageEmbed.Field> fields = new ArrayList<>();
+                fields.add(new MessageEmbed.Field("Ranked / Total score:", formatNumber(u.getRankedScore()) + " / " + formatNumber(u.getTotalScore()), true));
+                fields.add(new MessageEmbed.Field("Accuracy:", df.format(u.getAccuracy()), true));
+                // TODO: get play time
+                fields.add(new MessageEmbed.Field("Play count / time:", formatNumber(u.getPlayCount()) + " / " + formatNumber(u.getPlayCount()) + " hours", true));
+                fields.add(new MessageEmbed.Field("Level:", df.format(u.getLevel()), true));
+                // TODO: separate for modes
+                fields.add(new MessageEmbed.Field("Total / 300 / 100 / 50 hits:", formatNumber(u.getTotalHits()) + " / " + formatNumber(u.getHit300()) + " / " + formatNumber(u.getHit100()) + " / " + formatNumber(u.getHit50()), false));
+                fields.add(new MessageEmbed.Field("Grades:",
+                        getGradeEmote("XH") + u.getCountRankSSH() + " " +
+                        getGradeEmote("X") + u.getCountRankSS() + " " +
+                        getGradeEmote("SH") + u.getCountRankSH() + " " +
+                        getGradeEmote("S") + u.getCountRankS() + " " +
+                        getGradeEmote("A") + u.getCountRankA()
+                        , false));
+                double totalAcc = 0, minAcc = 100, maxAcc = 0;
+                double totalPp = 0, minPp = Double.MAX_VALUE, maxPp = 0;
+                int amountFCs = 0, amountNoMisses = 0;
+                for (OsuScore s : scores) {
+                    double acc = utilOsu.getAcc(s, u.getMode());
+                    totalAcc += acc;
+                    if (acc < minAcc) minAcc = acc;
+                    if (acc > maxAcc) maxAcc = acc;
+                    totalPp += s.getPp();
+                    if (s.getPp() < minPp) minPp = s.getPp();
+                    if (s.getPp() > maxPp) maxPp = s.getPp();
+
+                    if (s.getMisses() == 0) amountNoMisses++;
+                }
+                totalAcc /= 100;
+                totalPp /= 100;
+                fields.add(new MessageEmbed.Field("Unweighted accuracy:", df.format(totalAcc) + "% [" + minAcc + "% - " + maxAcc + "%]", true));
+                fields.add(new MessageEmbed.Field("Average pp:", df.format(totalPp) + "pp [" + minPp + " - " + maxPp + "]", true));
+                fields.add(new MessageEmbed.Field("Full combos ~ No misses:", amountFCs + " ~ " + amountNoMisses, true));
+                /* --- mods ---
+                 * % mods exact
+                 * % mods included
+                 * pp source (pp)
+                 * pp source (%)
+                 */
+                for (MessageEmbed.Field f : fields)
+                    eb.addField(f);
+                switch (u.getMode()) {
+                    case STANDARD: {
+
+                        break;
+                    }
+                    case MANIA: {
+
+                        break;
+                    }
+                    case TAIKO: {
+
+                        break;
+                    }
+                    case CATCH_THE_BEAT: {
+
+                        break;
+                    }
+                }
+                break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
         mb.setEmbed(eb.build());
@@ -466,8 +539,8 @@ public class BotMessage {
                         try {
                             Thread.sleep(shortFormatDelay);
                             eb.clearFields().setTimestamp(null)
-                                    .addField(new MessageEmbed.Field(getRank() + getModString() + "\t" +
-                                            NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) + "\t(" +
+                                    .addField(new MessageEmbed.Field(getGradeFull() + getModString() + "\t" +
+                                            formatNumber(p.getScore()) + "\t(" +
                                             p.getAcc() + "%)\t" + timeAgo, "**" + p.getPp() +
                                             "**/" + p.getPpMax() + "PP\t[ **" + p.getCombo() + "x**/" +
                                             p.getMaxCombo() + "x ]\t " + hString, false));
@@ -482,8 +555,8 @@ public class BotMessage {
                         try {
                             Thread.sleep(shortFormatDelay);
                             eb.clearFields().setTimestamp(null)
-                                    .addField(new MessageEmbed.Field(getRank() + getModString() + (p.getScore() > 0 ? "\t" +
-                                            NumberFormat.getNumberInstance(Locale.US).format(p.getScore()) : "") + "\t(" +
+                                    .addField(new MessageEmbed.Field(getGradeFull() + getModString() + (p.getScore() > 0 ? "\t" +
+                                            formatNumber(p.getScore()) : "") + "\t(" +
                                             p.getAcc() + "%)", "**" + p.getPp() +
                                             "**/" + p.getPpMax() + "PP\t[ **" + p.getCombo() + "x**/" +
                                             p.getMaxCombo() + "x ]\t " + hString, false));
@@ -499,6 +572,7 @@ public class BotMessage {
                 case SS:
                 case RATIO:
                 case NOCHOKESCORES:
+                case PROFILE:
                     // Just send
                     ma.queue();
                     break;
@@ -601,6 +675,7 @@ public class BotMessage {
         return this;
     }
 
+    // In case of an enumeration, this function returns the index of the next element
     private Integer nextIndex() {
         if (this.indices == null || this.indices.isEmpty()) {
             this.indices = IntStream.range(1, 16).boxed().collect(Collectors.toCollection(LinkedList::new));
@@ -608,12 +683,15 @@ public class BotMessage {
         return this.indices.pollFirst();
     }
 
-    // Return the rating of the score as emote and the completion % if the score is failed
-    private String getRank() {
-        String scoreRank = p.getRank();
-        return Main.jda.getGuildById(secrets.devGuildID)
-                .getEmoteById(utilOsu.getRankEmote(scoreRank).getValue()).getAsMention()
-            + (scoreRank.equals("F") ? " (" + p.getCompletion() + "%)" : "");
+    // Return the grade of the score as emote and the completion % if the score is failed
+    private String getGradeFull() {
+        String scoreGrade = p.getGrade();
+        return getGradeEmote(scoreGrade) + (scoreGrade.equals("F") ? " (" + p.getCompletion() + "%)" : "");
+    }
+
+    // Return the grade of the score as emote
+    private String getGradeEmote(String grade) {
+        return Main.jda.getGuildById(secrets.devGuildID).getEmoteById(utilOsu.getRankEmote(grade).getValue()).getAsMention();
     }
 
     // Return a formated string for the mod combination
@@ -628,6 +706,11 @@ public class BotMessage {
     private String getKeyString() {
         if (p.getMode() != GameMode.MANIA) return "";
         return "[" + (int)p.getMap().getSize() + "K" + "]";
+    }
+
+    // Auxiliary function to return a string of a number in a representable fashion
+    private String formatNumber(double number) {
+        return NumberFormat.getNumberInstance(Locale.US).format(number);
     }
 
     private enum Error {
@@ -660,6 +743,7 @@ public class BotMessage {
         LEADERBOARD,
         COMMONSCORES,
         RATIO,
-        SIMULATE
+        SIMULATE,
+        PROFILE,
     }
 }

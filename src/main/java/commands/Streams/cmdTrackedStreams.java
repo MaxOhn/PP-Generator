@@ -1,4 +1,4 @@
-package main.java.commands.Twitch;
+package main.java.commands.Streams;
 
 import main.java.commands.ICommand;
 import main.java.core.Main;
@@ -25,12 +25,12 @@ public class cmdTrackedStreams implements ICommand {
         if (args.length > 0 && (args[0].equals("-h") || args[0].equals("-help")))
             event.getTextChannel().sendMessage(help(0)).queue();
         else
-            event.getTextChannel().sendMessage("I'm current tracking in this channel: `" + Main.streamHook.trackedStreamers(event.getTextChannel().getId()) + "`").queue();
+            event.getTextChannel().sendMessage("I'm currently tracking in this channel: `" + Main.streamHook.trackedStreamers(event.getTextChannel().getId()) + "`").queue();
     }
 
     @Override
     public String help(int hCode) {
-        return "Enter `" + statics.prefix + "trackedstreams` to make me display all twitch streams I'm currently tracking";
+        return "Enter `" + statics.prefix + "trackedstreams` to make me display all streams I'm currently tracking";
     }
 
     @Override

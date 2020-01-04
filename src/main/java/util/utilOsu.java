@@ -259,8 +259,8 @@ public class utilOsu {
         return hitresults;
     }
 
-    // Calculate the rank as a string of a given score
-    public static String getRank(GameMode mode, OsuScore score, int nObjects) {
+    // Calculate the grade as a string of a given score
+    public static String getGrade(GameMode mode, OsuScore score, int nObjects) {
         Set<GameMod> mods = new HashSet<>(Arrays.asList(score.getEnabledMods()));
         double acc;
         switch (mode) {
@@ -341,6 +341,6 @@ public class utilOsu {
         }
         score.setCountmiss(0);
         score.setPp(0);
-        score.setRank(utilOsu.getRank(mode, score, nObjects));
+        score.setRank(utilOsu.getGrade(mode, score, nObjects));
     }
 }

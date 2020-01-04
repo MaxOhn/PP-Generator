@@ -7,7 +7,7 @@ import main.java.commands.Osu.Mania.*;
 import main.java.commands.Osu.Standard.*;
 import main.java.commands.Osu.Taiko.*;
 import main.java.commands.Osu.*;
-import main.java.commands.Twitch.*;
+import main.java.commands.Streams.*;
 import main.java.commands.Utility.*;
 import main.java.listeners.*;
 import main.java.util.secrets;

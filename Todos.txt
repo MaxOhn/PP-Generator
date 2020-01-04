@@ -2,10 +2,10 @@
 --- GENERAL ---
 check if pp calculation has an update
 update spreadsheet
+reformat <ratio via whitespaces in field instead of description
 (provide filtering by keys for <topmania)
-typo in <trackedstream msg
-provide opportunity to get lb of other countries with lb/rlb
-  ^ add default country in server properties
+~~provide opportunity to get lb of other countries with lb/rlb~~
+    ^ no access through current api :(
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions
