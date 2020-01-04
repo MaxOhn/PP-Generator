@@ -87,7 +87,7 @@ public class Main {
         commandHandler.commands.put("ss", new cmdSS());
         commandHandler.commands.put("recentleaderboard", new cmdRecentLeaderboard());
         commandHandler.commands.put("rlb", new cmdRecentLeaderboard());
-        commandHandler.commands.put("recentglb", new cmdRecentGlobalLeaderboard());
+        commandHandler.commands.put("recentgloballeaderboard", new cmdRecentGlobalLeaderboard());
         commandHandler.commands.put("rglb", new cmdRecentGlobalLeaderboard());
         commandHandler.commands.put("common", new cmdCommonScores());
         commandHandler.commands.put("simulaterecent", new cmdSimulateRecent());
@@ -105,13 +105,12 @@ public class Main {
         commandHandler.commands.put("recentmania", new cmdRecentMania());
         commandHandler.commands.put("rm", new cmdRecentMania());
         commandHandler.commands.put("recentbestmania", new cmdRecentBestMania());
-        commandHandler.commands.put("rbmania", new cmdRecentBestMania());
         commandHandler.commands.put("rbm", new cmdRecentBestMania());
         commandHandler.commands.put("topmania", new cmdTopMania());
         commandHandler.commands.put("topm", new cmdTopMania());
-        commandHandler.commands.put("recentmanialb", new cmdRecentManiaLeaderboard());
+        commandHandler.commands.put("recentmanialeaderboard", new cmdRecentManiaLeaderboard());
         commandHandler.commands.put("rmlb", new cmdRecentManiaLeaderboard());
-        commandHandler.commands.put("recentmaniaglb", new cmdRecentManiaGlobalLeaderboard());
+        commandHandler.commands.put("recentmaniagloballeaderboard", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("rmglb", new cmdRecentManiaGlobalLeaderboard());
         commandHandler.commands.put("commonmania", new cmdCommonScoresMania());
         commandHandler.commands.put("commonm", new cmdCommonScoresMania());
@@ -135,13 +134,12 @@ public class Main {
         commandHandler.commands.put("recenttaiko", new cmdRecentTaiko());
         commandHandler.commands.put("rt", new cmdRecentTaiko());
         commandHandler.commands.put("recentbesttaiko", new cmdRecentBestTaiko());
-        commandHandler.commands.put("rbtaiko", new cmdRecentBestTaiko());
         commandHandler.commands.put("rbt", new cmdRecentBestTaiko());
         commandHandler.commands.put("toptaiko", new cmdTopTaiko());
         commandHandler.commands.put("topt", new cmdTopTaiko());
-        commandHandler.commands.put("recenttaikolb", new cmdRecentTaikoLeaderboard());
+        commandHandler.commands.put("recenttaikoleaderboard", new cmdRecentTaikoLeaderboard());
         commandHandler.commands.put("rtlb", new cmdRecentTaikoLeaderboard());
-        commandHandler.commands.put("recenttaikoglb", new cmdRecentTaikoGlobalLeaderboard());
+        commandHandler.commands.put("recenttaikogloballeaderboard", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("rtglb", new cmdRecentTaikoGlobalLeaderboard());
         commandHandler.commands.put("commontaiko", new cmdCommonScoresTaiko());
         commandHandler.commands.put("commont", new cmdCommonScoresTaiko());
@@ -161,13 +159,12 @@ public class Main {
         commandHandler.commands.put("recentctb", new cmdRecentFruits());
         commandHandler.commands.put("rc", new cmdRecentFruits());
         commandHandler.commands.put("recentbestctb", new cmdRecentBestFruits());
-        commandHandler.commands.put("rbctb", new cmdRecentBestFruits());
         commandHandler.commands.put("rbc", new cmdRecentBestFruits());
         commandHandler.commands.put("topctb", new cmdTopFruits());
         commandHandler.commands.put("topc", new cmdTopFruits());
-        commandHandler.commands.put("recentctblb", new cmdRecentFruitsLeaderboard());
+        commandHandler.commands.put("recentctbleaderboard", new cmdRecentFruitsLeaderboard());
         commandHandler.commands.put("rclb", new cmdRecentFruitsLeaderboard());
-        commandHandler.commands.put("recentctbglb", new cmdRecentFruitsGlobalLeaderboard());
+        commandHandler.commands.put("recentctbgloballeaderboard", new cmdRecentFruitsGlobalLeaderboard());
         commandHandler.commands.put("rcglb", new cmdRecentFruitsGlobalLeaderboard());
         commandHandler.commands.put("commonctb", new cmdCommonScoresFruits());
         commandHandler.commands.put("commonc", new cmdCommonScoresFruits());
@@ -219,7 +216,6 @@ public class Main {
         commandHandler.commands.put("prune", new cmdPrune());
         commandHandler.commands.put("purge", new cmdPrune());
         commandHandler.commands.put("setauthorityroles", new cmdSetAuthorityRoles());
-        commandHandler.commands.put("authorityroles", new cmdSetAuthorityRoles());
         commandHandler.commands.put("authorities", new cmdSetAuthorityRoles());
         commandHandler.commands.put("roleassign", new cmdRoleAssign());
     }
