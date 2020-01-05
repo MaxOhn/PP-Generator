@@ -21,7 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
 
 /*
     - Automatically kicking unchecked users after some time
@@ -99,8 +99,7 @@ public class MemberHandler {
     private void runRegularChecks() {
         if (secrets.RELEASE) {
             ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-            final Runnable kickerIterator = this::regularIteration;
-            scheduler.scheduleAtFixedRate(kickerIterator, 0, 1, DAYS);
+            scheduler.scheduleAtFixedRate(this::regularIteration, 1, 24, HOURS);
         }
     }
 

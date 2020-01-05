@@ -98,8 +98,7 @@ public class Main {
         commandHandler.commands.put("rank", new cmdRank());
         commandHandler.commands.put("reach", new cmdReach());
         commandHandler.commands.put("osu", new cmdProfile());
-        commandHandler.commands.put("osuprofile", new cmdProfile());
-        commandHandler.commands.put("profileosu", new cmdProfile());
+        commandHandler.commands.put("profile", new cmdProfile());
 
         // osu! mania
         commandHandler.commands.put("recentmania", new cmdRecentMania());

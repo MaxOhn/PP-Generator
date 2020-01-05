@@ -81,8 +81,7 @@ public class StreamHook {
                 mixerStreamers = new HashMap<>();
             }
         } catch (SQLException | ClassNotFoundException e) {
-            logger.error("Could not load streamers:");
-            e.printStackTrace();
+            logger.error("Could not load streamers:", e);
             twitchStreamers = new HashMap<>();
             mixerStreamers = new HashMap<>();
         }

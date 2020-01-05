@@ -20,11 +20,10 @@ public class ReadyListener extends ListenerAdapter {
                 try {
                     Main.streamHook = new StreamHook();
                     break;
-                } catch (Exception ignored) {
-                } finally {
+                } catch (Exception ignored1) {
                     try {
                         Thread.sleep(5000);
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored2) { }
                 }
             }
         }

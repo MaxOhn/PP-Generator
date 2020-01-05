@@ -20,6 +20,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
 import java.util.*;
@@ -456,8 +457,7 @@ public class BotMessage {
                                 + u.getCountry()
                                 + formatNumber(u.getCountryRank()) + ")",
                         "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg")
-                        // TODO: get joined date
-                        .setFooter("Joined TODO [TODO years ago]", null);
+                        .setFooter("Joined osu! " + DateTimeFormatter.ofPattern("dd/MM/yyyy 'at' hh:mm a").format(u.getJoinedDate()) + " (" + howLongAgo(u.getJoinedDate()) + ")", null);
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 // Calculate all interesting values
                 double totalAcc = 0, minAcc = 100, maxAcc = 0;
@@ -529,8 +529,7 @@ public class BotMessage {
                 eb.addField("Ranked score:", formatNumber(u.getRankedScore()), true)
                         .addField("Total score:", formatNumber(u.getTotalScore()), true)
                         .addField("Total hits:", formatNumber(u.getTotalHits()), true)
-                        // TODO: get play time
-                        .addField("Play count / time:", formatNumber(u.getPlayCount()) + " / " + formatNumber(0) + " hrs", true)
+                        .addField("Play count / time:", formatNumber(u.getPlayCount()) + " / " + (u.getPlayTimeSeconds() / 3600) + " hrs", true)
                         .addField("Level:", df.format(u.getLevel()), true)
                         .addField("Bonus PP:", "~" + df.format(bonusPp) + "pp", true)
                         .addField("Accuracy:", df.format(u.getAccuracy()) + "%", true)

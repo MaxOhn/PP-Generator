@@ -2,6 +2,7 @@
 --- GENERAL ---
 check if pp calculation has an update
 update spreadsheet
+put all logs into file
 (provide filtering by keys for <topmania)
 ~~(reformat <ratio via whitespaces in field instead of description)~~
     ^ cant do, JDA removes whitespaces in fields too :(
