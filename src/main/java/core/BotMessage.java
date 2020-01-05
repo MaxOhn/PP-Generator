@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.google.common.collect.Streams.zip;
 import static main.java.util.utilGeneral.howLongAgo;
 import static main.java.util.utilGeneral.secondsToTimeFormat;
 
@@ -450,32 +449,40 @@ public class BotMessage {
                 // User and scores need to be set beforehand
                 if (u == null) throw new IllegalStateException(Error.USER.getMsg());
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
-                eb.setThumbnail("https://a.ppy.sh/" + u.getID());
-                eb.setAuthor(u.getUsername() + ": "
+                eb.setThumbnail("https://a.ppy.sh/" + u.getID())
+                        .setAuthor(u.getUsername() + ": "
                                 + formatNumber(u.getPPRaw()) + "pp (#"
                                 + formatNumber(u.getRank()) + " "
                                 + u.getCountry()
                                 + formatNumber(u.getCountryRank()) + ")",
-                        "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg");
+                        "https://osu.ppy.sh/u/" + u.getID(), "attachment://thumb.jpg")
+                        // TODO: get joined date
+                        .setFooter("Joined TODO [TODO years ago]", null);
                 thumbFile = new File(statics.flagPath + u.getCountry() + ".png");
                 // Calculate all interesting values
                 double totalAcc = 0, minAcc = 100, maxAcc = 0;
-                double totalPp = 0, minPp = Double.MAX_VALUE, maxPp = 0;
+                double totalPp = 0, minPp = scores.get(scores.size() - 1).getPp(), maxPp = scores.get(0).getPp();
+                double totalCombo = 0;
+                int minCombo = Integer.MAX_VALUE, maxCombo = 0;
                 double factor = 1;
                 HashMap<Integer, Integer> amountModsIncluded = new HashMap<>();
                 HashMap<Integer, Double> ppModsIncluded = new HashMap<>();
                 HashMap<Integer, Integer> amountModsExact = new HashMap<>();
                 HashMap<Integer, Double> ppModsExact = new HashMap<>();
+                boolean multiMods = false;
                 for (OsuScore s : scores) {
                     double acc = utilOsu.getAcc(s, u.getMode());
                     totalAcc += acc;
                     if (acc < minAcc) minAcc = acc;
                     if (acc > maxAcc) maxAcc = acc;
+                    totalCombo += s.getMaxCombo();
+                    if (s.getMaxCombo() < minCombo)
+                        minCombo = s.getMaxCombo();
+                    if (s.getMaxCombo() > maxCombo)
+                        maxCombo = s.getMaxCombo();
                     totalPp += s.getPp();
                     double weightedScorePp = factor * s.getPp();
                     factor *= 0.95;
-                    if (s.getPp() < minPp) minPp = s.getPp();
-                    if (s.getPp() > maxPp) maxPp = s.getPp();
                     int modBits = utilOsu.mods_arrToInt(s.getEnabledMods());
                     amountModsExact.compute(modBits, (k, v) -> v == null ? 1 : v + 1);
                     ppModsExact.compute(modBits, (k, v) -> v == null ? weightedScorePp : v + weightedScorePp);
@@ -484,6 +491,7 @@ public class BotMessage {
                         ppModsIncluded.compute(0, (k, v) -> v == null ? weightedScorePp : v + weightedScorePp);
                     } else {
                         boolean skipDT = false, skipSD = false;
+                        int modAmount = 0;
                         for (int i = 0; i < s.getEnabledMods().length; i++) {
                             GameMod mod = s.getEnabledMods()[i];
                             if (mod == GameMod.NIGHTCORE) skipDT = true;
@@ -492,7 +500,9 @@ public class BotMessage {
                             else if (mod == GameMod.SUDDEN_DEATH && skipSD) continue;
                             amountModsIncluded.compute((int)mod.getBit(), (k, v) -> v == null ? 1 : v + 1);
                             ppModsIncluded.compute((int)mod.getBit(), (k, v) -> v == null ? weightedScorePp : v + weightedScorePp);
+                            modAmount++;
                         }
+                        if (modAmount > 1) multiMods = true;
                     }
                 }
                 double bonusPp = 416.6667 * (1 - Math.pow(0.9994, (u.getCountRankSSH() + u.getCountRankSS() + u.getCountRankSH() + u.getCountRankS() + u.getCountRankA())));
@@ -504,40 +514,42 @@ public class BotMessage {
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                         .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
                         .collect(Collectors.joining(" > "));
-                String amountModsExactString = amountModsExact.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                        .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + e.getValue() + "%`")
-                        .collect(Collectors.joining(" > "));
-                String ppModsExactString = ppModsExact.entrySet().stream()
-                        .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                        .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
-                        .collect(Collectors.joining(" > "));
+                String amountModsExactString = "", ppModsExactString = "";
+                if (multiMods) {
+                    amountModsExactString = amountModsExact.entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                            .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + e.getValue() + "%`")
+                            .collect(Collectors.joining(" > "));
+                    ppModsExactString = ppModsExact.entrySet().stream()
+                            .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
+                            .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
+                            .collect(Collectors.joining(" > "));
+                }
                 // Prepare all fields
-                List<MessageEmbed.Field> fields = new ArrayList<>();
-                fields.add(new MessageEmbed.Field("Ranked score:", formatNumber(u.getRankedScore()), true));
-                fields.add(new MessageEmbed.Field("Total score:", formatNumber(u.getTotalScore()), true));
-                fields.add(new MessageEmbed.Field("Accuracy:", df.format(u.getAccuracy()) + "%", true));
-                // TODO: get play time
-                fields.add(new MessageEmbed.Field("Play count / time:", formatNumber(u.getPlayCount()) + " / " + formatNumber(0) + " hrs", true));
-                fields.add(new MessageEmbed.Field("Level:", df.format(u.getLevel()), true));
-                fields.add(new MessageEmbed.Field("Bonus PP:", "~" + df.format(bonusPp) + "pp", true));
-                // Uninteresting?
-                //fields.add(new MessageEmbed.Field("Total hits:", formatNumber(u.getTotalHits()), true));
-                fields.add(new MessageEmbed.Field("Grades:",
-                        getGradeEmote("XH") + u.getCountRankSSH()
-                        + " " + getGradeEmote("X") + u.getCountRankSS()
-                        + " " + getGradeEmote("SH") + u.getCountRankSH()
-                        + " " + getGradeEmote("S") + u.getCountRankS()
-                        + " " + getGradeEmote("A") + u.getCountRankA()
-                        , false));
-                fields.add(new MessageEmbed.Field("Unweighted accuracy:", df.format(totalAcc / 100) + "% [" + minAcc + "% - " + maxAcc + "%]", true));
-                fields.add(new MessageEmbed.Field("Average PP:", df.format(totalPp / 100) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]", true));
-                fields.add(new MessageEmbed.Field("Favourite mod combinations:", amountModsExactString, false));
-                fields.add(new MessageEmbed.Field("Favourite mods:", amountModsIncludedString, false));
-                fields.add(new MessageEmbed.Field("PP earned with mod combination:", ppModsExactString, false));
-                fields.add(new MessageEmbed.Field("PP earned with mod:", ppModsIncludedString, false));
-                for (MessageEmbed.Field f : fields)
-                    eb.addField(f);
+                eb.addField("Ranked score:", formatNumber(u.getRankedScore()), true)
+                        .addField("Total score:", formatNumber(u.getTotalScore()), true)
+                        .addField("Total hits:", formatNumber(u.getTotalHits()), true)
+                        // TODO: get play time
+                        .addField("Play count / time:", formatNumber(u.getPlayCount()) + " / " + formatNumber(0) + " hrs", true)
+                        .addField("Level:", df.format(u.getLevel()), true)
+                        .addField("Bonus PP:", "~" + df.format(bonusPp) + "pp", true)
+                        .addField("Accuracy:", df.format(u.getAccuracy()) + "%", true)
+                        .addField("Unweighted accuracy:", df.format(totalAcc / 100) + "% [" + minAcc + "% - " + maxAcc + "%]", true)
+                        .addField("Grades:",
+                                getGradeEmote("XH") + u.getCountRankSSH()
+                                + " " + getGradeEmote("X") + u.getCountRankSS()
+                                + " " + getGradeEmote("SH") + u.getCountRankSH()
+                                + " " + getGradeEmote("S") + u.getCountRankS()
+                                + " " + getGradeEmote("A") + u.getCountRankA()
+                                , false)
+                        .addField("Average PP:", df.format(totalPp / 100) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]", true)
+                        .addField("Average Combo:", df.format(totalCombo / 100) + " [" + minCombo + " - " + maxCombo  + "]", true);
+                if (multiMods)
+                    eb.addField("Favourite mod combinations:", amountModsExactString, false);
+                eb.addField("Favourite mods:", amountModsIncludedString, false);
+                if (multiMods)
+                    eb.addField("PP earned with mod combination:", ppModsExactString, false);
+                eb.addField("PP earned with mod:", ppModsIncludedString, false);
                 break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }

@@ -66,7 +66,7 @@ public class Main {
         commandHandler.commands.put("scores", new cmdScores());
         commandHandler.commands.put("leaderboard", new cmdMapLeaderboard());
         commandHandler.commands.put("lb", new cmdMapLeaderboard());
-        commandHandler.commands.put("globallb", new cmdGlobalLeaderboard());
+        commandHandler.commands.put("globalleaderboard", new cmdGlobalLeaderboard());
         commandHandler.commands.put("glb", new cmdGlobalLeaderboard());
         commandHandler.commands.put("simulate", new cmdSimulateMap());
         commandHandler.commands.put("s", new cmdSimulateMap());

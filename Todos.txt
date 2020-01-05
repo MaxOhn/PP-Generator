@@ -2,9 +2,10 @@
 --- GENERAL ---
 check if pp calculation has an update
 update spreadsheet
-reformat <ratio via whitespaces in field instead of description
 (provide filtering by keys for <topmania)
-~~provide opportunity to get lb of other countries with lb/rlb~~
+~~(reformat <ratio via whitespaces in field instead of description)~~
+    ^ cant do, JDA removes whitespaces in fields too :(
+~~(provide opportunity to get lb of other countries with lb/rlb)~~
     ^ no access through current api :(
 
 --- BUGS ---
@@ -17,7 +18,6 @@ FileInteractor.offsetOfNode NullPointerExceptions
 --- IDEAS ---
 command showing average max combo, maybe weighted
 <selfprune to remove own msg (& bot responses)
-<osu / <mania / <taiko / <ctb command to show stats
 <suggest <ss pp value> gives top 10 maps (with mods) that have that pp value
 (command to show all scores of mapset)
 (page scrap to get last ranked/loved/... maps)
