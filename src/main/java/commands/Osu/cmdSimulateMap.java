@@ -1,15 +1,12 @@
 package main.java.commands.Osu;
 
 import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
-import main.java.core.BotMessage;
-import main.java.core.DBProvider;
-import main.java.core.FileInteractor;
-import main.java.core.Main;
+import main.java.core.*;
 import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
@@ -200,7 +197,7 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
             map = DBProvider.getBeatmap(osuscore.getBeatmapID());
         } catch (SQLException | ClassNotFoundException e) {
             try {
-                map = Main.osu.beatmaps.query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(osuscore.getBeatmapID()).build()).get(0);
+                map = osuscore.getBeatmap().get();
             } catch (OsuAPIException e1) {
                 event.getChannel().sendMessage("Could not retrieve beatmap").queue();
                 return;
@@ -264,9 +261,12 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                     osuscore.setMaxcombo(combo);
                 // Otherwise just unchoke the score
                 } else {
+                    n100 = Math.max(osuscore.getHit100(), 0);
+                    n50 = Math.max(osuscore.getHit50(), 0);
+                    n300 -= n100 + n50;
                     osuscore.setCount300(n300);
-                    osuscore.setCount100(Math.max(osuscore.getHit100(), 0));
-                    osuscore.setCount50(Math.max(osuscore.getHit50(), 0));
+                    osuscore.setCount100(n100);
+                    osuscore.setCount50(n50);
                     utilOsu.unchokeScore(osuscore, map.getMaxCombo(), map.getMode(), FileInteractor.countTotalObjects(map.getID()), 300);
                 }
                 if (specifiedMods)
@@ -300,6 +300,11 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
                 osuscore.setCount50(n50);
                 osuscore.setCountmiss(nM);
                 osuscore.setMaxcombo(combo);
+                osuscore.setRank(utilOsu.getGrade(GameMode.MANIA, osuscore, nTotal));
+                Performance performance = new Performance();
+                performance.map(map);
+                performance.osuscore(osuscore);
+                osuscore.setPp((float)performance.getPpDouble());
                 break;
             }
             case TAIKO: {

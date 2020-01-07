@@ -508,7 +508,7 @@ public class BotMessage {
                 double bonusPp = 416.6667 * (1 - Math.pow(0.9994, (u.getCountRankSSH() + u.getCountRankSS() + u.getCountRankSH() + u.getCountRankS() + u.getCountRankA())));
                 String amountModsIncludedString = amountModsIncluded.entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                        .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + e.getValue() + "%`")
+                        .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + (100 * e.getValue() / scores.size()) + "%`")
                         .collect(Collectors.joining(" > "));
                 String ppModsIncludedString = ppModsIncluded.entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -518,7 +518,7 @@ public class BotMessage {
                 if (multiMods) {
                     amountModsExactString = amountModsExact.entrySet().stream()
                             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
-                            .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + e.getValue() + "%`")
+                            .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + (100 * e.getValue() / scores.size()) + "%`")
                             .collect(Collectors.joining(" > "));
                     ppModsExactString = ppModsExact.entrySet().stream()
                             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -533,7 +533,7 @@ public class BotMessage {
                         .addField("Level:", df.format(u.getLevel()), true)
                         .addField("Bonus PP:", "~" + df.format(bonusPp) + "pp", true)
                         .addField("Accuracy:", df.format(u.getAccuracy()) + "%", true)
-                        .addField("Unweighted accuracy:", df.format(totalAcc / 100) + "% [" + minAcc + "% - " + maxAcc + "%]", true)
+                        .addField("Unweighted accuracy:", df.format(totalAcc / scores.size()) + "% [" + minAcc + "% - " + maxAcc + "%]", true)
                         .addField("Grades:",
                                 getGradeEmote("XH") + u.getCountRankSSH()
                                 + " " + getGradeEmote("X") + u.getCountRankSS()
@@ -541,8 +541,8 @@ public class BotMessage {
                                 + " " + getGradeEmote("S") + u.getCountRankS()
                                 + " " + getGradeEmote("A") + u.getCountRankA()
                                 , false)
-                        .addField("Average PP:", df.format(totalPp / 100) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]", true)
-                        .addField("Average Combo:", df.format(totalCombo / 100) + " [" + minCombo + " - " + maxCombo  + "]", true);
+                        .addField("Average PP:", df.format(totalPp / scores.size()) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]", true)
+                        .addField("Average Combo:", df.format(totalCombo / scores.size()) + " [" + minCombo + " - " + maxCombo  + "]", true);
                 if (multiMods)
                     eb.addField("Favourite mod combinations:", amountModsExactString, false);
                 eb.addField("Favourite mods:", amountModsIncludedString, false);
@@ -729,9 +729,7 @@ public class BotMessage {
     // Return a formated string for the mod combination
     private String getModString() {
         String out = utilOsu.mods_arrToStr(score.getEnabledMods());
-        if (!out.equals("NM"))
-            out = " +" + out;
-        return out;
+        return out.equals("NM") ? "" : " +" + out;
     }
 
     // Return a string containing key info for mania maps

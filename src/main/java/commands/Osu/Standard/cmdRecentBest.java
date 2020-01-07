@@ -26,11 +26,11 @@ import java.util.stream.Collectors;
  */
 public class cmdRecentBest implements INumberedCommand {
 
-    private int number = 1;
+    private int number = 0;
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
-        number = 1;
+        number = 0;
         return true;
     }
 
@@ -84,7 +84,7 @@ public class cmdRecentBest implements INumberedCommand {
         // Sort scores by date
         List<OsuScore> topPlaysByDate = new ArrayList<>(topPlays);
         topPlaysByDate.sort(Comparator.comparing(OsuScore::getDate).reversed());
-        if (number > 5) {
+        if (number > 0) {
             final Iterator<OsuScore> itr = topPlaysByDate.iterator();
             OsuScore rbScore = itr.next();
             // Get the appropriate score

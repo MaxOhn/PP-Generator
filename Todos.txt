@@ -1,13 +1,7 @@
 
 --- GENERAL ---
-check if pp calculation has an update
-update spreadsheet
-put all logs into file
+/!\ check if pp calculation has an update /!\
 (provide filtering by keys for <topmania)
-~~(reformat <ratio via whitespaces in field instead of description)~~
-    ^ cant do, JDA removes whitespaces in fields too :(
-~~(provide opportunity to get lb of other countries with lb/rlb)~~
-    ^ no access through current api :(
 
 --- BUGS ---
 FileInteractor.offsetOfNode NullPointerExceptions
@@ -17,9 +11,17 @@ FileInteractor.offsetOfNode NullPointerExceptions
 	- mapid 1706017, noteIndex 496, lineNum 495
 
 --- IDEAS ---
-command showing average max combo, maybe weighted
-<selfprune to remove own msg (& bot responses)
 <suggest <ss pp value> gives top 10 maps (with mods) that have that pp value
+    ^ requires handling of _all_ beatmaps first
 (command to show all scores of mapset)
 (page scrap to get last ranked/loved/... maps)
-(<urban to show urban dictionary definition of a word/phrase [same for <wolfram])
+
+--- SCRATCHED ---
+reformat <ratio via whitespaces in field instead of description
+    - cant do, JDA removes whitespaces in fields too
+provide opportunity to get lb of other countries with lb/rlb
+    - no access through current api
+<wolfram to show result of query
+    - not in maven repo
+<selfprune to remove own msg (& bot responses)
+    - author not properly retrievable through bot message
