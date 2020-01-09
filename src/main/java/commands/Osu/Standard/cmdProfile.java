@@ -8,9 +8,11 @@ import main.java.core.BotMessage;
 import main.java.core.Main;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,9 +67,17 @@ public class cmdProfile implements ICommand {
             event.getChannel().sendMessage("Could not retrieve top scores").queue();
             return;
         }
+        List<OsuBeatmap> maps;
+        try {
+            maps = utilOsu.getBeatmaps(topPlays);
+        } catch (ClassNotFoundException | SQLException | OsuAPIException e) {
+            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+            return;
+        }
         new BotMessage(event.getChannel(), BotMessage.MessageType.PROFILE)
                 .user(user)
                 .osuscores(topPlays)
+                .maps(maps)
                 .mode(getMode())
                 .buildAndSend();
     }

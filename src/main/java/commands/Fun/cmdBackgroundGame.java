@@ -34,7 +34,7 @@ import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /*
-    Background game: The bot send part of a background of a map and players must guess the title of the song of the map
+    Background game: The bot sends part of a background of a map and players must guess the title of the song of the map
  */
 public class cmdBackgroundGame implements ICommand {
 
@@ -107,6 +107,7 @@ public class cmdBackgroundGame implements ICommand {
                 event.getChannel().sendMessage(runningGames.get(event.getChannel().getIdLong()).getHint()).queue();
                 break;
             // Stop autostarting the next round
+            case "end":
             case "stop":
                 if (!runningGames.containsKey(event.getChannel().getIdLong())) {
                     event.getChannel().sendMessage(help(1)).queue();

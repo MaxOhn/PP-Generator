@@ -7,14 +7,14 @@ import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.commands.Osu.cmdModdedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -32,6 +32,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
     private double acc;
     private int combo;
     private String grade;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -194,54 +195,29 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             List<OsuBeatmap> maps = new ArrayList<>();
             // If there is a condition on maps, take all scores for which the map satisfies the condition
             if (!getMapCondition(null)) {
-                for (OsuScore s : scores) {
-                    OsuBeatmap map;
-                    try {
-                        if (!secrets.WITH_DB)
-                            throw new SQLException();
-                        map = DBProvider.getBeatmap(s.getBeatmapID());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        try {
-                            map = s.getBeatmap().get();
-                        } catch (OsuAPIException e1) {
-                            continue;
-                        }
-                        try {
-                            if (secrets.WITH_DB)
-                                DBProvider.addBeatmap(map);
-                        } catch (ClassNotFoundException | SQLException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
+                List<OsuBeatmap> allMaps;
+                try {
+                    allMaps = utilOsu.getBeatmaps(scores);
+                } catch (SQLException | OsuAPIException | ClassNotFoundException e) {
+                    event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                    logger.error("Error while retrieving maps in bulk: ", e);
+                    return;
+                }
+                for (OsuBeatmap map : allMaps)
                     if (getMapCondition(map))
                         maps.add(map);
-                }
                 scores = scores.stream()
                         .filter(s -> maps.stream().anyMatch(m -> m.getID() == s.getBeatmapID()))
                         .collect(Collectors.toList());
             // No condition on maps -> just take the maps of the first 5 scores
             } else {
-                maps.addAll(scores.stream().limit(5).map(s -> {
-                    OsuBeatmap map;
-                    try {
-                        if (!secrets.WITH_DB)
-                            throw new SQLException();
-                        map = DBProvider.getBeatmap(s.getBeatmapID());
-                    } catch (SQLException | ClassNotFoundException e) {
-                        try {
-                            map = s.getBeatmap().get();
-                        } catch (OsuAPIException e1) {
-                            return null;
-                        }
-                        try {
-                            if (secrets.WITH_DB)
-                                DBProvider.addBeatmap(map);
-                        } catch (ClassNotFoundException | SQLException e1) {
-                            e1.printStackTrace();
-                        }
-                    }
-                    return map;
-                }).filter(Objects::nonNull).collect(Collectors.toList()));
+                try {
+                    maps.addAll(utilOsu.getBeatmaps(scores.stream().limit(5).collect(Collectors.toList())));
+                } catch (SQLException | OsuAPIException | ClassNotFoundException e) {
+                    event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                    logger.error("Error while retrieving maps in bulk: ", e);
+                    return;
+                }
             }
             if (scores.size() == 0) {
                 event.getChannel().sendMessage(noScoreMessage(user.getUsername(), status != modStatus.WITHOUT || excludedMods.size() > 0 || excludeNM)).queue();
@@ -263,22 +239,10 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
                 if (getScoreCondition(s, user.getMode())) {
                     if (!getMapCondition(null)) {
                         try {
-                            if (!secrets.WITH_DB)
-                                throw new SQLException();
-                            map = DBProvider.getBeatmap(s.getBeatmapID());
-                        } catch (SQLException | ClassNotFoundException e) {
-                            try {
-                                map = s.getBeatmap().get();
-                            } catch (OsuAPIException e1) {
-                                event.getChannel().sendMessage("Could not retrieve map").queue();
-                                return;
-                            }
-                            try {
-                                if (secrets.WITH_DB)
-                                    DBProvider.addBeatmap(map);
-                            } catch (ClassNotFoundException | SQLException e1) {
-                                e1.printStackTrace();
-                            }
+                            map = utilOsu.getBeatmap(s.getBeatmapID());
+                        } catch (OsuAPIException e) {
+                            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+                            return;
                         }
                         if (getMapCondition(map) && --number == 0) {
                             topScore = s;
@@ -297,22 +261,10 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             // Retrieve the score's map if it didn't happen already
             if (map == null) {
                 try {
-                    if (!secrets.WITH_DB)
-                        throw new SQLException();
-                    map = DBProvider.getBeatmap(topScore.getBeatmapID());
-                } catch (SQLException | ClassNotFoundException e) {
-                    try {
-                        map = topScore.getBeatmap().get();
-                    } catch (OsuAPIException e1) {
-                        event.getChannel().sendMessage("Could not retrieve map").queue();
-                        return;
-                    }
-                    try {
-                        if (secrets.WITH_DB)
-                            DBProvider.addBeatmap(map);
-                    } catch (ClassNotFoundException | SQLException e1) {
-                        e1.printStackTrace();
-                    }
+                    map = utilOsu.getBeatmap(topScore.getBeatmapID());
+                } catch (OsuAPIException e) {
+                    event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+                    return;
                 }
             }
             // Retrieve the global leaderboard of the map
@@ -325,7 +277,7 @@ public class cmdTop extends cmdModdedCommand implements INumberedCommand {
             }
             // Create the message
             new BotMessage(event.getChannel(), BotMessage.MessageType.SINGLETOP).user(user).map(map).osuscore(topScore)
-                    .mode(getMode()).topplays(scores, globalPlays).buildAndSend();
+                    .mode(getMode()).topplays(actual, globalPlays).buildAndSend();
         }
     }
 

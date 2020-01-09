@@ -1,22 +1,18 @@
 package main.java.commands.Osu.Standard;
 
 import com.oopsjpeg.osu4j.*;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
-import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -86,7 +82,7 @@ public class cmdRecent implements INumberedCommand {
                 return;
             }
             // Retrieve osu user data
-            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(recent.getUserID()).setMode(getMode()).build());
+            user = recent.getUser().get();
         } catch (Exception e) {
             event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;
@@ -94,44 +90,34 @@ public class cmdRecent implements INumberedCommand {
         // Retrieve the score's map
         OsuBeatmap map;
         try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(recent.getBeatmapID());
-        } catch (SQLException | ClassNotFoundException e) {
-            try {
-                map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(recent.getBeatmapID()).setLimit(1).build()
-                ).get(0);
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve beatmap id `" + recent.getBeatmapID() + "`").queue();
-                return;
-            }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
-            }
-        }
-        // Retrieve top plays of user and global leaderboard of map
-        Collection<OsuScore> topPlays;
-        Collection<OsuScore> globalPlays;
-        try {
-            topPlays = map.getApproved() == ApprovalState.RANKED ? user.getTopScores(100).get() : new ArrayList<>();
-            globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
+            map = utilOsu.getBeatmap(recent.getBeatmapID());
         } catch (OsuAPIException e) {
-            event.getChannel().sendMessage("Could not retrieve top scores").queue();
+            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
             return;
         }
         // Build the message
-        new BotMessage(event.getChannel(), BotMessage.MessageType.RECENT)
+        BotMessage msg = new BotMessage(event.getChannel(), BotMessage.MessageType.RECENT)
                 .user(user)
                 .map(map)
                 .osuscore(recent)
                 .history(userRecents)
-                .mode(getMode())
-                .topplays(topPlays, globalPlays)
-                .buildAndSend();
+                .mode(getMode());
+        // Won't be in highscores if it's a fail
+        if (recent.getRank().equals("F")) {
+            msg.buildAndSend();
+        } else {
+            // Retrieve top plays of user and global leaderboard of map
+            Collection<OsuScore> topPlays;
+            Collection<OsuScore> globalPlays;
+            try {
+                topPlays = map.getApproved() == ApprovalState.RANKED ? user.getTopScores(100).get() : new ArrayList<>();
+                globalPlays = Main.osu.scores.query(new EndpointScores.ArgumentsBuilder(map.getID()).setMode(getMode()).build());
+            } catch (OsuAPIException e) {
+                event.getChannel().sendMessage("Could not retrieve top scores").queue();
+                return;
+            }
+            msg.topplays(topPlays, globalPlays).buildAndSend();
+        }
     }
 
     @Override

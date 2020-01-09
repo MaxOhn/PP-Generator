@@ -63,10 +63,10 @@ public class cmdDevTool implements ICommand {
                         if (args.length == 2 || args[2].equals("all")) {
                             StringBuilder msg = new StringBuilder("Averages of saved pp values for all mods:\n");
                             for (String mod : new String[] { "NM", "HD", "HR", "DT", "HDHR", "HDDT"})
-                                msg.append(mod).append(": ").append(DBProvider.getAverage(mod)).append("\n");
+                                msg.append(mod).append(": ").append(Math.round(100 * DBProvider.getAverage(mod)) / 100.0).append("\n");
                             event.getTextChannel().sendMessage(msg.toString()).queue();
                         } else {
-                            double response = DBProvider.getAverage(args[2]);
+                            double response = Math.round(100 * DBProvider.getAverage(args[2])) / 100.0;
                             event.getTextChannel().sendMessage("Average of saved pp values for `" + args[2] + "` scores: " + response).queue();
                         }
                     } catch (SQLException | ClassNotFoundException e) {

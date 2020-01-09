@@ -9,13 +9,14 @@ import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 public class cmdRecentBest implements INumberedCommand {
 
     private int number = 0;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -93,22 +95,10 @@ public class cmdRecentBest implements INumberedCommand {
             // Retrieve the score's map
             OsuBeatmap map;
             try {
-                if (!secrets.WITH_DB)
-                    throw new SQLException();
-                map = DBProvider.getBeatmap(rbScore.getBeatmapID());
-            } catch (SQLException | ClassNotFoundException e) {
-                try {
-                    map = rbScore.getBeatmap().get();
-                } catch (OsuAPIException e1) {
-                    event.getChannel().sendMessage("Could not retrieve map").queue();
-                    return;
-                }
-                try {
-                    if (secrets.WITH_DB)
-                        DBProvider.addBeatmap(map);
-                } catch (ClassNotFoundException | SQLException e1) {
-                    e1.printStackTrace();
-                }
+                map = utilOsu.getBeatmap(rbScore.getBeatmapID());
+            } catch (OsuAPIException e) {
+                event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+                return;
             }
             // Retrieve the global leaderboard of the map
             Collection<OsuScore> globalPlays;
@@ -124,28 +114,18 @@ public class cmdRecentBest implements INumberedCommand {
         } else {
             topPlaysByDate = topPlaysByDate.stream().limit(5).collect(Collectors.toList());
             List<OsuBeatmap> maps = new ArrayList<>();
+            Map<Integer, OsuBeatmap> allMaps;
+            try {
+                allMaps = utilOsu.getBeatmaps(topPlays).stream().collect(Collectors.toMap(OsuBeatmap::getID, m -> m));
+            } catch (SQLException | ClassNotFoundException | OsuAPIException e) {
+                event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+                logger.error("Error while retrieving maps in bulk: ", e);
+                return;
+            }
             LinkedList<Integer> indices = new LinkedList<>();
             for (OsuScore s : topPlaysByDate) {
                 indices.addLast(topPlays.indexOf(s) + 1);
-                OsuBeatmap map;
-                try {
-                    if (!secrets.WITH_DB)
-                        throw new SQLException();
-                    map = DBProvider.getBeatmap(s.getBeatmapID());
-                } catch (SQLException | ClassNotFoundException e) {
-                    try {
-                        map = s.getBeatmap().get();
-                    } catch (OsuAPIException e1) {
-                        continue;
-                    }
-                    try {
-                        if (secrets.WITH_DB)
-                            DBProvider.addBeatmap(map);
-                    } catch (ClassNotFoundException | SQLException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-                maps.add(map);
+                maps.add(allMaps.get(s.getBeatmapID()));
             }
             new BotMessage(event.getChannel(), BotMessage.MessageType.RECENTBESTS).user(user)
                     .osuscores(topPlaysByDate).indices(indices).maps(maps).mode(getMode()).buildAndSend();

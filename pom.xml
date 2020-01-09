@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bade</groupId>
     <artifactId>ppgenerator</artifactId>
-    <version>6.0.1</version>
+    <version>6.0.4</version>
 
     <name>PP-Generator</name>
     <description>discord bot with osu! functionalities</description>

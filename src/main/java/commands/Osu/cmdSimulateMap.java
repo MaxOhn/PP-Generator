@@ -6,8 +6,10 @@ import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
-import main.java.core.*;
-import main.java.util.secrets;
+import main.java.core.BotMessage;
+import main.java.core.FileInteractor;
+import main.java.core.Main;
+import main.java.core.Performance;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
@@ -16,7 +18,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -192,25 +193,10 @@ public class cmdSimulateMap extends cmdModdedCommand implements INumberedCommand
         // Retrieve map
         OsuBeatmap map;
         try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(osuscore.getBeatmapID());
-        } catch (SQLException | ClassNotFoundException e) {
-            try {
-                map = osuscore.getBeatmap().get();
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve beatmap").queue();
-                return;
-            } catch (IndexOutOfBoundsException e1) {
-                event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
-                return;
-            }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
-            }
+            map = utilOsu.getBeatmap(osuscore.getBeatmapID());
+        } catch (OsuAPIException e) {
+            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+            return;
         }
         // Check parameter constrains
         int hitSum;

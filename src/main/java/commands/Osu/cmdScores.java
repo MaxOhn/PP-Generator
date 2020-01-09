@@ -3,15 +3,12 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
 import com.oopsjpeg.osu4j.OsuUser;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
@@ -20,7 +17,6 @@ import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -104,25 +100,11 @@ public class cmdScores implements INumberedCommand {
         // Retrieve map data
         OsuBeatmap map;
         try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(Integer.parseInt(mapID));
-        } catch (SQLException | ClassNotFoundException e) {
-            try {
-                map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
-                ).get(0);
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve beatmap").queue();
-                return;
-            }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
-            }
-        } catch (IndexOutOfBoundsException e1) {
+            map = utilOsu.getBeatmap(Integer.parseInt(mapID));
+        } catch (OsuAPIException e) {
+            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+            return;
+        } catch (IndexOutOfBoundsException e) {
             event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
             return;
         }

@@ -4,11 +4,7 @@
 (provide filtering by keys for <topmania)
 
 --- BUGS ---
-FileInteractor.offsetOfNode NullPointerExceptions
-	- mapid 107410 (nyan [Insane]) at 100% completion?
-	- mapid 1256809, noteIndex 3201, lineNum 3200
-	- mapid 487951, noteIndex 1686, lineNum 1685
-	- mapid 1706017, noteIndex 496, lineNum 495
+None :^)
 
 --- IDEAS ---
 <suggest <ss pp value> gives top 10 maps (with mods) that have that pp value

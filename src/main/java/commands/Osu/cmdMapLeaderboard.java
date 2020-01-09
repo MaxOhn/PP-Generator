@@ -3,13 +3,10 @@ package main.java.commands.Osu;
 import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
-import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
 import main.java.util.utilOsu;
@@ -17,9 +14,10 @@ import net.dv8tion.jda.core.entities.ChannelType;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageEmbed;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +32,7 @@ import static main.java.util.utilOsu.mods_strToInt;
 public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedCommand {
 
     private int number = 1;
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
@@ -99,27 +98,14 @@ public class cmdMapLeaderboard extends cmdModdedCommand implements INumberedComm
         // Retrieve map data
         OsuBeatmap map;
         try {
-            if (!secrets.WITH_DB)
-                throw new SQLException();
-            map = DBProvider.getBeatmap(Integer.parseInt(mapID));
-        } catch (SQLException | ClassNotFoundException e) {
-            try {
-                map = Main.osu.beatmaps.query(
-                        new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(Integer.parseInt(mapID)).build()
-                ).get(0);
-            } catch (OsuAPIException e1) {
-                event.getChannel().sendMessage("Could not retrieve beatmap").queue();
-                return;
-            } catch (IndexOutOfBoundsException e1) {
-                event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
-                return;
-            }
-            try {
-                if (secrets.WITH_DB)
-                    DBProvider.addBeatmap(map);
-            } catch (ClassNotFoundException | SQLException e1) {
-                e1.printStackTrace();
-            }
+            map = utilOsu.getBeatmap(Integer.parseInt(mapID));
+        } catch (OsuAPIException e) {
+            event.getChannel().sendMessage("Some osu! API issue, blame bade").queue();
+            logger.error("Error while retrieving map from API: ", e);
+            return;
+        } catch (IndexOutOfBoundsException e) {
+            event.getChannel().sendMessage("Could not find beatmap. Did you give a mapset id instead of a map id?").queue();
+            return;
         }
         // Retrieve leaderboard of map
         List<OsuScore> scores;

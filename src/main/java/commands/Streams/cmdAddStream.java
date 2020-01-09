@@ -19,7 +19,10 @@ public class cmdAddStream extends PrivilegedCommand {
 
     @Override
     public boolean customCalled(String[] args, MessageReceivedEvent event) {
-        if (args.length != 2) {
+        if (args.length > 0 && !args[0].equals("twitch") && !args[0].equals("mixer")) {
+            event.getTextChannel().sendMessage(help(3)).queue();
+            return false;
+        } else if (args.length != 2) {
             event.getTextChannel().sendMessage(help(0)).queue();
             return false;
         }
@@ -28,11 +31,6 @@ public class cmdAddStream extends PrivilegedCommand {
 
     @Override
     public void action(String[] args, MessageReceivedEvent event) {
-        // Must be specified whether the streamer is on twitch or mixer
-        if (!args[0].equals("twitch") && !args[0].equals("mixer")) {
-            event.getTextChannel().sendMessage(help(3)).queue();
-            return;
-        }
         // Check if streamer - channel combination already in database
         String name = args[1];
         if (Main.streamHook.isTracked(name, event.getTextChannel().getId())) {

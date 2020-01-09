@@ -140,8 +140,11 @@ public class Performance {
         } catch (IllegalAccessException e) {    // pp rating not yet calculated
             calculateMaxPp();   // calculate it, then save it
             try {
-                if (secrets.WITH_DB)
-                    DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
+                if (secrets.WITH_DB) {
+                    String modString = utilOsu.mods_setToStr(mods);
+                    DBProvider.addModsPp(map.getID(), modString, this.ppMax);
+                    logger.info("Added " + modString + " max pp (" + this.ppMax + ") for map id " + map.getID());
+                }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
                 e1.printStackTrace();
@@ -151,7 +154,10 @@ public class Performance {
                 calculateMaxPp();   // calculate it, then save it
                 if (secrets.WITH_DB) {
                     DBProvider.addMapPp(map.getID());
-                    DBProvider.addModsPp(map.getID(), utilOsu.mods_setToStr(mods), this.ppMax);
+                    logger.info("Added map id " + map.getID() + " to pp-database");
+                    String modString = utilOsu.mods_setToStr(mods);
+                    DBProvider.addModsPp(map.getID(), modString, this.ppMax);
+                    logger.info("Added " + modString + " max pp (" + this.ppMax + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with ppRating database: ");
@@ -247,7 +253,7 @@ public class Performance {
         try {
             if (failedPlay) {
                 // Create new map file up to the failed note
-                int lastNoteTiming = FileInteractor.offsetOfNote(getNPassedObjects(), map.getID());
+                int lastNoteTiming = FileInteractor.offsetOfNote(getNPassedObjects() - 1, map.getID());
                 FileInteractor.copyMapUntilOffset(mapPath, map.getID(), lastNoteTiming);
             }
             // Prepare mode
@@ -383,8 +389,11 @@ public class Performance {
         } catch (IllegalAccessException e) {    // star rating not yet calculated
             calculateStarRating(modsImportant); // calculate it and save it
             try {
-                if (secrets.WITH_DB)
-                    DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
+                if (secrets.WITH_DB) {
+                    String modString = utilOsu.mods_setToStr(modsImportant);
+                    DBProvider.addModsStars(map.getID(), modString, this.starRating);
+                    logger.info("Added " + modString + " stars (" + this.starRating + ") for map id " + map.getID());
+                }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");
                 e1.printStackTrace();
@@ -394,7 +403,10 @@ public class Performance {
                 calculateStarRating(modsImportant); // calculate it and save it
                 if (secrets.WITH_DB) {
                     DBProvider.addMapStars(map.getID());
+                    logger.info("Added map id " + map.getID() + " to stars-database");
+                    String modString = utilOsu.mods_setToStr(modsImportant);
                     DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
+                    logger.info("Added " + modString + " stars (" + this.starRating + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
                 logger.error("Something went wrong while interacting with starRating database: ");

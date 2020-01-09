@@ -2,8 +2,16 @@ package main.java.util;
 
 import com.oopsjpeg.osu4j.GameMod;
 import com.oopsjpeg.osu4j.GameMode;
+import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
+import com.oopsjpeg.osu4j.exception.OsuAPIException;
+import main.java.core.DBProvider;
+import main.java.core.Main;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -344,5 +352,46 @@ public class utilOsu {
         score.setCountmiss(0);
         score.setPp(0);
         score.setRank(utilOsu.getGrade(mode, score, nObjects));
+    }
+
+    public static OsuBeatmap getBeatmap(int mapID) throws OsuAPIException, IndexOutOfBoundsException {
+        OsuBeatmap map;
+        try {
+            if (secrets.WITH_DB) map = DBProvider.getBeatmap(mapID);
+            else throw new SQLException();
+        } catch (ClassNotFoundException | SQLException e) {
+            map = Main.osu.beatmaps.query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(mapID).build()).get(0);
+            if (secrets.WITH_DB) {
+                try {
+                    DBProvider.addBeatmap(map);
+                    LoggerFactory.getLogger(utilOsu.class).info("Added map id " + map.getID() + " to map database");
+                } catch (ClassNotFoundException | SQLException ex) {
+                    LoggerFactory.getLogger(utilOsu.class).error("Error while adding new map id " + map.getID() + " to map database: ", e);
+                }
+            }
+        }
+        return map;
+    }
+
+    public static List<OsuBeatmap> getBeatmaps(Collection<OsuScore> scores) throws SQLException, ClassNotFoundException, OsuAPIException {
+        Logger logger = LoggerFactory.getLogger(utilOsu.class);
+        List<OsuBeatmap> maps = new ArrayList<>();
+        if (secrets.WITH_DB) {
+            HashMap<Integer, OsuBeatmap> dbMaps = DBProvider.getBeatmaps(scores);
+            for (OsuScore s : scores) {
+                OsuBeatmap map = dbMaps.get(s.getBeatmapID());
+                if (map != null) maps.add(map);
+                else {
+                    map = s.getBeatmap().get();
+                    maps.add(map);
+                    DBProvider.addBeatmap(map);
+                    logger.info("Added map id " + map.getID() + " to map database");
+                }
+            }
+        } else {
+            for (OsuScore s : scores)
+                maps.add(s.getBeatmap().get());
+        }
+        return maps;
     }
 }

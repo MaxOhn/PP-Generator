@@ -124,7 +124,7 @@ public class cmdReach implements ICommand {
                 return;
             }
             double[] topPP = topPlays.stream().map(OsuScore::getPp).mapToDouble(elem -> elem).toArray();
-            // Calculate how the pp value of the required score
+            // Calculate the pp value of the required score
             int size = topPP.length, idx = size - 1;
             double factor = Math.pow(0.95, idx), top = user1.getPPRaw(), bot = 0, current = topPP[idx];
             for (; top + bot < pp; idx--) {

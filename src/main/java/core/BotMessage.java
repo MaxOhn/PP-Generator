@@ -63,6 +63,7 @@ public class BotMessage {
         this.eb = new EmbedBuilder().setColor(Color.green);
         this.mb = new MessageBuilder();
         this.p = new Performance();
+        this.topplays = "";
     }
 
     public void buildAndSend(@NotNull Runnable runnable) {
@@ -450,6 +451,7 @@ public class BotMessage {
                 // User and scores need to be set beforehand
                 if (u == null) throw new IllegalStateException(Error.USER.getMsg());
                 if (scores == null) throw new IllegalStateException(Error.COLLECTION.getMsg());
+                if (maps == null) throw new IllegalStateException(Error.MAP.getMsg());
                 eb.setThumbnail("https://a.ppy.sh/" + u.getID())
                         .setAuthor(u.getUsername() + ": "
                                 + formatNumber(u.getPPRaw()) + "pp (#"
@@ -462,15 +464,20 @@ public class BotMessage {
                 // Calculate all interesting values
                 double totalAcc = 0, minAcc = 100, maxAcc = 0;
                 double totalPp = 0, minPp = scores.get(scores.size() - 1).getPp(), maxPp = scores.get(0).getPp();
-                double totalCombo = 0;
-                int minCombo = Integer.MAX_VALUE, maxCombo = 0;
+                int totalCombo = 0, mapCombo = 0, minCombo = Integer.MAX_VALUE, maxCombo = 0;
+                int countBCD = 0;
+                int mapLength = 0, minLength = Integer.MAX_VALUE, maxLength = 0;
                 double factor = 1;
+                Map<String, Integer> mapperAmount = new HashMap<>();
+                Map<String, Double> mapperPp = new HashMap<>();
                 HashMap<Integer, Integer> amountModsIncluded = new HashMap<>();
                 HashMap<Integer, Double> ppModsIncluded = new HashMap<>();
                 HashMap<Integer, Integer> amountModsExact = new HashMap<>();
                 HashMap<Integer, Double> ppModsExact = new HashMap<>();
                 boolean multiMods = false;
+                Iterator<OsuBeatmap> mapIter = maps.iterator();
                 for (OsuScore s : scores) {
+                    OsuBeatmap map = mapIter.next();
                     double acc = utilOsu.getAcc(s, u.getMode());
                     totalAcc += acc;
                     if (acc < minAcc) minAcc = acc;
@@ -480,9 +487,23 @@ public class BotMessage {
                         minCombo = s.getMaxCombo();
                     if (s.getMaxCombo() > maxCombo)
                         maxCombo = s.getMaxCombo();
+                    mapCombo += map.getMaxCombo();
+                    mapLength += map.getHitLength();
+                    if (map.getHitLength() < minLength)
+                        minLength = map.getHitLength();
+                    if (map.getHitLength() > maxLength)
+                        maxLength  = map.getHitLength();
+                    mapperAmount.compute(map.getCreatorName(), (k, v) -> v == null ? 1 : v + 1);
                     totalPp += s.getPp();
                     double weightedScorePp = factor * s.getPp();
                     factor *= 0.95;
+                    mapperPp.compute(map.getCreatorName(), (k, v) -> v == null ? weightedScorePp : v + weightedScorePp);
+                    // Bonus pp can be approximated slightly better when amount of B, C, or D scores are considered
+                    switch (s.getRank()) {
+                        case "B":
+                        case "C":
+                        case "D": countBCD++;
+                    }
                     int modBits = utilOsu.mods_arrToInt(s.getEnabledMods());
                     amountModsExact.compute(modBits, (k, v) -> v == null ? 1 : v + 1);
                     ppModsExact.compute(modBits, (k, v) -> v == null ? weightedScorePp : v + weightedScorePp);
@@ -505,7 +526,7 @@ public class BotMessage {
                         if (modAmount > 1) multiMods = true;
                     }
                 }
-                double bonusPp = 416.6667 * (1 - Math.pow(0.9994, (u.getCountRankSSH() + u.getCountRankSS() + u.getCountRankSH() + u.getCountRankS() + u.getCountRankA())));
+                double bonusPp = 416.6667 * (1 - Math.pow(0.9994, (u.getCountRankSSH() + u.getCountRankSS() + u.getCountRankSH() + u.getCountRankS() + u.getCountRankA() + countBCD)));
                 String amountModsIncludedString = amountModsIncluded.entrySet().stream()
                         .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
                         .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + (100 * e.getValue() / scores.size()) + "%`")
@@ -515,6 +536,7 @@ public class BotMessage {
                         .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
                         .collect(Collectors.joining(" > "));
                 String amountModsExactString = "", ppModsExactString = "";
+                // If no score has >1 mods, then this does not need to be displayed
                 if (multiMods) {
                     amountModsExactString = amountModsExact.entrySet().stream()
                             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
@@ -525,15 +547,26 @@ public class BotMessage {
                             .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
                             .collect(Collectors.joining(" > "));
                 }
+                StringBuilder comboFieldValue = new StringBuilder(totalCombo / scores.size());
+                switch (u.getMode()) {
+                    case STANDARD:
+                    case CATCH_THE_BEAT:
+                        comboFieldValue.append("/").append(mapCombo / scores.size());
+                }
+                comboFieldValue.append(" [").append(minCombo).append(" - ").append(maxCombo).append("]");
                 // Prepare all fields
                 eb.addField("Ranked score:", formatNumber(u.getRankedScore()), true)
                         .addField("Total score:", formatNumber(u.getTotalScore()), true)
                         .addField("Total hits:", formatNumber(u.getTotalHits()), true)
-                        .addField("Play count / time:", formatNumber(u.getPlayCount()) + " / " + (u.getPlayTimeSeconds() / 3600) + " hrs", true)
+                        .addField("Play count / time:",
+                                formatNumber(u.getPlayCount()) + " / " + (u.getPlayTimeSeconds() / 3600) + " hrs",
+                                true)
                         .addField("Level:", df.format(u.getLevel()), true)
                         .addField("Bonus PP:", "~" + df.format(bonusPp) + "pp", true)
                         .addField("Accuracy:", df.format(u.getAccuracy()) + "%", true)
-                        .addField("Unweighted accuracy:", df.format(totalAcc / scores.size()) + "% [" + minAcc + "% - " + maxAcc + "%]", true)
+                        .addField("Unweighted accuracy:",
+                                df.format(totalAcc / scores.size()) + "% [" + minAcc + "% - " + maxAcc + "%]",
+                                true)
                         .addField("Grades:",
                                 getGradeEmote("XH") + u.getCountRankSSH()
                                 + " " + getGradeEmote("X") + u.getCountRankSS()
@@ -541,14 +574,30 @@ public class BotMessage {
                                 + " " + getGradeEmote("S") + u.getCountRankS()
                                 + " " + getGradeEmote("A") + u.getCountRankA()
                                 , false)
-                        .addField("Average PP:", df.format(totalPp / scores.size()) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]", true)
-                        .addField("Average Combo:", df.format(totalCombo / scores.size()) + " [" + minCombo + " - " + maxCombo  + "]", true);
+                        .addField("Average PP:",
+                                df.format(totalPp / scores.size()) + "pp [" + df.format(minPp) + " - " + df.format(maxPp) + "]",
+                                true)
+                        .addField("Average Combo:", comboFieldValue.toString(), true);
                 if (multiMods)
                     eb.addField("Favourite mod combinations:", amountModsExactString, false);
                 eb.addField("Favourite mods:", amountModsIncludedString, false);
                 if (multiMods)
                     eb.addField("PP earned with mod combination:", ppModsExactString, false);
                 eb.addField("PP earned with mod:", ppModsIncludedString, false);
+                String mapperFieldValue = mapperAmount
+                        .entrySet()
+                        .stream()
+                        .sorted((a, b) -> {
+                            int cmp = b.getValue().compareTo(a.getValue());
+                            return cmp == 0 ? mapperPp.get(b.getKey()).compareTo(mapperPp.get(a.getKey())) : cmp;
+                        })
+                        .limit(5)
+                        .map(entry -> entry.getKey() + ": " + df.format(mapperPp.get(entry.getKey())) + "pp (" + entry.getValue() + ")")
+                        .collect(Collectors.joining("\n"));
+                eb.addField("Mappers in top 100:", mapperFieldValue, true)
+                        .addField("Average map length:",
+                                secondsToTimeFormat(mapLength / scores.size()) + " [" + secondsToTimeFormat(minLength) + " - " + secondsToTimeFormat(maxLength) + "]",
+                                true);
                 break;
             default: throw new IllegalStateException(Error.TYPEM.getMsg());
         }
@@ -670,15 +719,15 @@ public class BotMessage {
         int globalPlayIdx = 0;
         if (playsT != null) topPlayIdx = utilOsu.indexInTopPlays(score, playsT);
         if (playsG != null) globalPlayIdx = utilOsu.indexInTopPlays(score, playsG);
-        String descriptionStr = "__**";
+        String description = "__**";
         if (topPlayIdx > 0) {
-            descriptionStr += "Personal Best #" + topPlayIdx;
+            description += "Personal Best #" + topPlayIdx;
             if (globalPlayIdx > 0)
-                descriptionStr += " and ";
+                description += " and ";
         }
         if (globalPlayIdx > 0)
-            descriptionStr += "Global Top #" + globalPlayIdx;
-        this.topplays = descriptionStr.equals("__**") ? "" : descriptionStr + "!**__";
+            description += "Global Top #" + globalPlayIdx;
+        this.topplays = description.equals("__**") ? "" : description + "!**__";
         return this;
     }
 

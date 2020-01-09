@@ -6,12 +6,13 @@ import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.ICommand;
 import main.java.commands.Osu.cmdModdedCommand;
 import main.java.core.BotMessage;
-import main.java.core.DBProvider;
 import main.java.core.Main;
-import main.java.util.secrets;
 import main.java.util.statics;
 import main.java.util.utilGeneral;
+import main.java.util.utilOsu;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -28,6 +29,9 @@ import static main.java.util.utilOsu.mods_strToInt;
     Compare the topscores of multiple players and show which maps appear in each top score list
  */
 public class cmdCommonScores extends cmdModdedCommand implements ICommand {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Override
     public boolean called(String[] args, MessageReceivedEvent event) {
         if (args.length < 1 || args[0].equals("-h") || args[0].equals("-help")) {
@@ -148,31 +152,19 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
                 .collect(Collectors.toList());
 
         // Retrieve maps of common scores
-        ArrayList<OsuBeatmap> maps = new ArrayList<>();
-        for (int i = 0; i < Math.min(common.size(), 15*compareAmount); i += compareAmount) {
-            OsuBeatmap map;
-            int mapID = common.get(i).getBeatmapID();
-            try {
-                if (!secrets.WITH_DB)
-                    throw new SQLException();
-                map = DBProvider.getBeatmap(mapID);
-            } catch (SQLException | ClassNotFoundException e) {
-                try {
-                    map = common.get(i).getBeatmap().get();
-                } catch (OsuAPIException e1) {
-                    event.getChannel().sendMessage("Could not retrieve beatmap with id `" + mapID + "`").queue();
-                    return;
-                }
-                try {
-                    if (secrets.WITH_DB)
-                        DBProvider.addBeatmap(map);
-                } catch (ClassNotFoundException | SQLException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            maps.add(map);
+        List<OsuBeatmap> maps;
+        try {
+            maps = utilOsu.getBeatmaps(
+                    common
+                            .stream()
+                            .limit(Math.min(common.size(), 15 * compareAmount))
+                            .collect(Collectors.toList())
+            );
+        } catch (SQLException | OsuAPIException | ClassNotFoundException e) {
+            event.getChannel().sendMessage("Something went wrong, blame bade").queue();
+            logger.error("Error while retrieving maps in bulk: ", e);
+            return;
         }
-
         new BotMessage(event.getChannel(), BotMessage.MessageType.COMMONSCORES).maps(maps).mode(getMode()).osuscores(common)
                 .users(users).buildAndSend();
     }

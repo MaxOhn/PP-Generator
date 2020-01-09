@@ -42,7 +42,7 @@ There are a few things to take care of so here's how you should proceed:
 
 
 
-I tried to keep everything clean and elegant, even though I horribly failed at that at many points as you might be about to see :p 
+I tried to keep everything clean and elegant, even though I horribly failed at that at many points as you might be about to see :^)
 
 The whole thing is just a side project for me to get back into Java and give our discord server some more utility.
 
