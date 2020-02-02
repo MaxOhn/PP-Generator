@@ -83,7 +83,12 @@ public class MemberHandler {
                 e1.printStackTrace();
             }
             // Kick member
-            Main.jda.getGuildById(guildID).getController()
+            Guild guild = Main.jda.getGuildById(guildID);
+            guild.getTextChannelById(secrets.newMembersChannel)
+                    .sendMessage("Kicking member " + guild.getMemberById(userID).getAsMention() +
+                            " for being unchecked for " + uncheckedKickDelay + " days")
+                    .queue();
+            guild.getController()
                     .kick(userID).reason("No provision of osu profile to a moderator within " + uncheckedKickDelay + " days")
                     .queue();
             logger.info("Kicked unchecked user " + userID);

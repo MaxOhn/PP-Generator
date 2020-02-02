@@ -55,6 +55,7 @@ public class Main {
         builder.addEventListener(new RoleLostListener());
         builder.addEventListener(new MemberJoinListener());
         builder.addEventListener(new ReactionListener());
+        builder.addEventListener(new ServerVoiceListener());
     }
 
     private static void addCommands() {

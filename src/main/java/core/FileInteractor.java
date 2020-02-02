@@ -83,8 +83,8 @@ public class FileInteractor {
 
     // Given mapID and note index, return the timing offset of that note by reading the map's file
     public static int offsetOfNote(int noteIndex, int mapID) {
+        int lineNum = 0;
         try {
-            int lineNum = 0;
             BufferedReader reader = new BufferedReader(new FileReader(secrets.mapPath + mapID + ".osu"));
             String line;
             boolean reachedHO = false;
@@ -100,7 +100,8 @@ public class FileInteractor {
             logger.error("Something went wrong while calculating the offset of a note:", e);
             return 0;
         } catch (Exception e) {
-            logger.error("Unexpected error while calculating offset of note", e);
+            logger.error("Unexpected error while calculating offset of note\nmapID: "
+                    + mapID + "\nnoteIndex: " + noteIndex + "\nlineNum: " + lineNum, e);
             return 0;
         }
     }

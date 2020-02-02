@@ -362,11 +362,28 @@ public class utilOsu {
         } catch (ClassNotFoundException | SQLException e) {
             map = Main.osu.beatmaps.query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(mapID).build()).get(0);
             if (secrets.WITH_DB) {
+                Logger logger = LoggerFactory.getLogger(utilOsu.class);
                 try {
                     DBProvider.addBeatmap(map);
-                    LoggerFactory.getLogger(utilOsu.class).info("Added map id " + map.getID() + " to map database");
+                    logger.debug("Added map id " + map.getID() + " to map database");
                 } catch (ClassNotFoundException | SQLException ex) {
-                    LoggerFactory.getLogger(utilOsu.class).error("Error while adding new map id " + map.getID() + " to map database: ", e);
+                    logger.error("Error while adding new map id " + map.getID() + " to map database: ", e);
+                } catch (IllegalArgumentException ex) {
+                    StringBuilder msg = new StringBuilder("Map id ")
+                            .append(map.getID())
+                            .append(" not added to map database because ")
+                            .append(ex.getMessage())
+                            .append(" too long (");
+                    switch (ex.getMessage()) {
+                        case "version": msg.append(map.getVersion().length()); break;
+                        case "title": msg.append(map.getTitle().length()); break;
+                        case "artist": msg.append(map.getArtist().length()); break;
+                        case "source": msg.append(map.getSource().length()); break;
+                        default:
+                            logger.error("Unexpected error in addBeatmap:", ex);
+                            return map;
+                    }
+                    logger.debug(msg.append(")").toString());
                 }
             }
         }
@@ -378,14 +395,31 @@ public class utilOsu {
         List<OsuBeatmap> maps = new ArrayList<>();
         if (secrets.WITH_DB) {
             HashMap<Integer, OsuBeatmap> dbMaps = DBProvider.getBeatmaps(scores);
+            logger.debug("Retrieved " + dbMaps.size() + "/" + scores.size() + " maps from beatmapInfo database");
             for (OsuScore s : scores) {
                 OsuBeatmap map = dbMaps.get(s.getBeatmapID());
                 if (map != null) maps.add(map);
                 else {
                     map = s.getBeatmap().get();
                     maps.add(map);
-                    DBProvider.addBeatmap(map);
-                    logger.info("Added map id " + map.getID() + " to map database");
+                    try {
+                        DBProvider.addBeatmap(map);
+                    } catch (IllegalArgumentException ex) {
+                        StringBuilder msg = new StringBuilder("Map id ")
+                                .append(map.getID())
+                                .append(" not added to map database because ")
+                                .append(ex.getMessage())
+                                .append(" too long (");
+                        switch (ex.getMessage()) {
+                            case "version": msg.append(map.getVersion().length()); break;
+                            case "title": msg.append(map.getTitle().length()); break;
+                            case "artist": msg.append(map.getArtist().length()); break;
+                            case "source": msg.append(map.getSource().length()); break;
+                            default: msg.append(-1); break;
+                        }
+                        logger.debug(msg.append(")").toString());
+                    }
+                    logger.debug("Added map id " + map.getID() + " to map database");
                 }
             }
         } else {

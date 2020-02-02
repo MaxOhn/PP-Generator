@@ -3,6 +3,7 @@ package main.java.commands.Osu.Standard;
 import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointScores;
 import com.oopsjpeg.osu4j.backend.EndpointUserRecents;
+import com.oopsjpeg.osu4j.backend.EndpointUsers;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.commands.INumberedCommand;
 import main.java.core.BotMessage;
@@ -82,7 +83,7 @@ public class cmdRecent implements INumberedCommand {
                 return;
             }
             // Retrieve osu user data
-            user = recent.getUser().get();
+            user = Main.osu.users.query(new EndpointUsers.ArgumentsBuilder(name).setMode(getMode()).build());
         } catch (Exception e) {
             event.getChannel().sendMessage("`" + name + "` was not found or no recent plays").queue();
             return;

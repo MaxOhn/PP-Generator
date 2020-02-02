@@ -84,7 +84,6 @@ public class BotMessage {
             case RECENT:
                 if (retries == 0) throw new IllegalStateException(Error.HISTORY.getMsg());
                 mb.append("Try #").append(String.valueOf(retries));
-            case COMPARE:
             case RECENTBEST:
             case SINGLETOP: {
                 // Map needs to be set beforehand
@@ -547,7 +546,8 @@ public class BotMessage {
                             .map(e -> "`" + utilOsu.mods_intToStr(e.getKey()) + " " + df.format(e.getValue()) + "pp`")
                             .collect(Collectors.joining(" > "));
                 }
-                StringBuilder comboFieldValue = new StringBuilder(totalCombo / scores.size());
+                int avgCombo = totalCombo / scores.size();
+                StringBuilder comboFieldValue = new StringBuilder("" + avgCombo);
                 switch (u.getMode()) {
                     case STANDARD:
                     case CATCH_THE_BEAT:
@@ -612,7 +612,6 @@ public class BotMessage {
         try {
             switch (typeM) {
                 case RECENT:
-                case COMPARE:
                 case RECENTBEST:
                 case SINGLETOP:
                     // Send and later minimize the message
@@ -810,7 +809,6 @@ public class BotMessage {
 
     public enum MessageType {
         RECENT,
-        COMPARE,
         RECENTBEST,
         RECENTBESTS,
         SCORES,

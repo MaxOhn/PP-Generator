@@ -353,8 +353,21 @@ public class DBProvider {
      * ------------------------
      */
 
+    private static final int VERSION_LENGTH = 64;
+    private static final int TITLE_LENGTH = 64;
+    private static final int ARTIST_LENGTH = 64;
+    private static final int SOURCE_LENGTH = 64;
+
     // Save data of a new beatmap
-    public static void addBeatmap(OsuBeatmap map) throws ClassNotFoundException, SQLException {
+    public static void addBeatmap(OsuBeatmap map) throws ClassNotFoundException, SQLException, IllegalArgumentException {
+        if (map.getVersion().length() > VERSION_LENGTH)
+            throw new IllegalArgumentException("version");
+        else if (map.getTitle().length() > TITLE_LENGTH)
+            throw new IllegalArgumentException("title");
+        else if (map.getArtist().length() > ARTIST_LENGTH)
+            throw new IllegalArgumentException("artist");
+        else if (map.getSource().length() > SOURCE_LENGTH)
+            throw new IllegalArgumentException("source");
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
@@ -445,7 +458,8 @@ public class DBProvider {
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
         ResultSet rs = stmnt.executeQuery("select * from beatmapInfo where mapID='" + mapID + "'");
-        rs.next();
+        if (!rs.next())
+            throw new SQLException("No beatmap in beatmapInfo table with mapID " + mapID);
         OsuBeatmap m = new OsuBeatmap(Main.osu);
         m.setBeatmapID(rs.getInt("mapID"));
         m.setBeatmapSetID(rs.getInt("mapSetID"));
@@ -548,12 +562,22 @@ public class DBProvider {
     }
 
     // Add a new map to the pp database
-    public static void addMapPp(int mapID) throws ClassNotFoundException, SQLException {
+    public static void addMapPp(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
+        double nm = -1, hd = -1, hr = -1, dt = -1, hdhr = -1, hddt = -1;
+        switch (prepareMods(mods)) {
+            case "NM": nm = rating; break;
+            case "HD": hd = rating; break;
+            case "HR": hr = rating; break;
+            case "DT": dt = rating; break;
+            case "HDHR": hdhr = rating; break;
+            case "HDDT": hddt = rating; break;
+        }
         try {
-            stmnt.execute("insert into ppRatings values ('" + mapID + "', -1, -1, -1, -1, -1, -1)");
+            stmnt.execute("insert into ppRatings(mapID, NM, HD, HR, DT, HDHR, HDDT) values ('"
+                    + mapID + "', " + nm + ", " + hd + ", " + hr + ", " + dt + ", " + hdhr + ", " + hddt + ")");
         } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();
@@ -592,20 +616,25 @@ public class DBProvider {
             else
                 throw new IllegalAccessException("Mods '" + mods + "' not yet calculated for mapID " + mapID);
         } catch (SQLException e) {
-            switch (e.getErrorCode()) {
-                case 1054: throw new IllegalArgumentException("Mods '" + mods + "' not available");
-                default: throw e;
-            }
+            if (e.getErrorCode() == 1054)
+                throw new IllegalArgumentException("Mods '" + mods + "' not available");
+            throw e;
         }
     }
 
     // Add a new map to star rating database
-    public static void addMapStars(int mapID) throws ClassNotFoundException, SQLException {
+    public static void addMapStars(int mapID, String mods, double rating) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection c = DriverManager.getConnection(secrets.dbPath, secrets.dbUser, secrets.dbPw);
         Statement stmnt = c.createStatement();
+        double hr = -1, dt = -1;
+        switch (prepareMods(mods)) {
+            case "HR": hr = rating; break;
+            case "DT": dt = rating; break;
+        }
         try {
-            stmnt.execute("insert into starRatings values ('" + mapID + "', -1, -1)");
+            stmnt.execute("insert into starRatings(mapID, HR, DT) values ('"
+                    + mapID + "', " + hr + ", " + dt + ")");
         } catch (SQLIntegrityConstraintViolationException ignore) {}
         stmnt.close();
         c.close();

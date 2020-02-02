@@ -11,12 +11,17 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.time.ZonedDateTime;
 
+import static main.java.util.secrets.newMembersChannel;
+
 public class MemberJoinListener extends ListenerAdapter {
 
     public void onGuildMemberJoin(GuildMemberJoinEvent event) {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         logger.info("User " + event.getUser().getName() + " joined server " + event.getGuild().getName());
-        if (!secrets.RELEASE || event.getGuild().getId().equals(secrets.mainGuildID)) {
+        if (event.getGuild().getId().equals(secrets.mainGuildID)) {
+            event.getGuild().getTextChannelById(newMembersChannel)
+                    .sendMessage(event.getMember().getAsMention() + " just joined the server, awaiting approval")
+                    .queue();
             try {
                 ZonedDateTime now = ZonedDateTime.now();
                 Main.memberHandler.addUncheckedUser(event.getUser().getId() + "", now);

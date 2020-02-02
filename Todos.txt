@@ -1,7 +1,11 @@
 
 --- GENERAL ---
 /!\ check if pp calculation has an update /!\
+change a bunch of logger.info to logger.debug
 (provide filtering by keys for <topmania)
+each score in <common appears twice
+only put ranked and loved maps into beatmapInfo database
+check output of <allstreams
 
 --- BUGS ---
 None :^)

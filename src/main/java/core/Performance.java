@@ -146,28 +146,23 @@ public class Performance {
                     logger.info("Added " + modString + " max pp (" + this.ppMax + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
-                logger.error("Something went wrong while interacting with ppRating database: ");
-                e1.printStackTrace();
+                logger.error("Something went wrong while interacting with ppRating database: ", e1);
             }
         } catch (SQLException e) {              // map not in database
             try {
                 calculateMaxPp();   // calculate it, then save it
                 if (secrets.WITH_DB) {
-                    DBProvider.addMapPp(map.getID());
-                    logger.info("Added map id " + map.getID() + " to pp-database");
                     String modString = utilOsu.mods_setToStr(mods);
-                    DBProvider.addModsPp(map.getID(), modString, this.ppMax);
+                    DBProvider.addMapPp(map.getID(), modString, this.ppMax);
                     logger.info("Added " + modString + " max pp (" + this.ppMax + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
-                logger.error("Something went wrong while interacting with ppRating database: ");
-                e1.printStackTrace();
+                logger.error("Something went wrong while interacting with ppRating database: ", e1);
             }
         } catch (IllegalArgumentException e) {  // mod combination not stored
             calculateMaxPp();   // calculate it without saving
         } catch (ClassNotFoundException e) {    // won't happen
-            logger.error("Something went wrong while setting the pp rating: ");
-            e.printStackTrace();
+            logger.error("Something went wrong while setting the pp rating: ", e);
         }
         return ppMax;
     }
@@ -231,8 +226,7 @@ public class Performance {
             //errors.close();
             pr.waitFor();
         } catch (Exception e) {
-            logger.error("Something went wrong while calculating the pp of a map: ");
-            e.printStackTrace();
+            logger.error("Something went wrong while calculating the pp of a map: ", e);
         }
     }
 
@@ -303,8 +297,7 @@ public class Performance {
             if (failedPlay)
                 FileInteractor.deleteFile(mapPath);
         } catch(Exception e) {
-            logger.error("Something went wrong while calculating the pp of a play: ");
-            e.printStackTrace();
+            logger.error("Something went wrong while calculating the pp of a play: ", e);
         }
         return score.getPp();
     }
@@ -395,28 +388,23 @@ public class Performance {
                     logger.info("Added " + modString + " stars (" + this.starRating + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
-                logger.error("Something went wrong while interacting with starRating database: ");
-                e1.printStackTrace();
+                logger.error("Something went wrong while interacting with starRating database: ", e1);
             }
         } catch (SQLException e) {              // map not in database
             try {
                 calculateStarRating(modsImportant); // calculate it and save it
                 if (secrets.WITH_DB) {
-                    DBProvider.addMapStars(map.getID());
-                    logger.info("Added map id " + map.getID() + " to stars-database");
                     String modString = utilOsu.mods_setToStr(modsImportant);
-                    DBProvider.addModsStars(map.getID(), utilOsu.mods_setToStr(modsImportant), this.starRating);
+                    DBProvider.addMapStars(map.getID(), modString, this.starRating);
                     logger.info("Added " + modString + " stars (" + this.starRating + ") for map id " + map.getID());
                 }
             } catch (ClassNotFoundException | SQLException e1) {
-                logger.error("Something went wrong while interacting with starRating database: ");
-                e1.printStackTrace();
+                logger.error("Something went wrong while interacting with starRating database: ", e1);
             }
         } catch (IllegalArgumentException e) {  // mod combination not stored
             calculateStarRating(modsImportant); // calculate it without saving
         } catch (ClassNotFoundException e) {    // won't happen
-            logger.error("Something went wrong while setting the star rating: ");
-            e.printStackTrace();
+            logger.error("Something went wrong while setting the star rating: ", e);
         }
         return starRating;
     }
@@ -452,8 +440,7 @@ public class Performance {
             input.close();
             pr.waitFor();
         } catch (Exception e) {
-            logger.error("Something went wrong while calculating the star rating: ");
-            e.printStackTrace();
+            logger.error("Something went wrong while calculating the star rating: ", e);
         }
     }
 }
