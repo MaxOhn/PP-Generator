@@ -142,13 +142,14 @@ public class cmdCommonScores extends cmdModdedCommand implements ICommand {
         }
 
         // Combine common scores
-        List<OsuScore> common = scores.stream().flatMap(Collection::stream)
+        List<OsuScore> common = scores.stream()
+                .flatMap(Collection::stream)
                 .collect(Collectors.groupingBy(OsuScore::getBeatmapID))
                 .values()
                 .stream()
                 .filter(list -> list.size() >= compareAmount && list.stream().allMatch(this::hasValidMods))
-                .sorted((a, b) -> Math.round(a.get(0).getPp() - b.get(0).getPp()))
-                .flatMap(List::stream)
+                .map(list -> list.get(0))
+                .sorted((a, b) -> Double.compare(b.getPp(), a.getPp()))
                 .collect(Collectors.toList());
 
         // Retrieve maps of common scores

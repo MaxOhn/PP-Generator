@@ -3,8 +3,7 @@
 /!\ check if pp calculation has an update /!\
 change a bunch of logger.info to logger.debug
 (provide filtering by keys for <topmania)
-each score in <common appears twice
-only put ranked and loved maps into beatmapInfo database
+add <matchcosts in spreadsheet
 game names on <allstreams are wrong, need to update JDA for this
 write in new-members channel which mod unchecked a user (is it possible?)
 

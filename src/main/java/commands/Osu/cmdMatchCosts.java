@@ -188,7 +188,8 @@ public class cmdMatchCosts implements ICommand {
                         + "\nIf no warmup amount is specified, it defaults to 2."
                         + "\nI will assume that the match type (e.g. TeamVs, HeadToHead, ...) will not change after the first non-warmup map."
                         + "\nI will also assume that each player will be in no more than 1 team during the match."
-                        + "\nIf those assumptions are wrong, I might produce garbage :^)";
+                        + "\nIf those assumptions are wrong, I might produce garbage :^)"
+                        + "\nFormula yoinked from https://github.com/dain98/Minccino, go there to get more info and may god bless his soul :pray:";
             case 1:
                 return "Requires at least 1 argument, namely either the URL to the match, or just the match id." + help;
             case 2:

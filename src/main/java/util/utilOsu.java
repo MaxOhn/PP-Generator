@@ -1,9 +1,6 @@
 package main.java.util;
 
-import com.oopsjpeg.osu4j.GameMod;
-import com.oopsjpeg.osu4j.GameMode;
-import com.oopsjpeg.osu4j.OsuBeatmap;
-import com.oopsjpeg.osu4j.OsuScore;
+import com.oopsjpeg.osu4j.*;
 import com.oopsjpeg.osu4j.backend.EndpointBeatmaps;
 import com.oopsjpeg.osu4j.exception.OsuAPIException;
 import main.java.core.DBProvider;
@@ -361,7 +358,8 @@ public class utilOsu {
             else throw new SQLException();
         } catch (ClassNotFoundException | SQLException e) {
             map = Main.osu.beatmaps.query(new EndpointBeatmaps.ArgumentsBuilder().setBeatmapID(mapID).build()).get(0);
-            if (secrets.WITH_DB) {
+            boolean validForDB = map.getApproved() == ApprovalState.RANKED || map.getApproved() == ApprovalState.LOVED;
+            if (secrets.WITH_DB && validForDB) {
                 Logger logger = LoggerFactory.getLogger(utilOsu.class);
                 try {
                     DBProvider.addBeatmap(map);
@@ -402,24 +400,37 @@ public class utilOsu {
                 else {
                     map = s.getBeatmap().get();
                     maps.add(map);
-                    try {
-                        DBProvider.addBeatmap(map);
-                    } catch (IllegalArgumentException ex) {
-                        StringBuilder msg = new StringBuilder("Map id ")
-                                .append(map.getID())
-                                .append(" not added to map database because ")
-                                .append(ex.getMessage())
-                                .append(" too long (");
-                        switch (ex.getMessage()) {
-                            case "version": msg.append(map.getVersion().length()); break;
-                            case "title": msg.append(map.getTitle().length()); break;
-                            case "artist": msg.append(map.getArtist().length()); break;
-                            case "source": msg.append(map.getSource().length()); break;
-                            default: msg.append(-1); break;
+                    boolean validForDB = map.getApproved() == ApprovalState.RANKED || map.getApproved() == ApprovalState.LOVED;
+                    if (validForDB) {
+                        try {
+                            DBProvider.addBeatmap(map);
+                        } catch (IllegalArgumentException ex) {
+                            StringBuilder msg = new StringBuilder("Map id ")
+                                    .append(map.getID())
+                                    .append(" not added to map database because ")
+                                    .append(ex.getMessage())
+                                    .append(" too long (");
+                            switch (ex.getMessage()) {
+                                case "version":
+                                    msg.append(map.getVersion().length());
+                                    break;
+                                case "title":
+                                    msg.append(map.getTitle().length());
+                                    break;
+                                case "artist":
+                                    msg.append(map.getArtist().length());
+                                    break;
+                                case "source":
+                                    msg.append(map.getSource().length());
+                                    break;
+                                default:
+                                    msg.append(-1);
+                                    break;
+                            }
+                            logger.debug(msg.append(")").toString());
                         }
-                        logger.debug(msg.append(")").toString());
+                        logger.debug("Added map id " + map.getID() + " to map database");
                     }
-                    logger.debug("Added map id " + map.getID() + " to map database");
                 }
             }
         } else {
