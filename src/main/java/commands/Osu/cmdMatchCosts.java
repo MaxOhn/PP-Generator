@@ -82,10 +82,12 @@ public class cmdMatchCosts implements ICommand {
         // Key: UserID, Value: TeamInt
         HashMap<Integer, Integer> teams = new HashMap<>();
         // Key: UserID, Value: List of pointCosts
+        // Point costs: How well did a user do compared to the average of the _game_
         HashMap<Integer, ArrayList<Double>> pointCosts = new HashMap<>();
         boolean teamVS = games[0].getTeamType() == OsuMatch.TeamType.TEAM_VS;
         // For each game
         for (OsuMatch.Game game : games) {
+            // All scores summed up
             int scoreSum = game
                     .getScores()
                     .stream()
@@ -102,6 +104,7 @@ public class cmdMatchCosts implements ICommand {
             }
         }
         // Key: TeamInt / UserID, Value: HashMap with Key: UserID, Value: Username-MatchCosts pair
+        // Match costs: How well did a user do compared to the rest of the _match_
         HashMap<Integer, HashMap<Integer, ImmutablePair<String, Double>>> data = new HashMap<>();
         double highestCosts = 0;
         int mvpID = 0;
@@ -129,7 +132,7 @@ public class cmdMatchCosts implements ICommand {
         // Formulate the message
         EmbedBuilder eb = new EmbedBuilder()
                 .setColor(Color.green)
-                .setAuthor(matchTitle, "https://osu.ppy.sh/community/matches/" + matchID)
+                .setTitle(matchTitle, "https://osu.ppy.sh/community/matches/" + matchID)
                 .setThumbnail("https://a.ppy.sh/" + mvpID);
         StringBuilder description = new StringBuilder();
         if (teamVS) {
@@ -138,12 +141,15 @@ public class cmdMatchCosts implements ICommand {
             bluePlayers.sort(new MatchCostComparator());
             List<ImmutablePair<String, Double>> redPlayers = new ArrayList<>(data.get(2).values());
             redPlayers.sort(new MatchCostComparator());
+            boolean blueHasMvp = bluePlayers.size() > 0 &&
+                    (redPlayers.size() == 0 || bluePlayers.get(0).getRight() > redPlayers.get(0).getRight());
 
             // Put players into string
             description.append(":blue_circle: **Blue Team** :blue_circle:\n");
-            buildFromList(description, bluePlayers);
+            buildFromList(description, bluePlayers, blueHasMvp);
             description.append("\n:red_circle: **Red Team** :red_circle:\n");
-            buildFromList(description, redPlayers);
+            buildFromList(description, redPlayers, !blueHasMvp);
+            // Delete last '\n'
             if (redPlayers.size() > 0)
                 description.deleteCharAt(description.length() - 1);
         } else {
@@ -154,7 +160,8 @@ public class cmdMatchCosts implements ICommand {
                     .sorted(new MatchCostComparator())
                     .collect(Collectors.toList());
             // Put players into string
-            buildFromList(description, players);
+            buildFromList(description, players, true);
+            // Delete last '\n'
             if (players.size() > 0)
                 description.deleteCharAt(description.length() - 1);
         }
@@ -202,7 +209,7 @@ public class cmdMatchCosts implements ICommand {
         }
     }
 
-    void buildFromList(StringBuilder builder, List<ImmutablePair<String, Double>> players) {
+    void buildFromList(StringBuilder builder, List<ImmutablePair<String, Double>> players, boolean withMVP) {
         int idx = 0;
         for (ImmutablePair<String, Double> player : players) {
             builder.append("**")
@@ -213,7 +220,10 @@ public class cmdMatchCosts implements ICommand {
                     .append(player.getLeft().replaceAll(" ", "+"))
                     .append(") - **")
                     .append((double)Math.round(100 * player.getRight()) / 100)
-                    .append("**\n");
+                    .append("**");
+            if (withMVP && idx == 1)
+                builder.append(" :crown:");
+            builder.append("\n");
         }
     }
 }

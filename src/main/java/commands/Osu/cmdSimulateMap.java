@@ -1,6 +1,6 @@
 package main.java.commands.Osu;
 
-import com.oopsjpeg.osu4j.GameMod;
+import com.oopsjpeg.osu4j   .GameMod;
 import com.oopsjpeg.osu4j.GameMode;
 import com.oopsjpeg.osu4j.OsuBeatmap;
 import com.oopsjpeg.osu4j.OsuScore;
