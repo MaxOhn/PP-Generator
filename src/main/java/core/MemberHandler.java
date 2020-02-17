@@ -63,8 +63,7 @@ public class MemberHandler {
             if (secrets.WITH_DB)
                 DBProvider.removeUncheckedUser(discord);
         } catch (ClassNotFoundException | SQLException e) {
-            logger.error("Could not remove unchecked user from DB:");
-            e.printStackTrace();
+            logger.error("Could not remove unchecked user from DB:", e);
         }
     }
 

@@ -5,7 +5,8 @@ change a bunch of logger.info to logger.debug
 (provide filtering by keys for <topmania)
 each score in <common appears twice
 only put ranked and loved maps into beatmapInfo database
-check output of <allstreams
+game names on <allstreams are wrong, need to update JDA for this
+write in new-members channel which mod unchecked a user (is it possible?)
 
 --- BUGS ---
 None :^)

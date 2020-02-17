@@ -399,6 +399,7 @@ public class DBProvider {
 
     // Retrieve all maps that correspond to the given OsuScore collection
     public static HashMap<Integer, OsuBeatmap> getBeatmaps(Collection<OsuScore> scores) throws ClassNotFoundException, SQLException {
+        if (scores.isEmpty()) return new HashMap<>();
         String queryCondition = scores
                 .stream()
                 .map(score -> "mapID='" + score.getBeatmapID() + "'")

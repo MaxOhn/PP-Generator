@@ -4,6 +4,7 @@ import main.java.util.secrets;
 import net.dv8tion.jda.core.entities.Role;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceJoinEvent;
 import net.dv8tion.jda.core.events.guild.voice.GuildVoiceLeaveEvent;
+import net.dv8tion.jda.core.events.guild.voice.GuildVoiceMoveEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,11 @@ public class ServerVoiceListener extends ListenerAdapter {
     // Distribute 'In VC' role to members who join a voice chat
     public void onGuildVoiceJoin(GuildVoiceJoinEvent event) {
         if (event.getGuild().getId().equals(secrets.mainGuildID)) {
+            if (event.getChannelJoined().getName().toLowerCase().equals("afk"))
+                return;
+            for (Role r : event.getMember().getRoles())
+                if (r.getName().equals("Silenced"))
+                    return;
             Role role = event.getGuild().getRoleById(673633138207096833L);
             event.getGuild().getController()
                     .addSingleRoleToMember(event.getMember(), role)
@@ -31,6 +37,21 @@ public class ServerVoiceListener extends ListenerAdapter {
                     .removeSingleRoleFromMember(event.getMember(), role)
                     .queue();
             logger.info("Removed \"In VC\" role from member " + event.getMember().getEffectiveName());
+        }
+    }
+
+    // Remove 'In VC' role from members if they move to the afk channel
+    public void onGuildVoiceMove(GuildVoiceMoveEvent event) {
+        if (event.getGuild().getId().equals(secrets.mainGuildID)) {
+            if (event.getChannelJoined().getName().toLowerCase().equals("afk")) {
+                Role role = event.getGuild().getRoleById(673633138207096833L);
+                event.getGuild().getController()
+                        .removeSingleRoleFromMember(event.getMember(), role)
+                        .queue();
+                logger.info("Removed \"In VC\" role from member "
+                        + event.getMember().getEffectiveName()
+                        + " for joining afk channel");
+            }
         }
     }
 }

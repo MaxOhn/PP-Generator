@@ -71,6 +71,9 @@ public class Main {
         commandHandler.commands.put("glb", new cmdGlobalLeaderboard());
         commandHandler.commands.put("simulate", new cmdSimulateMap());
         commandHandler.commands.put("s", new cmdSimulateMap());
+        commandHandler.commands.put("matchcosts", new cmdMatchCosts());
+        commandHandler.commands.put("matchcost", new cmdMatchCosts());
+        commandHandler.commands.put("mc", new cmdMatchCosts());
 
         // osu! standard
         commandHandler.commands.put("recent", new cmdRecent());

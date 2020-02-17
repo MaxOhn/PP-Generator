@@ -37,9 +37,10 @@ public class cmdAllStreamers implements ICommand {
         if (streamMap.size() > 0) {
             msg.append("__Current streamers on this server:__");
             for (String name : streamMap.keySet())
-                msg.append("\n- `").append(name).append("`: `")
-                        .append(streamMap.get(name).getName().trim().replaceAll("\\s+"," "))
-                        .append("` on <").append(streamMap.get(name).getUrl()).append(">");
+                msg.append("\n- `").append(name).append("`: <")
+                        // TODO: Display rows as "`[Game name]` on <[stream url]>" but current JDA version doesn't provide name
+                        //.append(streamMap.get(name).getName().trim().replaceAll("\\s+"," "))
+                        .append(streamMap.get(name).getUrl()).append(">");
         } else msg.append("No current streamers on this server");
         event.getChannel().sendMessage(msg.toString()).queue();
     }
